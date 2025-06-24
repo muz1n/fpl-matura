@@ -1,4 +1,4 @@
-# Zeitplan Maturaarbeit – KI-gestützte FPL-Optimierungsapp
+# Zeitplan Maturaarbeit: KI-gestützte FPL-Optimierungsapp
 
 ## 1: Setup & Vorbereitung (Juni – Juli 2025)
 - GitHub-Repo erstellen und strukturieren ✅
