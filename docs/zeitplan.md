@@ -9,7 +9,7 @@
 ## 2: Feature Engineering & Modelltraining (August 2025)
 - Datensammlung (historische FPL-Daten, API-Zugriffe testen)
 - Datenbereinigung & Feature Engineering (z. B. xG, Gegnerstärke)
-- Training einfacher Modelle: Random Forest, MLP
+- Training einfacher Modelle: Random Forest oder Neuronales Netz
 - Evaluation mit MAE + Vergleich zur Baseline
 ## Reale Anwendung: Saisonstart und reale Anwendung
 - Die Premier-League- und FPL-Saison beginnt am **15. August 2025**.  
