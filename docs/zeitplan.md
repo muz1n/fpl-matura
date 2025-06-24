@@ -34,7 +34,7 @@
 - Reflexion der Ergebnisse (Funktioniert es wirklich?)
 - Schreiben der Arbeit (strukturierter Aufbau mit Theorie, Methode, Analyse)
 
-## Fixtermine gemäss KSZ
+## Fixtermine
 - **Probekapitel abgeben bis:** 15. September 2025
 - **Zwischenevaluation:** 22.–26. September 2025
 - **Endabgabe:** 5. Dezember 2025
