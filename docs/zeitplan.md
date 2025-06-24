@@ -12,12 +12,12 @@
 - Training einfacher Modelle: Random Forest, MLP
 - Evaluation mit MAE + Vergleich zur Baseline
 ## Hinweis: Saisonstart und reale Anwendung
-Die Premier-League- und FPL-Saison beginnt am **15. August 2025**.  
-Ab diesem Zeitpunkt wird im Rahmen der Maturaarbeit ein persönliches FPL-Team geführt.  
-Dabei handelt es sich um ein öffentlich zugängliches, internetbasiertes Spiel, bei dem wöchentlich ein virtuelles Fussballteam aus echten Premier-League-Spielern zusammengestellt und angepasst wird.  
-Ziel ist es, über die Saison möglichst viele Punkte zu erzielen. Die Punkte basieren auf den realen Leistungen der Spieler in den Spielen.
-Dieses manuell betreute Team dient als Referenz: Ab Oktober wird geprüft, ob das Machine-Learning-Modell bessere Teamvorschläge gemacht hätte als die tatsächlichen Entscheidungen, die während der Saison getroffen wurden (z. B. bei der Auswahl der Spieler pro Spieltag).
-Die Qualität des Modells wird unabhängig davon mathematisch bewertet (z. B. mit dem mittleren absoluten Fehler, MAE). Die Platzierung des FPL-Teams dient nur als ergänzender Realitätsbezug.
+- Die Premier-League- und FPL-Saison beginnt am **15. August 2025**.  
+- Ab diesem Zeitpunkt wird im Rahmen der Maturaarbeit ein persönliches FPL-Team geführt.  
+- Dabei handelt es sich um ein öffentlich zugängliches, internetbasiertes Spiel, bei dem wöchentlich ein virtuelles Fussballteam aus echten Premier-League-Spielern zusammengestellt und angepasst wird.  
+- Ziel ist es, über die Saison möglichst viele Punkte zu erzielen. Die Punkte basieren auf den realen Leistungen der Spieler in den Spielen.
+- Dieses manuell betreute Team dient als Referenz: Ab Oktober wird geprüft, ob das Machine-Learning-Modell bessere Teamvorschläge gemacht hätte als die tatsächlichen Entscheidungen, die während der Saison getroffen wurden (z. B. bei der Auswahl der Spieler pro Spieltag).
+- Die Qualität des Modells wird unabhängig davon mathematisch bewertet (z. B. mit dem mittleren absoluten Fehler, MAE). Die Platzierung des FPL-Teams dient nur als ergänzender Realitätsbezug.
 
 ## 3: WebApp-Prototyp (September 2025)
 - Grundstruktur der Web-App: evtl. React-Frontend und Flask-Backend
