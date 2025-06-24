@@ -1,1 +1,1 @@
-Dieser Ordner enthält den Python-Code zur Modellierung und Optimierung.
+Dieser Ordner enthält den Code zur Modellierung und Optimierung.
