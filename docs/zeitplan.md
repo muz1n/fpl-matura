@@ -11,7 +11,7 @@
 - Datenbereinigung & Feature Engineering (z. B. xG, Gegnerstärke)
 - Training einfacher Modelle: Random Forest, MLP
 - Evaluation mit MAE + Vergleich zur Baseline
-## Hinweis: Saisonstart und reale Anwendung
+## Reale Anwendung: Saisonstart und reale Anwendung
 - Die Premier-League- und FPL-Saison beginnt am **15. August 2025**.  
 - Ab diesem Zeitpunkt wird im Rahmen der Maturaarbeit ein persönliches FPL-Team geführt.  
 - Dabei handelt es sich um ein öffentlich zugängliches, internetbasiertes Spiel, bei dem wöchentlich ein virtuelles Fussballteam aus echten Premier-League-Spielern zusammengestellt und angepasst wird.  
