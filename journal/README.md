@@ -1,1 +1,1 @@
-Enthält das Arbeitsjournal mit täglichem Fortschritt.
+Enthält das Arbeitsjournal mit Fortschritt.
