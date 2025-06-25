@@ -19,7 +19,12 @@ Ich habe drei Haupttypen von Modellen gefunden, die in bisherigen FPL-Projekten 
 3. **Modelle mit zusätzlichen Datenquellen** (z. B. News, Social Media):  
    Diese Modelle kombinieren FPL-Daten mit externen Informationen wie Verletzungsnews oder Meinungen aus sozialen Netzwerken. Ein Beispielprojekt, das so gearbeitet hat, kam in die Top 0.5 % aller FPL-Spieler. Die Integration dieser Daten ist aber technisch sehr anspruchsvoll. Man muss die Texte verarbeiten (NLP), passende Datenquellen finden und diese mit dem restlichen Datensatz kombinieren. Für ein Maturaprojekt ist dieser Weg nur dann machbar, wenn man viel Zeit und Erfahrung hat.
 
-Nach allem, was ich recherchiert habe, ist Random Forest die sinnvollste Wahl für mein Projekt. Mein Datensatz ist relativ klein und Random Forest kann damit gut umgehen. Ich kann es lokal auf meinem Laptop oder PC trainieren, ohne GPU oder Cloud. Die Trainingszeit ist kurz, und die Ergebnisse lassen sich nachvollziehbar erklären. Ausserdem kann ich mit Feature Importance zeigen, welche Eingabedaten wichtig waren. Das ist besonders nützlich für die Analyse im schriftlichen Teil der Arbeit. Auch andere Projekte, die erfolgreich waren, haben Random Forest oder XGBoost verwendet.  
+## Auswahl für das eigene Projekt
+
+Nach allem, was ich recherchiert habe, ist Random Forest die sinnvollste Wahl für mein Projekt. Mein Datensatz ist relativ klein und Random Forest kann damit gut umgehen. Ich kann es lokal auf meinem Laptop oder PC trainieren, ohne GPU oder Cloud. Die Trainingszeit ist kurz, und die Ergebnisse lassen sich nachvollziehbar erklären. Ausserdem kann ich mit Feature Importance zeigen, welche Eingabedaten wichtig waren. Das ist besonders nützlich für die Analyse im schriftlichen Teil der Arbeit. Auch andere Projekte, die erfolgreich waren, haben Random Forest oder XGBoost verwendet. 
+
 XGBoost wäre eventuell ein nächster Schritt, wenn ich Zeit habe. Es braucht aber mehr Tuning und reagiert empfindlicher auf falsche Einstellungen. Für den Einstieg ist Random Forest deshalb besser geeignet.
+
+## Fazit
 
 Ich habe drei grundsätzliche Modelltypen verglichen. Neuronale Netze und komplexe Hybridmodelle sind zwar leistungsfähig, aber in meinem Fall zu aufwändig und riskant. Ensemble-Modelle wie Random Forest bieten eine gute Balance aus Genauigkeit, Einfachheit und Erklärbarkeit. Deshalb wähle ich Random Forest als mein erstes Modell. Es ist stabil, leicht umzusetzen und passt gut zum Umfang dieses Projekts. Falls später noch Zeit ist, kann ich XGBoost oder ein neuronales Netz zum Vergleich ergänzen.
