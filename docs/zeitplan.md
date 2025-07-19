@@ -3,8 +3,8 @@
 ## 1: Setup & Vorbereitung (Juni – Juli 2025)
 - GitHub-Repo erstellen und strukturieren ✅
 - Zeitplan & Arbeitsjournal aufsetzen ✅
-- Erste Recherche: ML für Punktprognosen in Fantasy Football
-- Test: evtl. kleines neuronales Netz mit Beispieldaten
+- Erste Recherche: ML-Modelle für Punktprognosen in Fantasy Football ✅
+- Vorbereitung auf Feature Engineering: Daten sichten & mögliche Eingabevariablen überlegen
 
 ## 2: Feature Engineering & Modelltraining (August 2025)
 - Datensammlung (historische FPL-Daten, API-Zugriffe testen)
