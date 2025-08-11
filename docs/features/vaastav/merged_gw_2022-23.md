@@ -9,6 +9,7 @@
 > **Einfrieren** bedeutet: Werte wie Preis/Beliebtheit als **Snapshot vor Deadline** verwenden, damit keine Infos aus der Zukunft ins Modell rutschen.  
 > Viele Spalten dieser Datei sind Match-Ergebnisse. Die nutze ich **nur verzögert** (z. B. als Durchschnitt der letzten Spiele), nicht für dieselbe GW.
 
+
 ## Inhalt
 - [Kontext](#kontext)
 - [Bewertungssystematik](#bewertungssystematik)
@@ -18,12 +19,10 @@
 - [Nächste Schritte](#nächste-schritte)
 - [Eigenes Vorgehen und Grenzen](#eigenes-vorgehen-und-grenzen)
 
----
 
 ## Kontext
 `merged_gw.csv` enthält **Gameweek-Daten pro Spieler und Spiel** (2022/23). Viele Spalten sind **post-match** (erst nach dem Spiel bekannt). Für echte Vorhersagen verwende ich solche Informationen **nur als Historie** (z. B. Mittelwert der letzten 3–5 GWs), niemals als Input für dieselbe Ziel-GW.
 
----
 
 ## Bewertungssystematik
 Für jede Spalte dokumentiere ich:
@@ -33,7 +32,6 @@ Für jede Spalte dokumentiere ich:
 - **Zeitbezug**: vor dem Spiel, post-match, zeitlos, saison-aggregiert  
 - **Transformation**: empfohlene Aufbereitung (Rollfenster, pro 90, Standardisierung, One-Hot)
 
----
 
 ## Spaltenübersicht
 
@@ -85,7 +83,6 @@ Für jede Spalte dokumentiere ich:
 
 \* **vor dem Spiel***: Diese Werte sind in der Praxis nur dann vor-Deadline, wenn der Datensnapshot rechtzeitig erfasst wurde. Im Zweifel **einfrieren** und den Zeitpunkt dokumentieren.
 
----
 
 ## Empfohlene Startfeatures für die Baseline
 Ziel: **einfache, robuste** Vorhersage der nächsten GW-Punkte mit Random Forest.
@@ -102,7 +99,6 @@ Ziel: **einfache, robuste** Vorhersage der nächsten GW-Punkte mit Random Forest
 **Nicht als Input für Ziel-GW:**
 - `total_points`, `bonus`, `bps`, **alle** `expected_*` dieser Ziel-GW, `team_*_score`, `starts`
 
----
 
 ## Risiken und Bias
 - **Leakage**: Alles, was erst nach dem Spiel feststeht, nicht für dieselbe Ziel-GW verwenden.  
@@ -110,7 +106,6 @@ Ziel: **einfache, robuste** Vorhersage der nächsten GW-Punkte mit Random Forest
 - **Datums-Schnappschüsse**: `value`, `selected`, `transfers_*` nur als **vor-Deadline-Snapshot** nutzen und den Zeitpunkt festhalten.  
 - **Überanpassung an seltene Events**: `penalties_saved`, `own_goals`, `red_cards` sind selten – eher stark glätten oder niedriger gewichten.
 
----
 
 ## Nächste Schritte
 1. **Spaltenprofil automatisch auslesen** (Datentyp, Missing-Rate) und hier verlinken.  
@@ -119,7 +114,6 @@ Ziel: **einfache, robuste** Vorhersage der nächsten GW-Punkte mit Random Forest
 4. **Snapshots** definieren: Wie und wann `value`, `selected`, `transfers_*` eingefroren werden.  
 5. **Baseline-Training**: Nur vor-Match-und Historie-Features; MAE gegen naive Baseline (z. B. letzter Wert).
 
----
 
 ## Eigenes Vorgehen und Grenzen
 - Ich starte bewusst einfach (Random Forest, wenige, saubere, zukunftssichere Features).  

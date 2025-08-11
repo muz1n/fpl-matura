@@ -19,13 +19,11 @@
 - [Nächste Schritte](#nächste-schritte)
 - [Eigenes Vorgehen und Grenzen](#eigenes-vorgehen-und-grenzen)
 
----
 
 ## Hinweis zur Datenlage
 `cleaned_players.csv` enthält aggregierte Saisondaten (eine Zeile pro Spieler) aus 2022/23. Die spätere App arbeitet auf Gameweek-Ebene. Diese Datei dient hier zur strukturierten Feature-Einschätzung und zum Ableiten von sinnvollen Transformationen.  
 Regelbezug siehe `docs/fpl_basics/fpl_punktevergabe.md` (bis 2024/25). Änderungen ab 2025/26 werden separat dokumentiert.
 
----
 
 ## Bewertungssystematik
 Für jedes potenzielle Feature werden festgehalten:
@@ -35,7 +33,6 @@ Für jedes potenzielle Feature werden festgehalten:
 - **Zeitbezug**: saison-aggregiert, vor dem Spiel, nach dem Spiel  
 - **Transformation**: empfohlene Aufbereitung, z. B. pro 90, Normalisierung
 
----
 
 ## Nicht verwendbare Spalten
 
@@ -45,7 +42,6 @@ Für jedes potenzielle Feature werden festgehalten:
 | `second_name`  | Nur Identifikation                         |
 | `total_points` | Zielvariable, nicht als Eingabe verwenden  |
 
----
 
 ## Spaltenübersicht
 Hinweis: „Positionsabhängig = ja“ bedeutet, dass die Punktewirkung je Position verschieden ist, z. B. Tore und Clean Sheets.
@@ -68,7 +64,6 @@ Hinweis: „Positionsabhängig = ja“ bedeutet, dass die Punktewirkung je Posit
 | `red_cards`           | numerisch   | Rote Karten                                                  | negative Punkte                            | nein              | nein           | saison-aggregiert   | Rate pro 90 oder pro Einsatz                                    |
 | `yellow_cards`        | numerisch   | Gelbe Karten                                                 | negative Punkte                            | nein              | nein           | saison-aggregiert   | Rate pro 90 oder pro Einsatz                                    |
 
----
 
 ## Auswahl für das erste Modell
 Robuste Baseline mit Random Forest:
@@ -80,7 +75,6 @@ Robuste Baseline mit Random Forest:
 - Weglassen: `ict_index`  
 - Optional/meta: `selected_by_percent` nur mit klar definiertem Stichtag vor Deadline
 
----
 
 ## Risiken und Bias
 - Leakage: `bonus` und `bps` entstehen nach dem Match, für Ziel-GW nicht verwenden  
@@ -88,7 +82,6 @@ Robuste Baseline mit Random Forest:
 - Meta-Effekte: `selected_by_percent` und `now_cost` spiegeln Community-Reaktionen  
 - Positionslogik: Punkte für Tore und Clean Sheets sind positionsabhängig, `element_type` ist nötig
 
----
 
 ## Nächste Schritte
 1. In `features/vaastav/merged_gw_2022-23.md` identische Tabelle auf GW-Basis anlegen  
@@ -97,7 +90,6 @@ Robuste Baseline mit Random Forest:
 4. Stichtage definieren: Preis und Beliebtheit vor jeder Deadline einfrieren  
 5. `ict_index` entfernen; `bonus` und `bps` nur für historische Analyse nutzen, nicht als Input der Ziel-GW
 
----
 
 ## Eigenes Vorgehen und Grenzen
 - Ich starte bewusst einfach (Random Forest, wenige, saubere Features).  
