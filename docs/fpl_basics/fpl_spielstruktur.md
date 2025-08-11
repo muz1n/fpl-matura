@@ -1,6 +1,7 @@
 # Spielstruktur im Fantasy Premier League (FPL)
 
-Dieses Dokument erklärt die grundlegenden Spielmechanismen der Fantasy Premier League, gültig bis einschliesslich Saison 2024/25. Es enthält alle wichtigen Informationen über Kader, Budget, Transfers, Chips, Kapitänsregeln und automatische Aufstellung.
+Dieses Dokument erklärt die grundlegenden Spielmechanismen der Fantasy Premier League. 
+**Basisregeln** gelten fortlaufend; **saison­spezifische Änderungen 2025/26** sind unten im Chip-Abschnitt markiert.
 
 ---
 
@@ -11,11 +12,14 @@ Dieses Dokument erklärt die grundlegenden Spielmechanismen der Fantasy Premier 
   - **5 Verteidiger**
   - **5 Mittelfeldspieler**
   - **3 Stürmer**
+- Pro **Premier-League-Team** dürfen sich **maximal 3 Spieler** im Kader befinden.
 
 - Pro Spieltag werden **11 Spieler** aufgestellt. Die restlichen 4 sind Bankspieler.
 - Die Formation kann frei gewählt werden, es gelten aber folgende Einschränkungen:
   - Es muss immer **genau 1 Torhüter** aufgestellt sein.
   - Es müssen mindestens **3 Verteidiger** eingesetzt werden.
+  - Es müssen mindestens **2 Mittelfeldspieler** eingesetzt werden.
+  - Es muss mindestens **1 Stürmer** eingesetzt werden.
   - Maximal **3 Stürmer** sind erlaubt.
 
 ---
@@ -23,7 +27,7 @@ Dieses Dokument erklärt die grundlegenden Spielmechanismen der Fantasy Premier 
 ## Budget & Preise
 
 - Das Startbudget beträgt **£100 Millionen**.
-- Die Preise der Spieler ändern sich während der Saison in 0.1-Millionen-Schritten (z. B. von 6.5 auf 6.6 Mio), abhängig vom Transferverhalten der Community.
+- Die Preise der Spieler ändern sich während der Saison in 0.1-Millionen-Schritten (z. B. von 6.5 auf 6.6 Mio), abhängig vom Transferverhalten der Community.
 - Spielerwerte werden täglich angepasst, steigen oder fallen aber nicht unbegrenzt schnell.
 
 ---
@@ -33,27 +37,25 @@ Dieses Dokument erklärt die grundlegenden Spielmechanismen der Fantasy Premier 
 - Pro Gameweek ist **ein Transfer kostenlos**.
 - Unbenutzte Transfers können auf die nächste Woche übertragen werden, bis zu einem Maximum von **5 gleichzeitig**.
 - **Jeder zusätzliche Transfer kostet 4 Punkte Abzug**.
-- Transfers können jederzeit gemacht werden, sind aber nur bis zum jeweiligen Gameweek-Deadline gültig.
+- Transfers können jederzeit gemacht werden, sind aber nur bis **zur jeweiligen Gameweek-Deadline** gültig.
 - In einer Gameweek sind maximal **20 Transfers erlaubt**, ausser beim Einsatz eines Chips.
+- **AFCON-Sonderfall 2025/26:** In **GW16** werden die verfügbaren Free Transfers einmalig auf **5** aufgefüllt (Top-up), um Ausfälle durch das Turnier abzufedern.
 
 ---
 
-## Chips
+## Chips (2025/26)
 
-Chips sind Sonderaktionen, die strategisch eingesetzt werden können. Sie verändern Aufstellung, Punktevergabe oder Transfers. Pro Gameweek kann **nur ein Chip aktiv sein**.
+Chips sind Sonderaktionen. Pro Gameweek kann **nur ein Chip** aktiv sein.
 
-| Chip               | Verfügbarkeit      | Effekt                                                                 |
-|--------------------|--------------------|------------------------------------------------------------------------|
-| **Wildcard**        | 2× pro Saison      | Unbegrenzte Transfers ohne Punkteverlust. Eine pro Saisonhälfte.       |
-| **Free Hit**        | 1× pro Saison      | Einmaliger, temporärer Teamwechsel für eine einzelne Gameweek.         |
-| **Bench Boost**     | 1× pro Saison      | Auch alle vier Bankspieler erhalten in dieser Woche Punkte.            |
-| **Triple Captain**  | 1× pro Saison      | Der Captain erhält dreifache Punkte anstelle von doppelten.            |
-| **Assistant Manager** | Nur 2024/25       | Automatisierte Aufstellung für drei Spieltage. Ab 2025/26 gestrichen.  |
+| Chip              | Verfügbarkeit 2025/26          | Effekt |
+|-------------------|---------------------------------|--------|
+| **Wildcard**      | **2×** (eine pro Saisonhälfte) | Unbegrenzte Transfers ohne Punktabzug |
+| **Free Hit**      | **2×** (eine pro Saisonhälfte) | Einmalige Team-Neuzusammenstellung für eine GW |
+| **Bench Boost**   | **2×** (eine pro Saisonhälfte) | Alle 15 Spieler punkten |
+| **Triple Captain**| **2×** (eine pro Saisonhälfte) | Captain-Punkte werden verdreifacht |
+| **Assistant Manager** | **entfällt 2025/26** (nur 2024/25) | – |
 
-**Hinweise:**
-- Die Wildcard ist als einziger Chip **zweimal pro Saison verfügbar**: einmal vor Ende Dezember, einmal danach.
-- Der Assistant Manager Chip wurde **nur in der Saison 2024/25 eingeführt** und ist in der **Saison 2025/26 nicht mehr verfügbar**.
-- Chips müssen manuell aktiviert werden. Es ist **nicht möglich, zwei Chips gleichzeitig zu aktivieren**.
+**Wichtig:** Das **erste Set** (4 Chips) muss **bis zur GW19-Deadline** gespielt werden und kann **nicht** in die zweite Saisonhälfte übertragen werden; das **zweite Set** ist **ab GW20** bis Saisonende nutzbar.
 
 ---
 
