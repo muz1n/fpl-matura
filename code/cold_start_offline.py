@@ -1,6 +1,7 @@
 # cold_start_offline.py
 # Offline-GW1: Hybrid-Score (Preis/Ownership-Perzentile + Vorjahresleistung per90 + ICT)
-# Formation 3-5-2, volle Bank, Budget < 100, max. 3 pro Klub (falls Teamspalte vorhanden)
+# + Nailedness-Filter (Min/Own/Preis) + Anti-4.0-Start-Regeln + FORCE-FILL (Notfall)
+# Formation 3-5-2, volle Bank, Budget < 100, max. 3 pro Klub (wenn Teamspalte vorhanden)
 
 import sys
 import pandas as pd
@@ -10,27 +11,34 @@ from collections import defaultdict, Counter
 # ----------------- Konfiguration -----------------
 CSV_PATH_DEFAULT = "data/cleaned_players_2025-26.csv"
 BUDGET = 100.0
-FORMATION = {"GK": 1, "DEF": 3, "MID": 5, "FWD": 2}   # Experten-Trend für GW1
+FORMATION = {"GK": 1, "DEF": 3, "MID": 5, "FWD": 2}
 BENCH     = {"GK": 1, "DEF": 1, "MID": 1, "FWD": 1}
 MAX_PER_CLUB = 3
 
-# feste Mindestpreise + Puffer -> garantiert Budget für die Bank
+# Bank sicherstellen
 BENCH_MIN = {"GK":4.0, "DEF":4.0, "MID":4.5, "FWD":4.5}
-BENCH_CUSHION = 1.0   # kleine Reserve, damit Total i.d.R. < 100 bleibt
+BENCH_CUSHION = 1.0  # lässt i.d.R. <100 übrig
+
+# „Sicher starten“-Regeln
+MIN_NAILED_PCT = 0.25         # 0..1 (aus Minutes/Ownership/Preis)
+START_GK_MIN_PRICE = 4.5      # kein 4.0-GK als Starter (falls Alternativen existieren)
+MAX_CHEAP_DEF_IN_XI = 1       # max. x × £4.0-DEF in der XI
 
 # ----------------- Utils -----------------
 def robust_read_csv(path):
     tries = [
         {"engine":"c"},
-        {"sep":None},  # auto sniff (python)
+        {"sep":None},
         {"sep":";", "engine":"python"},
         {"engine":"python", "on_bad_lines":"skip"},
         {"engine":"python", "on_bad_lines":"skip", "encoding":"utf-8", "encoding_errors":"ignore"},
     ]
     last = None
     for kw in tries:
-        try: return pd.read_csv(path, **kw)
-        except Exception as e: last = e
+        try:
+            return pd.read_csv(path, **kw)
+        except Exception as e:
+            last = e
     raise last
 
 def map_pos(v):
@@ -94,6 +102,7 @@ ict    = to_float(df["ict_index"])      if "ict_index" in df.columns else pd.Ser
 g90, a90 = per90(goals, mins).fillna(0.0), per90(assists, mins).fillna(0.0)
 cs90, gc90, sv90 = per90(cs, mins).fillna(0.0), per90(gc, mins).fillna(0.0), per90(saves, mins).fillna(0.0)
 
+# Features (Perzentile)
 pool["price_pct"] = pct_rank(pool["price"])
 pool["own_pct"]   = pct_rank(pool["own"])
 pool["mins_pct"]  = pct_rank(mins)
@@ -102,6 +111,10 @@ pool["cs90_pct"]  = pct_rank(cs90); pool["gc90_pct"]= pct_rank(gc90); pool["sv90
 pool["thr_pct"]   = pct_rank(thr);  pool["cre_pct"] = pct_rank(cre);  pool["inf_pct"] = pct_rank(inf_)
 pool["ict_pct"]   = pct_rank(ict)
 
+# Nailedness (0..1)
+pool["nailed_pct"] = (0.5*pool["mins_pct"] + 0.3*pool["own_pct"] + 0.2*pool["price_pct"]).clip(0,1)
+
+# Score je Position
 def score_row(r):
     if r["pos"]=="MID":
         return (3.0*r["g90_pct"] + 2.0*r["a90_pct"] + 1.2*r["thr_pct"] + 1.0*r["cre_pct"] +
@@ -138,24 +151,53 @@ def minimal_cost_for(need, used_names, club_count, enforce_club, sorted_pool):
     return float(rem)
 
 def build_team(pool_df):
-    enforce_club = HAS_TEAM
+    enforce_club = (pool_df["team"].nunique()>1) and HAS_TEAM
     sorted_pool = pool_df.sort_values("pred_score", ascending=False).reset_index(drop=True)
     need = FORMATION.copy()
     picked = []
     budget = 0.0
     club_count = Counter()
-    # **Bank-Reserve sichern**
     effective_budget = max(0.0, BUDGET - bench_reserve_cost())
+    cheap_def_in_xi = 0
+
+    def violates_start_rules(r):
+        if r["nailed_pct"] < MIN_NAILED_PCT: 
+            return True
+        if r["pos"]=="GK" and r["price"] < START_GK_MIN_PRICE:
+            return True
+        if r["pos"]=="DEF" and r["price"] <= 4.0 and cheap_def_in_xi >= MAX_CHEAP_DEF_IN_XI:
+            return True
+        return False
+
+    def any_ok_for_pos(pos):
+        for _, rr in sorted_pool.iterrows():
+            if rr["pos"] != pos: 
+                continue
+            ok = True
+            if rr["nailed_pct"] < MIN_NAILED_PCT: ok = False
+            if rr["pos"] == "GK" and rr["price"] < START_GK_MIN_PRICE: ok = False
+            if rr["pos"] == "DEF" and rr["price"] <= 4.0 and MAX_CHEAP_DEF_IN_XI <= 0: ok = False
+            if ok: 
+                return True
+        return False
+
+    def feasible_with_budget(add_r, need_after):
+        used = {p["name"] for p in picked} | {add_r["name"]}
+        min_rem = minimal_cost_for(need_after, used, club_count, enforce_club, sorted_pool)
+        return (budget + float(add_r["price"]) + min_rem) <= (effective_budget + 1e-9)
 
     def can_add(r):
-        if need[r["pos"]] <= 0: return False
-        if enforce_club and club_count[r["team"]] >= MAX_PER_CLUB: return False
-        used = {p["name"] for p in picked} | {r["name"]}
+        if need[r["pos"]] <= 0:
+            return False
+        # strikte Regeln – außer wenn es für diese Position GAR KEINE „ok“-Kandidaten gibt
+        if violates_start_rules(r) and any_ok_for_pos(r["pos"]):
+            return False
+        if enforce_club and club_count[r["team"]] >= MAX_PER_CLUB:
+            return False
         need_after = {p:(need[p] - (1 if p==r["pos"] else 0)) for p in need}
-        min_rem = minimal_cost_for(need_after, used, club_count, enforce_club, sorted_pool)
-        return (budget + float(r["price"]) + min_rem) <= (effective_budget + 1e-9)
+        return feasible_with_budget(r, need_after)
 
-    # XI
+    # XI: zuerst „strikt/relaxed“ nach obigem can_add
     for _, r in sorted_pool.iterrows():
         if all(v==0 for v in need.values()): break
         if can_add(r):
@@ -164,32 +206,45 @@ def build_team(pool_df):
             need[r["pos"]] -= 1
             budget += float(r["price"])
             if enforce_club: club_count[r["team"]] += 1
+            if r["pos"]=="DEF" and r["price"] <= 4.0: cheap_def_in_xi += 1
 
-    # Bench: günstigster je Position, mit Klublimit falls möglich
+    # FORCE-FILL: wenn immer noch Positionen fehlen, fülle mit best-score Kandidaten
+    if not all(v==0 for v in need.values()):
+        for pos in ["GK","DEF","DEF","DEF","MID","MID","MID","MID","MID","FWD","FWD"]:
+            if need.get(pos,0) <= 0: 
+                continue
+            for _, r in sorted_pool[sorted_pool["pos"]==pos].iterrows():
+                if enforce_club and club_count[r["team"]] >= MAX_PER_CLUB:
+                    continue
+                need_after = {p:(need[p] - (1 if p==pos else 0)) for p in need}
+                if feasible_with_budget(r, need_after):
+                    picked.append({"name":r["name"],"team":r["team"],"pos":pos,
+                                   "price":float(r["price"]),"score":float(r["pred_score"])})
+                    need[pos] -= 1
+                    budget += float(r["price"])
+                    if enforce_club: club_count[r["team"]] += 1
+                    break
+
+    # Bench: günstigster je Position (mit Nailedness-Prio)
     xi = picked
     xi_names = {p["name"] for p in xi}
     remaining = sorted_pool[~sorted_pool["name"].isin(xi_names)].copy()
     bench = []
     for pos, cnt in BENCH.items():
         for _ in range(cnt):
-            found = False
-            for _, r in remaining[remaining["pos"]==pos].sort_values("price").iterrows():
-                if r["name"] in xi_names or r["name"] in {b["name"] for b in bench}: continue
+            cand = remaining[(remaining["pos"]==pos) & (remaining["nailed_pct"]>=MIN_NAILED_PCT)].sort_values("price")
+            if cand.empty: cand = remaining[remaining["pos"]==pos].sort_values("price")
+            chosen = None
+            for _, r in cand.iterrows():
+                if r["name"] in {b["name"] for b in bench}: continue
                 if enforce_club and Counter([p["team"] for p in xi]+[b["team"] for b in bench])[r["team"]] >= MAX_PER_CLUB:
                     continue
                 if (budget + float(r["price"])) <= (BUDGET + 1e-9):
-                    bench.append({"name":r["name"],"team":r["team"],"pos":r["pos"],
-                                  "price":float(r["price"]),"score":float(r["pred_score"])})
-                    budget += float(r["price"]);  found = True;  break
-            if not found:
-                # Notfall: falls wegen Klublimit keiner passt, ignoriere Klublimit für diesen Bankplatz
-                for _, r in remaining[remaining["pos"]==pos].sort_values("price").iterrows():
-                    if r["name"] in xi_names or r["name"] in {b["name"] for b in bench}: continue
-                    if (budget + float(r["price"])) <= (BUDGET + 1e-9):
-                        bench.append({"name":r["name"],"team":r["team"],"pos":r["pos"],
-                                      "price":float(r["price"]),"score":float(r["pred_score"])})
-                        budget += float(r["price"]);  found = True;  break
-            # wenn selbst das nicht klappt, bleibt Slot leer (äusserst selten)
+                    chosen = r; break
+            if chosen is not None:
+                bench.append({"name":chosen["name"],"team":chosen["team"],"pos":chosen["pos"],
+                              "price":float(chosen["price"]),"score":float(chosen["pred_score"])})
+                budget += float(chosen["price"])
 
     xi_sorted = sorted(xi, key=lambda x: x["score"], reverse=True)
     captain = xi_sorted[0]["name"] if xi_sorted else ""
@@ -231,6 +286,7 @@ rel_sum = sum(p["score"] for p in used)
 print(f"**Summe prognostizierte Punkte (XI, relativer Score):** {rel_sum:.3f}\n")
 
 print("## Kurzbegründung")
-print("- Score = Preis- & Ownership-Perzentile + Vorjahresleistung (per90) + ICT (positionsgewichtet).")
-print("- Auswahl = Greedy unter Budget 100.0, Formation 3-5-2, Bank = günstig pro Position.")
+print("- Score = Preis/Ownership-Perzentile + Vorjahresleistung (per90) + ICT (positionsgewichtet).")
+print(f"- Start-Regeln (strikt, mit Notfall-Relax): Nailedness >= {MIN_NAILED_PCT:.2f}, kein GK < £{START_GK_MIN_PRICE:.1f}, max. {MAX_CHEAP_DEF_IN_XI} x £4.0-DEF in der XI.")
+print("- Auswahl = Greedy unter Budget 100.0, Formation 3-5-2, Bank = günstig & möglichst nailed.")
 print("- Klublimit:", "max. 3 pro Klub automatisch erzwungen." if enforce_club else "Teamspalte fehlte → Klublimit nicht erzwungen; beim Eintragen kurz prüfen.")
