@@ -1,30 +1,31 @@
-# GW1 ï¿½ Empfehlung (MVP)
+# GW1 – Empfehlung (MVP)
 
 ## Start-XI (3-4-3)
-- GK: David Raya Martin (Brentford) ï¿½4.8
-- DEF: Trent Alexander-Arnold (Liverpool) ï¿½7.8
-- DEF: Joel Ward (Crystal Palace) ï¿½4.4
-- DEF: Yerry Mina (Everton) ï¿½4.3
-- MID: Yoane Wissa (Brentford) ï¿½5.3
-- MID: Eberechi Eze (Crystal Palace) ï¿½5.7
-- MID: Douglas Luiz Soares de Paulo (Aston Villa) ï¿½4.8
-- MID: Jadon Sancho (Man Utd) ï¿½7.1
-- FWD: Bryan Mbeumo (Brentford) ï¿½5.7
-- FWD: Harry Kane (Spurs) ï¿½11.5
-- FWD: Callum Wilson (Newcastle) ï¿½7.3
+- GK: David Raya Martin (Brentford) £4.8
+- DEF: Trent Alexander-Arnold (Liverpool) £7.8
+- DEF: Joel Ward (Crystal Palace) £4.4
+- DEF: Yerry Mina (Everton) £4.3
+- MID: Yoane Wissa (Brentford) £5.3
+- MID: Eberechi Eze (Crystal Palace) £5.7
+- MID: Douglas Luiz Soares de Paulo (Aston Villa) £4.8
+- MID: Jadon Sancho (Man Utd) £7.1
+- FWD: Bryan Mbeumo (Brentford) £5.7
+- FWD: Harry Kane (Spurs) £11.5
+- FWD: Callum Wilson (Newcastle) £7.3
 
 **Captain:** Trent Alexander-Arnold
 **Vice-Captain:** Yoane Wissa
 
 ## Bank
-- GK: Stefan Ortega Moreno (Man City) ï¿½3.7
-- DEF: Brandon Williams (Man Utd) ï¿½3.7
-- MID: Jack Colback (Nott'm Forest) ï¿½4.1
-- FWD: Lyle Taylor (Nott'm Forest) ï¿½4.1
-**Gesamtkosten:** ï¿½84.3
+- GK: Stefan Ortega Moreno (Man City) £3.7
+- DEF: Brandon Williams (Man Utd) £3.7
+- MID: Jack Colback (Nott'm Forest) £4.1
+- FWD: Lyle Taylor (Nott'm Forest) £4.1
+
+**Gesamtkosten:** £84.3
 **Summe prognostizierte Punkte (XI, relativer Score):** 90.695
 
-## Kurzbegrï¿½ndung
-- Prognose = Durchschnitt der letzten 3 Einsï¿½tze je Spieler, in Perzentile skaliert und einfach gewichtet.
-- Auswahl = Greedy unter Budget 100.0, max. 3 pro Club, Formation 3-4-3; Bench = gï¿½nstig pro Position.
-- MVP-Limiten: keine Gegnerstï¿½rke/Verletzungen; spï¿½ter Daten der neuen Saison und bessere Optimierung.
+## Kurzbegründung
+- Prognose = Durchschnitt der letzten 3 Einsätze je Spieler, in Perzentile skaliert und einfach gewichtet.
+- Auswahl = Greedy unter Budget 100.0, max. 3 pro Club, Formation 3-4-3; Bench = günstig pro Position.
+- MVP-Limiten: keine Gegnerstärke/Verletzungen; später Daten der neuen Saison und bessere Optimierung.
