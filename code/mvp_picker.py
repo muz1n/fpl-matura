@@ -1,4 +1,3 @@
-# cold_start_offline.py
 # Offline-GW1: Hybrid-Score (Preis/Ownership-Perzentile + Vorjahresleistung per90 + ICT)
 # Formation 3-5-2, volle Bank, Budget < 100, max. 3 pro Klub (falls Teamspalte vorhanden)
 
