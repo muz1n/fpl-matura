@@ -175,3 +175,6 @@ if __name__ == "__main__":
     ap.add_argument("--gw", type=int, required=True)
     args = ap.parse_args()
     main(args.gw)
+
+
+# Terminal: python code/make_current_gw_dataset.py --gw 2
