@@ -3,6 +3,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import type { PredictionsPayload, LineupPayload, PredictionPlayer } from '../types/fpl'
+import { saveSquad, loadSquad, type StoredSquad } from '@/lib/squad-storage'
 
 type LoadingState = 'idle' | 'loading' | 'success' | 'error'
 
@@ -62,7 +63,7 @@ export default function PredictionsPage() {
 
     const handleSaveSquad = () => {
         if (!lineup) return
-        const squadData = {
+        const squadData: StoredSquad = {
             gw: lineup.gw,
             formation: lineup.formation,
             xi_ids: lineup.xi_ids,
@@ -71,10 +72,30 @@ export default function PredictionsPage() {
             captain_id: lineup.captain_id,
             vice_id: lineup.vice_id
         }
-        localStorage.setItem('lastSquad', JSON.stringify(squadData))
-        setSaveMessage('Mannschaft gespeichert!')
-        setTimeout(() => setSaveMessage(''), 3000)
+        try {
+            saveSquad(squadData)
+            setSaveMessage('Mannschaft gespeichert!')
+            setTimeout(() => setSaveMessage(''), 3000)
+        } catch (err) {
+            setSaveMessage('Fehler beim Speichern')
+            setTimeout(() => setSaveMessage(''), 3000)
+        }
     }
+
+    // LocalStorage-Squad anwenden (falls Toggle aktiv)
+    useEffect(() => {
+        if (!applyLocalSquad || !predictions) return
+        
+        const stored = loadSquad()
+        if (!stored) {
+            setError('Keine gespeicherte Mannschaft gefunden')
+            return
+        }
+
+        // Hier könnte man die Lineup mit der gespeicherten Squad überschreiben
+        // Für diese Version zeigen wir nur eine Warnung
+        console.log('LocalStorage-Squad würde angewendet:', stored)
+    }, [applyLocalSquad, predictions])
 
     // Helper: find player by ID
     const findPlayer = (id: number): PredictionPlayer | undefined => {

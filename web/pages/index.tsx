@@ -2,6 +2,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/router'
+import { loadSquad, formatSquadSummary } from '@/lib/squad-storage'
 
 export default function Home() {
     const router = useRouter()
@@ -35,17 +36,12 @@ export default function Home() {
 
     // LocalStorage auslesen
     const handleShowSquad = () => {
-        const stored = localStorage.getItem('lastSquad')
-        if (!stored) {
+        const squad = loadSquad()
+        if (!squad) {
             setSquadSummary('Keine Mannschaft gespeichert.')
             return
         }
-        try {
-            const squad = JSON.parse(stored)
-            setSquadSummary(`GW ${squad.gw}, Formation: ${squad.formation}, XI: ${squad.xi_ids.length} Spieler`)
-        } catch {
-            setSquadSummary('Gespeicherte Daten ungültig.')
-        }
+        setSquadSummary(formatSquadSummary(squad))
     }
 
     return (
