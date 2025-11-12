@@ -1,0 +1,16 @@
+player_id,name,position,club,price
+1,Aaron Ramsdale,GK,Arsenal,5.0
+2,Nick Pope,GK,Newcastle,5.5
+3,Kieran Trippier,DEF,Newcastle,7.0
+4,William Saliba,DEF,Arsenal,5.5
+5,Gabriel Magalhaes,DEF,Arsenal,5.5
+6,Ben White,DEF,Arsenal,5.5
+7,Trent Alexander-Arnold,DEF,Liverpool,7.5
+8,Mohamed Salah,MID,Liverpool,12.5
+9,Martin Odegaard,MID,Arsenal,8.5
+10,Bukayo Saka,MID,Arsenal,9.0
+11,Bruno Fernandes,MID,Man Utd,11.0
+12,Phil Foden,MID,Man City,8.5
+13,Erling Haaland,FWD,Man City,14.0
+14,Ivan Toney,FWD,Brentford,7.5
+15,Alexander Isak,FWD,Newcastle,8.0
