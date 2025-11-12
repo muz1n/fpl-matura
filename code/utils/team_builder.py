@@ -3,7 +3,14 @@
 from __future__ import annotations  # Moderne Typfeatures aktivieren
 
 import logging  # Fuer nachvollziehbare Hinweise
-from typing import Dict, List, Tuple  # Typ-Hilfen fuer Rueckgabewerte
+from typing import (
+    Dict,
+    List,
+    Tuple,
+    Literal,
+    TypedDict,
+    Optional,
+)  # Typ-Hilfen fuer Rueckgabewerte
 
 import numpy as np  # NumPy fuer Sortierhilfen
 import pandas as pd  # Pandas fuer Tabellenoperationen
@@ -182,3 +189,382 @@ def choose_best_formation(  # Durchprobieren aller Formationen
     if best_form is None or best_team is None:  # Falls keine Formation erfolgreich war
         raise ValueError("Keine gueltige Formation gefunden")  # Fehler melden
     return best_form, best_team  # Beste Formation samt Team zurueckgeben
+
+
+# ─────────────────────────────────────────────────────────────────────
+# Production-ready lineup picker with auto-formation
+# ─────────────────────────────────────────────────────────────────────
+
+FormationStr = Literal["3-4-3", "3-5-2", "4-4-2", "4-5-1", "4-3-3", "5-3-2", "5-4-1"]
+
+
+class LineupResult(TypedDict):
+    """Result of pick_lineup_autoformation."""
+
+    formation: FormationStr
+    xi_ids: List[int]  # 11 player_ids
+    bench_gk_id: int
+    bench_out_ids: List[int]  # exactly 3 ids, order matters (B1,B2,B3)
+    captain_id: int
+    vice_id: int
+    xi_points_sum: float
+    debug: Dict[str, float]  # per-formation score summary
+
+
+def parse_formation_counts(formation: str) -> Dict[str, int]:
+    """Parse e.g. '4-3-3' -> {'DEF':4,'MID':3,'FWD':3}."""
+    parts = formation.split("-")
+    if len(parts) != 3:
+        raise ValueError(f"Invalid formation string: {formation}")
+    d, m, f = int(parts[0]), int(parts[1]), int(parts[2])
+    return {"DEF": d, "MID": m, "FWD": f}
+
+
+def pick_lineup_autoformation(
+    squad_df: pd.DataFrame,
+    prefer_minutes: bool = True,
+    p_start_col: str = "p_start",
+    pred_col: str = "pred_points",
+    position_col: str = "position",
+    player_id_col: str = "player_id",
+    name_col: str = "name",
+    p_floor: float = 0.6,
+    formation_preference: Optional[List[FormationStr]] = None,
+    bench_policy: Optional[Dict[str, float]] = None,
+    captain_policy: Optional[Dict[str, bool]] = None,
+) -> LineupResult:
+    """
+    Auto-select formation, XI, bench order, captain/vice from a 15-man squad.
+
+    Algorithm:
+      1. Compute score = pred_points (no minutes) or pred_points * clamp(p_start, p_floor, 1.0) (prefer_minutes=True).
+      2. Pick best GK by score -> starting GK; other GK -> bench_gk_id.
+      3. For each valid formation, pick top DEF/MID/FWD by score. Sum XI scores.
+      4. Best formation = highest XI sum.
+      5. Bench outfield order: sort remaining outfield by score_bench desc, then p_start desc, then price desc, then name asc.
+         - score_bench = score * (1 - penalize_doubtful) if doubtful==True and bench_policy["penalize_doubtful"] set.
+      6. Captain/vice = top 2 by score in XI.
+
+    Args:
+        squad_df: Must include columns: position, player_id, pred_points, p_start (optional), doubtful (optional).
+        prefer_minutes: If True & p_start col present, multiply pred_points by clamp(p_start, p_floor,1.0).
+        p_start_col: Column name for starting probability.
+        pred_col: Column name for predicted points.
+        position_col: Column name for position (GK, DEF, MID, FWD).
+        player_id_col: Column name for player ID.
+        name_col: Column name for player name (optional; used for debug).
+        p_floor: Minimum start probability clamp (default 0.6).
+        formation_preference: List of formations to try (defaults to all ALLOWED_FORMATIONS).
+        bench_policy: Optional dict with keys like "penalize_doubtful" (default: None = no penalty).
+                      Example: {"penalize_doubtful": 0.2} reduces bench score by 20% for doubtful players.
+        captain_policy: Optional dict with keys like "prefer_minutes" (default: None).
+                        Example: {"prefer_minutes": True} when enabled, among top 2 scores choose the one
+                        with higher p_start as captain when scores are within epsilon=0.05.
+                        Ensures deterministic captain selection with minutes-based tiebreak.
+
+    Returns:
+        LineupResult with formation, xi_ids, bench_gk_id, bench_out_ids, captain_id, vice_id, xi_points_sum, debug.
+    """
+    df = squad_df.copy()
+
+    # Ensure columns
+    if pred_col not in df.columns:
+        raise ValueError(f"Missing required column: {pred_col}")
+    if position_col not in df.columns:
+        raise ValueError(f"Missing required column: {position_col}")
+    if player_id_col not in df.columns:
+        raise ValueError(f"Missing required column: {player_id_col}")
+
+    # Fill defaults for optional columns
+    if "price" not in df.columns:
+        df["price"] = 5.0
+    if name_col not in df.columns:
+        df[name_col] = df[player_id_col].astype(str)
+
+    has_p_start = p_start_col in df.columns
+
+    # Compute score
+    def compute_score(row):
+        base = float(row.get(pred_col, 0.0))
+        if not prefer_minutes or not has_p_start:
+            return base
+        p_s = float(row.get(p_start_col, 1.0))
+        clamped = max(p_floor, min(1.0, p_s))
+        return base * clamped
+
+    df["_score"] = df.apply(compute_score, axis=1)
+
+    # Validate positions
+    pos_counts = df[position_col].value_counts().to_dict()
+    if pos_counts.get("GK", 0) < 2:
+        raise ValueError("Squad must have at least 2 goalkeepers")
+    if pos_counts.get("DEF", 0) < 3:
+        raise ValueError("Squad must have at least 3 defenders")
+    if pos_counts.get("MID", 0) < 3:
+        raise ValueError("Squad must have at least 3 midfielders")
+    if pos_counts.get("FWD", 0) < 1:
+        raise ValueError("Squad must have at least 1 forward")
+
+    # 1. Pick GK for XI
+    gk_df = df[df[position_col] == "GK"].copy()
+    gk_df = gk_df.sort_values(by="_score", ascending=False)
+    starting_gk = gk_df.iloc[0]
+    bench_gk_id = int(gk_df.iloc[1][player_id_col])
+
+    # Outfield only
+    outfield_df = df[df[position_col] != "GK"].copy()
+
+    # 2. Try formations
+    formations_to_try = formation_preference or ALLOWED_FORMATIONS
+    best_formation: Optional[FormationStr] = None
+    best_xi_rows = None
+    best_xi_sum = -np.inf
+    formation_debug: Dict[str, float] = {}
+
+    for formation in formations_to_try:
+        # parse counts
+        try:
+            counts = parse_formation_counts(formation)
+        except ValueError:
+            continue
+
+        # check feasibility
+        if pos_counts.get("DEF", 0) < counts["DEF"]:
+            formation_debug[formation] = -np.inf
+            continue
+        if pos_counts.get("MID", 0) < counts["MID"]:
+            formation_debug[formation] = -np.inf
+            continue
+        if pos_counts.get("FWD", 0) < counts["FWD"]:
+            formation_debug[formation] = -np.inf
+            continue
+
+        xi_list = []
+        for pos_key in ["DEF", "MID", "FWD"]:
+            needed = counts[pos_key]
+            pos_subset = outfield_df[outfield_df[position_col] == pos_key].copy()
+            pos_subset = pos_subset.sort_values(by="_score", ascending=False)
+            top_n = pos_subset.head(needed)
+            xi_list.append(top_n)
+
+        xi_tmp = pd.concat(xi_list, ignore_index=True)
+        if len(xi_tmp) != 10:
+            formation_debug[formation] = -np.inf
+            continue
+
+        xi_tmp_sum = xi_tmp["_score"].sum()
+        formation_debug[formation] = xi_tmp_sum
+
+        if xi_tmp_sum > best_xi_sum:
+            best_xi_sum = xi_tmp_sum
+            best_formation = formation  # type: ignore
+            best_xi_rows = xi_tmp
+
+    if best_formation is None or best_xi_rows is None:
+        raise ValueError(
+            "No valid formation found. Check that squad has enough players per position."
+        )
+
+    # Build final XI: starting_gk + outfield
+    xi_all = pd.concat([pd.DataFrame([starting_gk]), best_xi_rows], ignore_index=True)
+    xi_ids = xi_all[player_id_col].astype(int).tolist()
+
+    # 3. Captain/Vice from XI (by _score, with optional minutes-based tiebreak)
+    xi_sorted = xi_all.sort_values(by="_score", ascending=False)
+
+    # Check if captain_policy with prefer_minutes is enabled
+    use_minutes_tiebreak = False
+    if captain_policy is not None:
+        use_minutes_tiebreak = captain_policy.get("prefer_minutes", False)
+
+    # Deterministic captain selection
+    if use_minutes_tiebreak and has_p_start and len(xi_sorted) >= 2:
+        # Get top 2 candidates
+        top2 = xi_sorted.head(2)
+        score_1 = float(top2.iloc[0]["_score"])
+        score_2 = float(top2.iloc[1]["_score"])
+
+        # If scores are within epsilon (0.05), choose based on p_start
+        epsilon = 0.05
+        if abs(score_1 - score_2) <= epsilon:
+            p_start_1 = float(top2.iloc[0].get(p_start_col, 0.0))
+            p_start_2 = float(top2.iloc[1].get(p_start_col, 0.0))
+
+            # If second player has higher p_start, swap captain and vice
+            if p_start_2 > p_start_1:
+                captain_id = int(top2.iloc[1][player_id_col])
+                vice_id = int(top2.iloc[0][player_id_col])
+            else:
+                # Deterministic tiebreak: if p_start also equal, use existing score order
+                captain_id = int(top2.iloc[0][player_id_col])
+                vice_id = int(top2.iloc[1][player_id_col])
+        else:
+            # Scores differ by more than epsilon, use normal logic
+            captain_id = int(xi_sorted.iloc[0][player_id_col])
+            vice_id = int(xi_sorted.iloc[1][player_id_col])
+    else:
+        # Default behavior: highest score is captain
+        captain_id = int(xi_sorted.iloc[0][player_id_col])
+        vice_id = (
+            int(xi_sorted.iloc[1][player_id_col]) if len(xi_sorted) > 1 else captain_id
+        )
+
+    # 4. Bench outfield (3 players)
+    remaining_outfield = outfield_df[~outfield_df[player_id_col].isin(xi_ids)].copy()
+
+    # Compute bench score (may differ from XI score due to bench_policy)
+    remaining_outfield["_score_bench"] = remaining_outfield["_score"]
+
+    # Apply bench_policy penalties if configured
+    if bench_policy is not None:
+        penalize_doubtful = bench_policy.get("penalize_doubtful", 0.0)
+        if penalize_doubtful > 0.0 and "doubtful" in remaining_outfield.columns:
+            # Reduce score for doubtful players: score_bench = score * (1 - penalty)
+            mask_doubtful = remaining_outfield["doubtful"].astype(bool)
+            remaining_outfield.loc[mask_doubtful, "_score_bench"] = (
+                remaining_outfield.loc[mask_doubtful, "_score_bench"]
+                * (1.0 - penalize_doubtful)
+            )
+
+    # Deterministic tie-break: score_bench desc, then p_start desc, then price desc, then name asc
+    # Build sort keys
+    remaining_outfield["_p_start_sort"] = remaining_outfield.get(p_start_col, 1.0)
+    remaining_outfield["_price_sort"] = remaining_outfield["price"]
+    remaining_outfield["_name_sort"] = remaining_outfield[name_col].astype(str)
+
+    remaining_outfield = remaining_outfield.sort_values(
+        by=["_score_bench", "_p_start_sort", "_price_sort", "_name_sort"],
+        ascending=[False, False, False, True],
+        kind="mergesort",
+    )
+
+    if len(remaining_outfield) < 3:
+        raise ValueError("Not enough outfield players left for bench (need 3).")
+
+    bench_out_ids = remaining_outfield.head(3)[player_id_col].astype(int).tolist()
+
+    # 5. Final points sum (from pred_col, not _score)
+    xi_points_sum = xi_all[pred_col].sum()
+
+    # Build debug mapping: each formation -> its XI sum (or -inf if invalid)
+    debug_dict: Dict[str, float] = formation_debug
+
+    return LineupResult(
+        formation=best_formation,
+        xi_ids=xi_ids,
+        bench_gk_id=bench_gk_id,
+        bench_out_ids=bench_out_ids,
+        captain_id=captain_id,
+        vice_id=vice_id,
+        xi_points_sum=float(xi_points_sum),
+        debug=debug_dict,
+    )
+
+
+def format_lineup_table(
+    squad_df: pd.DataFrame,
+    xi_ids: List[int],
+    bench_gk_id: int,
+    bench_out_ids: List[int],
+    captain_id: Optional[int] = None,
+    vice_id: Optional[int] = None,
+    player_id_col: str = "player_id",
+    name_col: str = "name",
+    position_col: str = "position",
+    pred_col: str = "pred_points",
+    p_start_col: str = "p_start",
+) -> str:
+    """
+    Format lineup as a simple string table for display.
+
+    Args:
+        squad_df: DataFrame with player information
+        xi_ids: List of 11 player IDs in starting XI
+        bench_gk_id: ID of goalkeeper on bench
+        bench_out_ids: List of 3 outfield player IDs on bench
+        captain_id: Optional captain ID (adds (C) marker)
+        vice_id: Optional vice-captain ID (adds (VC) marker)
+        player_id_col: Column name for player ID
+        name_col: Column name for player name
+        position_col: Column name for position
+        pred_col: Column name for predicted points
+        p_start_col: Column name for starting probability
+
+    Returns:
+        Formatted string table with starting XI and bench
+    """
+    # Set up DataFrame with player_id as index for easy lookup
+    df = squad_df.set_index(player_id_col)
+
+    # Helper to format player row
+    def format_player(pid: int, prefix: str = "") -> str:
+        if pid not in df.index:
+            return f"{prefix}Player {pid} (not found)"
+
+        row = df.loc[pid]
+
+        # Helper to safely extract a scalar float from possible Series/array values
+        def _to_float(val, default=0.0):
+            if isinstance(val, pd.Series):
+                if val.empty:
+                    return float(default)
+                v = val.iloc[0]
+            elif isinstance(val, (list, tuple, np.ndarray)):
+                try:
+                    v = val[0]
+                except Exception:
+                    return float(default)
+            else:
+                v = val
+            try:
+                if v is None:
+                    return float(default)
+                return float(v)
+            except Exception:
+                return float(default)
+
+        # Safely get name and position (handle possible Series)
+        name_val = row.get(name_col, f"ID{pid}")
+        name = (
+            str(name_val.iloc[0]) if isinstance(name_val, pd.Series) else str(name_val)
+        )
+        pos_val = row.get(position_col, "???")
+        pos = str(pos_val.iloc[0]) if isinstance(pos_val, pd.Series) else str(pos_val)
+
+        # Safely convert numeric fields
+        pred = _to_float(row.get(pred_col, 0.0), 0.0)
+        p_start = (
+            _to_float(row.get(p_start_col, 1.0), 1.0)
+            if p_start_col in df.columns
+            else 1.0
+        )
+
+        # Add captain/vice markers
+        marker = ""
+        if captain_id is not None and pid == captain_id:
+            marker = " (C)"
+        elif vice_id is not None and pid == vice_id:
+            marker = " (VC)"
+
+        return f"{prefix}{pos:3s} | {name:20s}{marker:5s} | {pred:5.2f} pts | {p_start:4.0%} start"
+
+    # Build table
+    lines = []
+    lines.append("=" * 70)
+    lines.append("STARTING XI")
+    lines.append("-" * 70)
+
+    for pid in xi_ids:
+        lines.append(format_player(pid, "  "))
+
+    lines.append("-" * 70)
+    lines.append("BENCH")
+    lines.append("-" * 70)
+    lines.append(format_player(bench_gk_id, "  [GK]  "))
+
+    for i, pid in enumerate(bench_out_ids, start=1):
+        lines.append(format_player(pid, f"  [B{i}]  "))
+
+    lines.append("=" * 70)
+
+    return "\n".join(lines)
