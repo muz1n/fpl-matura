@@ -60,6 +60,9 @@ export default function PredictionsPage() {
     } | null>(null)
     const TEAM_KEY = 'fpl_my_team_ids'
 
+    // Downloads panel state
+    const [downloadError, setDownloadError] = useState<string>("")
+
     // Fetch available gameweeks on mount
     useEffect(() => {
         async function fetchAvailableGWs() {
@@ -866,6 +869,66 @@ export default function PredictionsPage() {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                {/* Downloads Panel */}
+                <div className="fixed bottom-4 right-4 z-50 max-w-xs w-full">
+                    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4">
+                        <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">Downloads</h3>
+                        <ul className="space-y-2">
+                            {(() => {
+                                const downloadLinks: Array<{ href: string; label: string }> = [
+                                    {
+                                        href: "/api/files?name=team_backtest_2022-23_gw30-38.png",
+                                        label: "Team Backtest 2022-23 (PNG)",
+                                    },
+                                    {
+                                        href: "/api/files?name=team_backtest_summary_2022-23_gw30-38.csv",
+                                        label: "Team Backtest Summary 2022-23 (CSV)",
+                                    },
+                                    {
+                                        href: "/api/files?name=residuals_plot_latest.png",
+                                        label: "Residuals Plot (Latest)",
+                                    },
+                                ];
+                                if (selectedMethod === "rf_rank") {
+                                    downloadLinks.push({
+                                        href: "/api/files?name=rf_rank_boost_summary_2022-23_gw30-38.csv",
+                                        label: "RF Rank Boost Summary 2022-23 (CSV)",
+                                    });
+                                }
+                                return downloadLinks.map((link) => (
+                                    <li key={link.href}>
+                                        <a
+                                            href={link.href}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
+                                            onClick={async (e) => {
+                                                setDownloadError("");
+                                                try {
+                                                    const res = await fetch(link.href, { method: "HEAD" });
+                                                    if (!res.ok) {
+                                                        e.preventDefault();
+                                                        setDownloadError("Datei nicht gefunden oder nicht verfügbar.");
+                                                    }
+                                                } catch {
+                                                    e.preventDefault();
+                                                    setDownloadError("Fehler beim Abrufen der Datei.");
+                                                }
+                                            }}
+                                        >
+                                            {link.label}
+                                        </a>
+                                    </li>
+                                ));
+                            })()}
+                        </ul>
+                        {downloadError && (
+                            <div className="mt-2 text-xs text-red-600 dark:text-red-400">{downloadError}</div>
+                        )}
+                        <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">Falls eine Datei nicht gefunden wird, ist sie für diese Kombination nicht verfügbar.</div>
                     </div>
                 </div>
             </div>
