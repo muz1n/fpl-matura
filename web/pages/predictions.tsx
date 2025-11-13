@@ -18,12 +18,6 @@ const methodOptions = [
     { value: 'pos', label: 'Positionsmittel' },
 ]
 
-// Gameweek Optionen (1-38)
-const gameweekOptions = Array.from({ length: 38 }, (_, i) => ({
-    value: i + 1,
-    label: `Spielwoche ${i + 1}`,
-}))
-
 // Erlaubte Formationen (außerhalb der Komponente, um stabile Referenzen zu haben)
 const allowedFormations: Array<{ f: string; DEF: number; MID: number; FWD: number }> = [
     { f: '3-4-3', DEF: 3, MID: 4, FWD: 3 },
@@ -41,9 +35,16 @@ export default function PredictionsPage() {
     const [state, setState] = useState<LoadingStateType>('idle')
     const [error, setError] = useState<string>('')
 
+
+    // Available GWs and methods by GW
+    const [availableGWs, setAvailableGWs] = useState<number[]>([])
+    const [methodsByGw, setMethodsByGw] = useState<Record<number, string[]>>({})
+    const [gwLoadingState, setGwLoadingState] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle')
+    const [gwError, setGwError] = useState<string>('')
+
     // Auswahl-States
-    const [selectedGW, setSelectedGW] = useState<number>(38)
-    const [selectedMethod, setSelectedMethod] = useState<PredictionMethod>('rf')
+    const [selectedGW, setSelectedGW] = useState<number | null>(null)
+    const [selectedMethod, setSelectedMethod] = useState<string | null>('rf')
 
     // Dein Team (LocalStorage) + Transfer-Hilfe
     const [teamInput, setTeamInput] = useState<string>("")
@@ -57,38 +58,98 @@ export default function PredictionsPage() {
     } | null>(null)
     const TEAM_KEY = 'fpl_my_team_ids'
 
+    // Fetch available gameweeks on mount
     useEffect(() => {
+        async function fetchAvailableGWs() {
+            setGwLoadingState('loading')
+            setGwError('')
+
+            try {
+                const res = await fetch('/api/gw/available')
+                if (!res.ok) {
+                    throw new Error('Fehler beim Laden verfügbarer Gameweeks')
+                }
+
+                // Expect: { available: number[], latest: number | null, methodsByGw: Record<number, string[]> }
+                const data: { available: number[]; latest: number | null; methodsByGw?: Record<number, string[]> } = await res.json()
+
+                setAvailableGWs(data.available)
+                setMethodsByGw(data.methodsByGw ?? {})
+
+                // Set default to latest if available
+                if (data.latest !== null) {
+                    setSelectedGW(data.latest)
+                } else if (data.available.length > 0) {
+                    setSelectedGW(data.available[0])
+                }
+
+                setGwLoadingState('loaded')
+            } catch (err) {
+                setGwError(err instanceof Error ? err.message : 'Unbekannter Fehler')
+                setGwLoadingState('error')
+            }
+        }
+
+        fetchAvailableGWs()
+    }, [])
+
+    // Derive availableMethods for selectedGW
+    const availableMethods: string[] = selectedGW !== null ? (methodsByGw[selectedGW] ?? []) : [];
+
+    // Ensure selectedMethod is valid for selectedGW
+    useEffect(() => {
+        if (!selectedGW) return;
+        if (availableMethods.length === 0) {
+            setSelectedMethod(null);
+            return;
+        }
+        // Prefer 'rf', else first, else null
+        if (!availableMethods.includes(selectedMethod ?? '')) {
+            if (availableMethods.includes('rf')) {
+                setSelectedMethod('rf');
+            } else {
+                setSelectedMethod(availableMethods[0] ?? null);
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedGW, availableMethods.length]);
+
+    // Fetch predictions and lineup when GW or method changes
+    useEffect(() => {
+        // Don't fetch if no GW or method is selected
+        if (selectedGW === null || !selectedMethod) return;
+
         async function fetchData() {
-            setState('loading')
-            setError('')
+            setState('loading');
+            setError('');
 
             try {
                 const [predRes, lineupRes] = await Promise.all([
                     fetch(`/api/gw/${selectedGW}/predictions?methode=${selectedMethod}`),
                     fetch(`/api/gw/${selectedGW}/lineup?methode=${selectedMethod}`)
-                ])
+                ]);
 
                 if (!predRes.ok || !lineupRes.ok) {
-                    const errorData = await predRes.json().catch(() => ({}))
-                    throw new Error(errorData.error || 'Fehler beim Laden der Daten')
+                    const errorData = await predRes.json().catch(() => ({}));
+                    throw new Error(errorData.error || 'Fehler beim Laden der Daten');
                 }
 
-                const predData: PredictionsPayload = await predRes.json()
-                const lineupData: LineupPayload = await lineupRes.json()
+                const predData: PredictionsPayload = await predRes.json();
+                const lineupData: LineupPayload = await lineupRes.json();
 
-                setPredictions(predData)
-                setLineup(lineupData)
-                setState('success')
+                setPredictions(predData);
+                setLineup(lineupData);
+                setState('success');
             } catch (err) {
-                setError(err instanceof Error ? err.message : 'Unbekannter Fehler')
-                setState('error')
-                setPredictions(null)
-                setLineup(null)
+                setError(err instanceof Error ? err.message : 'Unbekannter Fehler');
+                setState('error');
+                setPredictions(null);
+                setLineup(null);
             }
         }
 
-        fetchData()
-    }, [selectedGW, selectedMethod])
+        fetchData();
+    }, [selectedGW, selectedMethod]);
 
     // Helper: find player by ID
     const findPlayer = (id: number): PredictionPlayer | undefined => {
@@ -245,8 +306,58 @@ export default function PredictionsPage() {
     }, [teamIds, predictions, computeBestXI])
 
     const handleRetry = () => {
-        setSelectedGW(38)
+        if (availableGWs.length > 0) {
+            setSelectedGW(availableGWs[availableGWs.length - 1]) // Use last available as fallback
+        }
         setSelectedMethod('rf')
+    }
+
+    // Loading state for available GWs
+    if (gwLoadingState === 'loading') {
+        return (
+            <>
+                <Head>
+                    <title>Prognosen — FPL Assistent</title>
+                </Head>
+                <LoadingState message="Lade verfügbare Gameweeks..." />
+            </>
+        )
+    }
+
+    // Error state for available GWs
+    if (gwLoadingState === 'error') {
+        return (
+            <>
+                <Head>
+                    <title>Prognosen — FPL Assistent</title>
+                </Head>
+                <ErrorState
+                    message={gwError || 'Fehler beim Laden verfügbarer Gameweeks'}
+                    onRetry={() => window.location.reload()}
+                />
+            </>
+        )
+    }
+
+    // Empty state if no GWs available
+    if (availableGWs.length === 0) {
+        return (
+            <>
+                <Head>
+                    <title>Prognosen — FPL Assistent</title>
+                </Head>
+                <div className="flex items-center justify-center min-h-[60vh]">
+                    <div className="text-center space-y-4">
+                        <p className="text-xl text-gray-600 dark:text-gray-400">
+                            Keine Gameweek-Daten verfügbar
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-500">
+                            Bitte stellen Sie sicher, dass Prognose-Daten generiert wurden.
+                        </p>
+                    </div>
+                </div>
+            </>
+        )
     }
 
     if (state === 'loading') {
@@ -292,6 +403,12 @@ export default function PredictionsPage() {
         selectedMethod === 'ma3' ? glossary.methodeMA3 :
             glossary.methodePos
 
+    // Generate gameweek options from available GWs
+    const gameweekOptions = availableGWs.map(gw => ({
+        value: gw,
+        label: `Spielwoche ${gw}`,
+    }))
+
     return (
         <>
             <Head>
@@ -309,7 +426,7 @@ export default function PredictionsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Select
                             label="Spielwoche"
-                            value={selectedGW}
+                            value={selectedGW ?? 1}
                             onChange={(val) => setSelectedGW(Number(val))}
                             options={gameweekOptions}
                             tooltip={<HelpIcon text={glossary.gameweek} />}
@@ -317,12 +434,22 @@ export default function PredictionsPage() {
 
                         <Select
                             label="Prognosemethode"
-                            value={selectedMethod}
-                            onChange={(val) => setSelectedMethod(val as PredictionMethod)}
-                            options={methodOptions}
+                            value={selectedMethod ?? ''}
+                            onChange={(val) => setSelectedMethod(val as string)}
+                            options={availableMethods.map(m => {
+                                const opt = methodOptions.find(o => o.value === m)
+                                return opt ? opt : { value: m, label: m === 'legacy' ? 'Legacy (nur Rohdaten)' : m }
+                            })}
+                            disabled={availableMethods.length === 0 || (availableMethods.length === 1 && availableMethods[0] === 'legacy')}
                             tooltip={<HelpIcon text={methodTooltip} />}
                         />
                     </div>
+                    {availableMethods.length === 0 && (
+                        <div className="text-sm text-gray-500 mt-2">Keine Prognosemethode für diese Gameweek verfügbar.</div>
+                    )}
+                    {availableMethods.length === 1 && availableMethods[0] === 'legacy' && (
+                        <div className="text-sm text-gray-500 mt-2">Nur Legacy-Daten für diese Gameweek vorhanden. Prognoseauswahl deaktiviert.</div>
+                    )}
                 </motion.div>
 
                 {/* Dein Team (LocalStorage) + 1-Transfer-Vorschlag */}
