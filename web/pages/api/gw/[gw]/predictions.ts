@@ -7,7 +7,7 @@ import { z } from 'zod'
 const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
 
 // Unterstützte Methoden
-type PredictionMethod = 'rf' | 'ma3' | 'pos'
+type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank'
 
 /**
  * Scannt das OUT_DIR und gibt alle verfügbaren GW-Nummern zurück
@@ -65,14 +65,14 @@ export default async function handler(
         const { gw, methode } = req.query
         const gwNum = Number.parseInt(gw as string, 10)
         const methodRaw = (methode as string)?.toLowerCase() || 'rf'
-        const method: PredictionMethod = (methodRaw === 'ma3' || methodRaw === 'pos' || methodRaw === 'rf') ? methodRaw : 'rf'
+        const method: PredictionMethod = (methodRaw === 'ma3' || methodRaw === 'pos' || methodRaw === 'rf' || methodRaw === 'rf_rank') ? methodRaw : 'rf'
 
         if (!Number.isFinite(gwNum)) {
             return res.status(400).json({ error: 'Bad gw parameter' })
         }
 
         // Validiere Methode
-        const validMethods: PredictionMethod[] = ['rf', 'ma3', 'pos']
+        const validMethods: PredictionMethod[] = ['rf', 'ma3', 'pos', 'rf_rank']
         if (!validMethods.includes(method as PredictionMethod)) {
             return res.status(400).json({
                 error: `Invalid method. Use: ${validMethods.join(', ')}`
@@ -82,7 +82,7 @@ export default async function handler(
         // Try primary path: predictions_gw{N}_{method}.json
         const primaryFilename = `predictions_gw${gwNum}_${method}.json`
         const primaryPath = join(OUT_DIR, primaryFilename)
-        
+
         // Try legacy path: predictions_gw{N}.json
         const legacyFilename = `predictions_gw${gwNum}.json`
         const legacyPath = join(OUT_DIR, legacyFilename)
@@ -135,18 +135,18 @@ export default async function handler(
         // Zod Validierung
         const parseResult = PredictionsPayloadSchema.safeParse(json)
         if (!parseResult.success) {
-            return res.status(422).json({ 
-                error: 'Validierungsfehler', 
-                details: parseResult.error.issues.map(i => i.message) 
+            return res.status(422).json({
+                error: 'Validierungsfehler',
+                details: parseResult.error.issues.map(i => i.message)
             })
         }
         const data = parseResult.data
 
         // Return with gw and methode echoed
-        return res.status(200).json({ 
-            ...data, 
-            gw: gwNum, 
-            methode: usedMethod 
+        return res.status(200).json({
+            ...data,
+            gw: gwNum,
+            methode: usedMethod
         })
     } catch (err: any) {
         console.error('Error reading predictions:', err)

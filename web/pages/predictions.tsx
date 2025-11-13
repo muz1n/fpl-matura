@@ -9,11 +9,12 @@ import { LoadingState, ErrorState, EmptyState } from '../src/components/States'
 import { saveSquad, loadSquad } from '../src/lib/squad-storage'
 
 type LoadingStateType = 'idle' | 'loading' | 'success' | 'error'
-type PredictionMethod = 'rf' | 'ma3' | 'pos'
+type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank'
 
 // Methoden-Optionen mit deutschen Namen
 const methodOptions = [
     { value: 'rf', label: 'Random Forest (KI-Modell)' },
+    { value: 'rf_rank', label: 'RF (Rank)' },
     { value: 'ma3', label: 'Formdurchschnitt (MA3)' },
     { value: 'pos', label: 'Positionsmittel' },
 ]
@@ -128,7 +129,7 @@ export default function PredictionsPage() {
             try {
                 // Fetch predictions
                 const predRes = await fetch(`/api/gw/${selectedGW}/predictions?methode=${selectedMethod}`);
-                
+
                 if (!predRes.ok) {
                     const errorData = await predRes.json().catch(() => ({}));
                     throw new Error(errorData.error || 'Fehler beim Laden der Prognosen');
@@ -140,7 +141,7 @@ export default function PredictionsPage() {
                 // Fetch lineup - handle 404 gracefully
                 try {
                     const lineupRes = await fetch(`/api/gw/${selectedGW}/lineup?methode=${selectedMethod}`);
-                    
+
                     if (!lineupRes.ok) {
                         if (lineupRes.status === 404) {
                             const errorData = await lineupRes.json().catch(() => ({}));
@@ -424,8 +425,9 @@ export default function PredictionsPage() {
 
     // Tooltip für gewählte Methode
     const methodTooltip = selectedMethod === 'rf' ? glossary.methodeRF :
-        selectedMethod === 'ma3' ? glossary.methodeMA3 :
-            glossary.methodePos
+        selectedMethod === 'rf_rank' ? glossary.methodeRFRank :
+            selectedMethod === 'ma3' ? glossary.methodeMA3 :
+                glossary.methodePos
 
     // Generate gameweek options from available GWs
     const gameweekOptions = availableGWs.map(gw => ({
@@ -581,9 +583,10 @@ export default function PredictionsPage() {
                         <span className="inline-flex items-center">
                             Methode: <strong className="ml-1 text-gray-900 dark:text-white">
                                 {selectedMethod === 'rf' ? 'Random Forest' :
-                                    selectedMethod === 'ma3' ? 'Formdurchschnitt' :
-                                        selectedMethod === 'pos' ? 'Positionsmittel' :
-                                            selectedMethod}
+                                    selectedMethod === 'rf_rank' ? 'RF (Rank)' :
+                                        selectedMethod === 'ma3' ? 'Formdurchschnitt' :
+                                            selectedMethod === 'pos' ? 'Positionsmittel' :
+                                                selectedMethod}
                             </strong>
                             <HelpIcon text={methodTooltip} />
                         </span>
@@ -622,172 +625,172 @@ export default function PredictionsPage() {
 
                 {/* Lineup Summary */}
                 {lineup && (
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Aufstellungs-Übersicht</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 inline-flex items-center">
-                                Formation<HelpIcon text={glossary.formation} />
-                            </div>
-                            <div className="text-xl font-semibold text-gray-900 dark:text-white">{lineup.formation}</div>
-                        </div>
-                        <div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 inline-flex items-center">
-                                Kapitän<HelpIcon text={glossary.captain} />
-                            </div>
-                            <div className="text-xl font-semibold text-gray-900 dark:text-white">
-                                {captainPlayer?.name || `ID ${lineup.captain_id}`}
-                            </div>
-                        </div>
-                        <div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 inline-flex items-center">
-                                Vize-Kapitän<HelpIcon text={glossary.viceCaptain} />
-                            </div>
-                            <div className="text-xl font-semibold text-gray-900 dark:text-white">
-                                {vicePlayer?.name || `ID ${lineup.vice_id}`}
-                            </div>
-                        </div>
-                        <div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 inline-flex items-center">
-                                Startelf<HelpIcon text={glossary.startelf} />
-                            </div>
-                            <div className="text-xl font-semibold text-gray-900 dark:text-white">{lineup.xi_ids.length}</div>
-                        </div>
-                        <div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400 inline-flex items-center">
-                                Erwartete Punkte<HelpIcon text={glossary.erwartePunkte} />
-                            </div>
-                            <div className="text-xl font-semibold text-emerald-600">
-                                {lineup.xi_points_sum.toFixed(1)}
-                            </div>
-                        </div>
-                        {lineup.debug?.rules_ok !== undefined && (
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Aufstellungs-Übersicht</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <div className="text-sm text-gray-600 dark:text-gray-400 inline-flex items-center">
-                                    Regelprüfung<HelpIcon text={glossary.regelPruefung} />
+                                    Formation<HelpIcon text={glossary.formation} />
                                 </div>
-                                <div className={`text-xl font-semibold ${lineup.debug.rules_ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-                                    {lineup.debug.rules_ok ? '✓ Gültig' : '✗ Ungültig'}
+                                <div className="text-xl font-semibold text-gray-900 dark:text-white">{lineup.formation}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-600 dark:text-gray-400 inline-flex items-center">
+                                    Kapitän<HelpIcon text={glossary.captain} />
                                 </div>
+                                <div className="text-xl font-semibold text-gray-900 dark:text-white">
+                                    {captainPlayer?.name || `ID ${lineup.captain_id}`}
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-600 dark:text-gray-400 inline-flex items-center">
+                                    Vize-Kapitän<HelpIcon text={glossary.viceCaptain} />
+                                </div>
+                                <div className="text-xl font-semibold text-gray-900 dark:text-white">
+                                    {vicePlayer?.name || `ID ${lineup.vice_id}`}
+                                </div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-600 dark:text-gray-400 inline-flex items-center">
+                                    Startelf<HelpIcon text={glossary.startelf} />
+                                </div>
+                                <div className="text-xl font-semibold text-gray-900 dark:text-white">{lineup.xi_ids.length}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm text-gray-600 dark:text-gray-400 inline-flex items-center">
+                                    Erwartete Punkte<HelpIcon text={glossary.erwartePunkte} />
+                                </div>
+                                <div className="text-xl font-semibold text-emerald-600">
+                                    {lineup.xi_points_sum.toFixed(1)}
+                                </div>
+                            </div>
+                            {lineup.debug?.rules_ok !== undefined && (
+                                <div>
+                                    <div className="text-sm text-gray-600 dark:text-gray-400 inline-flex items-center">
+                                        Regelprüfung<HelpIcon text={glossary.regelPruefung} />
+                                    </div>
+                                    <div className={`text-xl font-semibold ${lineup.debug.rules_ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                                        {lineup.debug.rules_ok ? '✓ Gültig' : '✗ Ungültig'}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        {lineup.debug?.notes && (
+                            <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-700 rounded text-sm text-gray-700 dark:text-gray-300">
+                                <strong>Hinweise:</strong> {lineup.debug.notes}
                             </div>
                         )}
                     </div>
-                    {lineup.debug?.notes && (
-                        <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-700 rounded text-sm text-gray-700 dark:text-gray-300">
-                            <strong>Hinweise:</strong> {lineup.debug.notes}
-                        </div>
-                    )}
-                </div>
                 )}
 
                 {/* Starting XI Table */}
                 {lineup && (
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-                    <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-white inline-flex items-center">
-                            Startelf<HelpIcon text={glossary.startelf} />
-                        </h2>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                        Spieler
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                        Team
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                        Position
-                                    </th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                        Gegner
-                                    </th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                        <span className="inline-flex items-center">
-                                            Prognose<HelpIcon text={glossary.prognose} side="left" />
-                                        </span>
-                                    </th>
-                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
-                                        Rolle
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                {xiPlayers.map((player) => {
-                                    const isCaptain = player.player_id === lineup.captain_id
-                                    const isVice = player.player_id === lineup.vice_id
-                                    return (
-                                        <tr key={player.player_id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="font-medium text-gray-900 dark:text-white">{player.name}</div>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
-                                                {player.team}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white inline-flex items-center">
+                                Startelf<HelpIcon text={glossary.startelf} />
+                            </h2>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                                            Spieler
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                                            Team
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                                            Position
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                                            Gegner
+                                        </th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                                            <span className="inline-flex items-center">
+                                                Prognose<HelpIcon text={glossary.prognose} side="left" />
+                                            </span>
+                                        </th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                                            Rolle
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                    {xiPlayers.map((player) => {
+                                        const isCaptain = player.player_id === lineup.captain_id
+                                        const isVice = player.player_id === lineup.vice_id
+                                        return (
+                                            <tr key={player.player_id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="font-medium text-gray-900 dark:text-white">{player.name}</div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                                                    {player.team}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                           ${player.pos === 'GK' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' : ''}
                           ${player.pos === 'DEF' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : ''}
                           ${player.pos === 'MID' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : ''}
                           ${player.pos === 'FWD' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' : ''}
                         `}>
-                                                    {player.pos}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
-                                                {player.is_home ? 'vs' : '@'} {player.opponent}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-gray-900 dark:text-white">
-                                                {player.predicted_points.toFixed(1)}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                                                {isCaptain && <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 font-semibold text-xs">K</span>}
-                                                {isVice && <span className="inline-flex items-center px-2 py-1 rounded bg-sky-100 dark:bg-sky-900/30 text-sky-800 dark:text-sky-400 font-semibold text-xs">VK</span>}
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                            </tbody>
-                        </table>
+                                                        {player.pos}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-400">
+                                                    {player.is_home ? 'vs' : '@'} {player.opponent}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-gray-900 dark:text-white">
+                                                    {player.predicted_points.toFixed(1)}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                                                    {isCaptain && <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 font-semibold text-xs">K</span>}
+                                                    {isVice && <span className="inline-flex items-center px-2 py-1 rounded bg-sky-100 dark:bg-sky-900/30 text-sky-800 dark:text-sky-400 font-semibold text-xs">VK</span>}
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
                 )}
 
                 {/* Bench */}
                 {lineup && (
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3 inline-flex items-center">
-                        Bank<HelpIcon text={glossary.bank} />
-                    </h2>
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
-                            <div>
-                                <span className="font-medium text-gray-900 dark:text-white">TW: </span>
-                                <span className="text-gray-700 dark:text-gray-300">{findPlayer(lineup.bench_gk_id)?.name || `ID ${lineup.bench_gk_id}`}</span>
-                            </div>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                                {findPlayer(lineup.bench_gk_id)?.predicted_points.toFixed(1)} Pkt
-                            </span>
-                        </div>
-                        {lineup.bench_out_ids.map((id, idx) => {
-                            const player = findPlayer(id)
-                            return (
-                                <div key={id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
-                                    <div>
-                                        <span className="font-medium text-gray-900 dark:text-white">B{idx + 1}: </span>
-                                        <span className="text-gray-700 dark:text-gray-300">{player?.name || `ID ${id}`}</span>
-                                        {player && <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">({player.pos})</span>}
-                                    </div>
-                                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                                        {player?.predicted_points.toFixed(1)} Pkt
-                                    </span>
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3 inline-flex items-center">
+                            Bank<HelpIcon text={glossary.bank} />
+                        </h2>
+                        <div className="space-y-2">
+                            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
+                                <div>
+                                    <span className="font-medium text-gray-900 dark:text-white">TW: </span>
+                                    <span className="text-gray-700 dark:text-gray-300">{findPlayer(lineup.bench_gk_id)?.name || `ID ${lineup.bench_gk_id}`}</span>
                                 </div>
-                            )
-                        })}
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                    {findPlayer(lineup.bench_gk_id)?.predicted_points.toFixed(1)} Pkt
+                                </span>
+                            </div>
+                            {lineup.bench_out_ids.map((id, idx) => {
+                                const player = findPlayer(id)
+                                return (
+                                    <div key={id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded">
+                                        <div>
+                                            <span className="font-medium text-gray-900 dark:text-white">B{idx + 1}: </span>
+                                            <span className="text-gray-700 dark:text-gray-300">{player?.name || `ID ${id}`}</span>
+                                            {player && <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">({player.pos})</span>}
+                                        </div>
+                                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                                            {player?.predicted_points.toFixed(1)} Pkt
+                                        </span>
+                                    </div>
+                                )
+                            })}
+                        </div>
                     </div>
-                </div>
                 )}
 
                 {/* Top 15 Predictions */}

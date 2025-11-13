@@ -21,12 +21,14 @@ export interface PredictionsPayload {
     players: PredictionPlayer[];
 }
 
+export type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank' | 'legacy'
+
 export interface LineupPayload {
     season: string;
     gw: number;
     generated_at: string;
     model_version: string;
-    methode?: string;            // e.g. "rf", "ma3", "pos", "legacy"
+    methode?: PredictionMethod;  // e.g. "rf", "ma3", "pos", "rf_rank", "legacy"
     formation: FormationStr;
     xi_ids: number[];            // 11 ints
     bench_gk_id: number;

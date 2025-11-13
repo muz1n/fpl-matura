@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { LineupPayloadSchema, PredictionsPayloadSchema, PredictionPlayerSchema, FormationStr } from '@/src/types/fpl.schema'
 
 const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
-type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'legacy'
+type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank' | 'legacy'
 const FORMATIONS = ["3-4-3", "3-5-2", "4-4-2", "4-3-3", "4-5-1", "5-4-1", "5-3-2"] as const
 
 // Helper: scan predictions files for available GWs and methods
@@ -51,7 +51,7 @@ export default async function handler(
         const { gw, methode } = req.query
         const gwNum = Number.parseInt(gw as string, 10)
         const methodRaw = (methode as string)?.toLowerCase() || 'rf'
-        const method: PredictionMethod = (methodRaw === 'ma3' || methodRaw === 'pos' || methodRaw === 'rf') ? methodRaw : 'rf'
+        const method: PredictionMethod = (methodRaw === 'ma3' || methodRaw === 'pos' || methodRaw === 'rf' || methodRaw === 'rf_rank') ? methodRaw : 'rf'
 
         if (!Number.isFinite(gwNum)) {
             return res.status(400).json({ error: 'Bad gw parameter' })
