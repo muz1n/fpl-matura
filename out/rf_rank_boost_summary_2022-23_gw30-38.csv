@@ -1,0 +1,2 @@
+season,start_gw,end_gw,MAE,RMSE,Spearman_rho,n_estimators,min_samples_leaf,max_depth
+2022-23,30,38,1.1491954188850086,2.458034184563879,-0.0009396704452816577,600,1,
