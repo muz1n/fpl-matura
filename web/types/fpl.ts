@@ -26,6 +26,7 @@ export interface LineupPayload {
     gw: number;
     generated_at: string;
     model_version: string;
+    methode?: string;            // e.g. "rf", "ma3", "pos", "legacy"
     formation: FormationStr;
     xi_ids: number[];            // 11 ints
     bench_gk_id: number;

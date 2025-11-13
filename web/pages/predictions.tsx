@@ -34,6 +34,7 @@ export default function PredictionsPage() {
     const [lineup, setLineup] = useState<LineupPayload | null>(null)
     const [state, setState] = useState<LoadingStateType>('idle')
     const [error, setError] = useState<string>('')
+    const [lineupError, setLineupError] = useState<string>('')
 
 
     // Available GWs and methods by GW
@@ -122,23 +123,45 @@ export default function PredictionsPage() {
         async function fetchData() {
             setState('loading');
             setError('');
+            setLineupError('');
 
             try {
-                const [predRes, lineupRes] = await Promise.all([
-                    fetch(`/api/gw/${selectedGW}/predictions?methode=${selectedMethod}`),
-                    fetch(`/api/gw/${selectedGW}/lineup?methode=${selectedMethod}`)
-                ]);
-
-                if (!predRes.ok || !lineupRes.ok) {
+                // Fetch predictions
+                const predRes = await fetch(`/api/gw/${selectedGW}/predictions?methode=${selectedMethod}`);
+                
+                if (!predRes.ok) {
                     const errorData = await predRes.json().catch(() => ({}));
-                    throw new Error(errorData.error || 'Fehler beim Laden der Daten');
+                    throw new Error(errorData.error || 'Fehler beim Laden der Prognosen');
                 }
 
                 const predData: PredictionsPayload = await predRes.json();
-                const lineupData: LineupPayload = await lineupRes.json();
-
                 setPredictions(predData);
-                setLineup(lineupData);
+
+                // Fetch lineup - handle 404 gracefully
+                try {
+                    const lineupRes = await fetch(`/api/gw/${selectedGW}/lineup?methode=${selectedMethod}`);
+                    
+                    if (!lineupRes.ok) {
+                        if (lineupRes.status === 404) {
+                            const errorData = await lineupRes.json().catch(() => ({}));
+                            setLineupError(errorData.error || 'Lineup-Daten nicht verfügbar');
+                            setLineup(null);
+                        } else {
+                            const errorData = await lineupRes.json().catch(() => ({}));
+                            throw new Error(errorData.error || 'Fehler beim Laden der Lineup-Daten');
+                        }
+                    } else {
+                        const lineupData: LineupPayload = await lineupRes.json();
+                        setLineup(lineupData);
+                        setLineupError('');
+                    }
+                } catch (lineupErr) {
+                    // Lineup error shouldn't break predictions view
+                    console.warn('Lineup fetch error:', lineupErr);
+                    setLineupError(lineupErr instanceof Error ? lineupErr.message : 'Fehler beim Laden der Lineup-Daten');
+                    setLineup(null);
+                }
+
                 setState('success');
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Unbekannter Fehler');
@@ -382,7 +405,7 @@ export default function PredictionsPage() {
         )
     }
 
-    if (!predictions || !lineup) {
+    if (!predictions) {
         return (
             <>
                 <Head>
@@ -393,10 +416,11 @@ export default function PredictionsPage() {
         )
     }
 
-    const captainPlayer = findPlayer(lineup.captain_id)
-    const vicePlayer = findPlayer(lineup.vice_id)
+    const captainPlayer = lineup ? findPlayer(lineup.captain_id) : undefined
+    const vicePlayer = lineup ? findPlayer(lineup.vice_id) : undefined
     const xiPlayers = getXIPlayers()
     const top15 = getTop15Players()
+    const isLegacyLineup = lineup?.methode === 'legacy'
 
     // Tooltip für gewählte Methode
     const methodTooltip = selectedMethod === 'rf' ? glossary.methodeRF :
@@ -412,7 +436,7 @@ export default function PredictionsPage() {
     return (
         <>
             <Head>
-                <title>Prognosen GW{lineup.gw} — FPL Assistent</title>
+                <title>Prognosen GW{selectedGW ?? ''} — FPL Assistent</title>
             </Head>
 
             <div className="space-y-6">
@@ -432,17 +456,24 @@ export default function PredictionsPage() {
                             tooltip={<HelpIcon text={glossary.gameweek} />}
                         />
 
-                        <Select
-                            label="Prognosemethode"
-                            value={selectedMethod ?? ''}
-                            onChange={(val) => setSelectedMethod(val as string)}
-                            options={availableMethods.map(m => {
-                                const opt = methodOptions.find(o => o.value === m)
-                                return opt ? opt : { value: m, label: m === 'legacy' ? 'Legacy (nur Rohdaten)' : m }
-                            })}
-                            disabled={availableMethods.length === 0 || (availableMethods.length === 1 && availableMethods[0] === 'legacy')}
-                            tooltip={<HelpIcon text={methodTooltip} />}
-                        />
+                        <div className="relative">
+                            <Select
+                                label="Prognosemethode"
+                                value={selectedMethod ?? ''}
+                                onChange={(val) => setSelectedMethod(val as string)}
+                                options={availableMethods.map(m => {
+                                    const opt = methodOptions.find(o => o.value === m)
+                                    return opt ? opt : { value: m, label: m === 'legacy' ? 'Legacy (nur Rohdaten)' : m }
+                                })}
+                                disabled={availableMethods.length === 0 || (availableMethods.length === 1 && availableMethods[0] === 'legacy')}
+                                tooltip={<HelpIcon text={methodTooltip} />}
+                            />
+                            {isLegacyLineup && (
+                                <span className="absolute top-0 right-0 mt-1 mr-1 px-2 py-1 text-xs font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 rounded">
+                                    Legacy
+                                </span>
+                            )}
+                        </div>
                     </div>
                     {availableMethods.length === 0 && (
                         <div className="text-sm text-gray-500 mt-2">Keine Prognosemethode für diese Gameweek verfügbar.</div>
@@ -545,22 +576,52 @@ export default function PredictionsPage() {
                     <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
                         <span>Saison: <strong className="text-gray-900 dark:text-white">{predictions.season}</strong></span>
                         <span>•</span>
-                        <span>Gameweek: <strong className="text-gray-900 dark:text-white">{lineup.gw}</strong></span>
+                        <span>Gameweek: <strong className="text-gray-900 dark:text-white">{predictions.gw}</strong></span>
                         <span>•</span>
                         <span className="inline-flex items-center">
                             Methode: <strong className="ml-1 text-gray-900 dark:text-white">
                                 {selectedMethod === 'rf' ? 'Random Forest' :
                                     selectedMethod === 'ma3' ? 'Formdurchschnitt' :
-                                        'Positionsmittel'}
+                                        selectedMethod === 'pos' ? 'Positionsmittel' :
+                                            selectedMethod}
                             </strong>
                             <HelpIcon text={methodTooltip} />
                         </span>
-                        <span>•</span>
-                        <span>Generiert: <strong className="text-gray-900 dark:text-white">{new Date(lineup.generated_at).toLocaleString('de-DE')}</strong></span>
+                        {lineup && (
+                            <>
+                                <span>•</span>
+                                <span>Generiert: <strong className="text-gray-900 dark:text-white">{new Date(lineup.generated_at).toLocaleString('de-DE')}</strong></span>
+                            </>
+                        )}
                     </div>
                 </div>
 
+                {/* Lineup Error Message */}
+                {lineupError && (
+                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-6">
+                        <div className="flex items-start">
+                            <div className="flex-shrink-0">
+                                <svg className="h-6 w-6 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <h3 className="text-sm font-medium text-amber-800 dark:text-amber-400">
+                                    Aufstellung nicht verfügbar
+                                </h3>
+                                <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                                    {lineupError}
+                                </p>
+                                <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
+                                    Die Prognosen sind weiterhin verfügbar. Eine Aufstellung kann für diese Kombination aus Gameweek und Methode möglicherweise nicht generiert werden.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Lineup Summary */}
+                {lineup && (
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
                     <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Aufstellungs-Übersicht</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -617,8 +678,10 @@ export default function PredictionsPage() {
                         </div>
                     )}
                 </div>
+                )}
 
                 {/* Starting XI Table */}
+                {lineup && (
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
                     <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                         <h2 className="text-2xl font-bold text-gray-900 dark:text-white inline-flex items-center">
@@ -690,8 +753,10 @@ export default function PredictionsPage() {
                         </table>
                     </div>
                 </div>
+                )}
 
                 {/* Bench */}
+                {lineup && (
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3 inline-flex items-center">
                         Bank<HelpIcon text={glossary.bank} />
@@ -723,6 +788,7 @@ export default function PredictionsPage() {
                         })}
                     </div>
                 </div>
+                )}
 
                 {/* Top 15 Predictions */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
