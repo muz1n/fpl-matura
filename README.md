@@ -33,9 +33,32 @@ python code\make_predictions.py --season 2023-24 --gw 38 --methode rf
 - **Niedrige Spearman-Korrelation:** Die ρ-Werte nahe Null bzw. leicht negativ zeigen, dass das aktuelle Ranking der Spieler noch verbesserungswürdig ist. Dies ist relevant für die Auswahl der Starting XI und Captain-Wahl, wird aber in nachfolgenden Iterationen weiter optimiert.
 - **RMSE und Ausreißer:** Der RMSE liegt deutlich über dem MAE, was auf vereinzelte grosse Abweichungen (Ausreißer) hindeutet. Eine geplante Residual- und Kalibrierungsanalyse soll diese Fälle besser identifizieren und die Modellrobustheit erhöhen.
 
+### RF (Rank) – verbesserte Ranking-Variante
+Ziel isch e bessere Rangordnig (höchseri Spearman-ρ) bi stabiler MAE.
+
+| Methode | MAE | RMSE | ρ (Spearman) |
+|---------|-----|------|--------------|
+| rf_rank | 1.15 | 2.46 | -0.001 |
+
+Reproduzieren: `python code\rf_rank_boost.py --season 2022-23 --start_gw 30 --end_gw 38`
+Im UI als "RF (Rank)" verfügbar; lädt `predictions_gw{GW}_rf_rank.json` und funktionier au mit dr Lineup-API.
+
 ## Team-Backtest (Stand: 13. Nov 2025)
 
-Der Team-Backtest simuliert die Auswahl einer Starting XI basierend auf Vorhersagen (GW 30–38, Saison 2022-23) und bewertet diese anhand der tatsächlich erzielten Punkte aus `merged_gw_2022-23.csv`. Für jede Gameweek wird aus einem vereinfachten 15-Spieler-Pool (GK=2, DEF=5, MID=5, FWD=3) die beste Formation gewählt. Der Captain erhält doppelte Punkte gemäss FPL-Regeln.
+**Kurzfazit (GW 30–38):** RF ≈ **51.8**, MA3 ≈ **42.6**, POS ≈ **12.4** Ø Team-Punkte/GW.
+
+| Methode | Ø Team-Punkte (XI) | StdAbw | GWs |
+|---|---:|---:|---:|
+| rf  | 51.75 | — | 8 |
+| ma3 | 42.63 | — | 8 |
+| pos | 12.44 | — | 9 |
+
+*Grafik:* ![Team-Backtest (GW30–38)](out/team_backtest_2022-23_gw30-38.png)
+
+**Reproduktion**
+```bash
+python code\\team_backtest.py --season 2022-23 --gw_start 30 --gw_end 38 --methods rf ma3 pos
+
 
 ### Ergebnisse
 
