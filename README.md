@@ -32,3 +32,31 @@ python code\make_predictions.py --season 2023-24 --gw 38 --methode rf
 - **MAE < 2 erfüllt:** Die durchschnittliche Punkteabweichung liegt bei ca. 1.3–1.4 Punkten. Dies erfüllt die in der Projektvereinbarung formulierte Hypothese (Teil 1) und zeigt, dass die Modelle die FPL-Punktzahl mit akzeptabler Genauigkeit schätzen können.
 - **Niedrige Spearman-Korrelation:** Die ρ-Werte nahe Null bzw. leicht negativ zeigen, dass das aktuelle Ranking der Spieler noch verbesserungswürdig ist. Dies ist relevant für die Auswahl der Starting XI und Captain-Wahl, wird aber in nachfolgenden Iterationen weiter optimiert.
 - **RMSE und Ausreißer:** Der RMSE liegt deutlich über dem MAE, was auf vereinzelte grosse Abweichungen (Ausreißer) hindeutet. Eine geplante Residual- und Kalibrierungsanalyse soll diese Fälle besser identifizieren und die Modellrobustheit erhöhen.
+
+## Team-Backtest (Stand: 13. Nov 2025)
+
+Der Team-Backtest simuliert die Auswahl einer Starting XI basierend auf Vorhersagen (GW 30–38, Saison 2022-23) und bewertet diese anhand der tatsächlich erzielten Punkte aus `merged_gw_2022-23.csv`. Für jede Gameweek wird aus einem vereinfachten 15-Spieler-Pool (GK=2, DEF=5, MID=5, FWD=3) die beste Formation gewählt. Der Captain erhält doppelte Punkte gemäss FPL-Regeln.
+
+### Ergebnisse
+
+| Methode | Ø Team-Punkte (XI) | StdAbw | GWs |
+|---------|---------------------|--------|-----|
+| rf      | 11.4                | 4.5    | 9   |
+| ma3     | —                   | —      | —   |
+| pos     | —                   | —      | —   |
+
+_Hinweis: ma3 und pos Predictions noch ausstehend, werden ergänzt sobald verfügbar._
+
+![Team-Backtest Vergleich](out/team_backtest_2022-23_gw30-38.png)
+
+### Reproduktion
+
+```bash
+python code\team_backtest.py --season 2022-23 --gw_start 30 --gw_end 38 --methods rf ma3 pos
+```
+
+### Interpretation
+
+- **RF-Performance:** Durchschnittlich 11.4 Punkte pro Gameweek im Testfenster (inkl. Captain-Bonus). Die Standardabweichung von 4.5 Punkten zeigt moderate Schwankungen zwischen Gameweeks.
+- **Vergleich mit anderen Methoden:** ma3 (Moving Average) und pos (positionsbasierte Baseline) werden ergänzt, sobald die entsprechenden Predictions vorliegen, um die Vorhersagequalität im Team-Kontext zu vergleichen.
+- **Limitationen:** Vereinfachter 15-Spieler-Pool ohne vollständige Transfersimulation oder Autosub-Mechanik. Die tatsächlichen Team-Punkte könnten bei optimaler Nutzung aller FPL-Features höher ausfallen.
