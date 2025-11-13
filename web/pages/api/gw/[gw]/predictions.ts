@@ -11,23 +11,45 @@ type PredictionMethod = 'rf' | 'ma3' | 'pos'
 
 /**
  * Scannt das OUT_DIR und gibt alle verfügbaren GW-Nummern zurück
+ * + optional ein Map mit verfügbaren Methoden pro GW
  */
-async function getAvailableGWs(): Promise<number[]> {
+async function getAvailableGWs(): Promise<{ available: number[]; methodsByGw: Record<number, string[]> }> {
     try {
         const files = await readdir(OUT_DIR)
         const gwSet = new Set<number>()
+        const methodsByGw: Record<number, string[]> = {}
 
-        // Suche nach predictions_gwXX.json Dateien
+        // Suche nach predictions_gw{N}.json (legacy) und predictions_gw{N}_{method}.json
         for (const file of files) {
-            const match = file.match(/^predictions_gw(\d+)\.json$/)
-            if (match) {
-                gwSet.add(Number.parseInt(match[1], 10))
+            // Method-specific: predictions_gw30_rf.json
+            const matchMethod = file.match(/^predictions_gw(\d+)_([a-z0-9]+)\.json$/)
+            if (matchMethod) {
+                const gw = Number.parseInt(matchMethod[1], 10)
+                const method = matchMethod[2]
+                gwSet.add(gw)
+                if (!methodsByGw[gw]) methodsByGw[gw] = []
+                if (!methodsByGw[gw].includes(method)) {
+                    methodsByGw[gw].push(method)
+                }
+                continue
+            }
+
+            // Legacy: predictions_gw30.json
+            const matchLegacy = file.match(/^predictions_gw(\d+)\.json$/)
+            if (matchLegacy) {
+                const gw = Number.parseInt(matchLegacy[1], 10)
+                gwSet.add(gw)
+                if (!methodsByGw[gw]) methodsByGw[gw] = []
+                if (!methodsByGw[gw].includes('legacy')) {
+                    methodsByGw[gw].push('legacy')
+                }
             }
         }
 
-        return Array.from(gwSet).sort((a, b) => a - b)
+        const available = Array.from(gwSet).sort((a, b) => a - b)
+        return { available, methodsByGw }
     } catch {
-        return []
+        return { available: [], methodsByGw: {} }
     }
 }
 
@@ -42,7 +64,7 @@ export default async function handler(
     try {
         const { gw, methode } = req.query
         const gwNum = Number.parseInt(gw as string, 10)
-        const methodRaw = (methode as string)?.toLowerCase()
+        const methodRaw = (methode as string)?.toLowerCase() || 'rf'
         const method: PredictionMethod = (methodRaw === 'ma3' || methodRaw === 'pos' || methodRaw === 'rf') ? methodRaw : 'rf'
 
         if (!Number.isFinite(gwNum)) {
@@ -57,21 +79,50 @@ export default async function handler(
             })
         }
 
-        // Immer Basisdatei (RF) laden – andere Methoden werden dynamisch berechnet oder gefiltert
-        const baseFilename = `predictions_gw${gwNum}.json`
-        const file = join(OUT_DIR, baseFilename)
-        let raw: string
+        // Try primary path: predictions_gw{N}_{method}.json
+        const primaryFilename = `predictions_gw${gwNum}_${method}.json`
+        const primaryPath = join(OUT_DIR, primaryFilename)
+        
+        // Try legacy path: predictions_gw{N}.json
+        const legacyFilename = `predictions_gw${gwNum}.json`
+        const legacyPath = join(OUT_DIR, legacyFilename)
+
+        let raw: string | null = null
+        let usedMethod: string = method
+
+        // Attempt primary first
         try {
-            raw = await readFile(file, 'utf8')
+            raw = await readFile(primaryPath, 'utf8')
         } catch (e: any) {
             if (e.code === 'ENOENT') {
-                const available = await getAvailableGWs()
-                return res.status(404).json({
-                    error: 'GW not available',
-                    available
-                })
+                // Primary not found, try legacy
+                try {
+                    raw = await readFile(legacyPath, 'utf8')
+                    usedMethod = 'legacy'
+                } catch (e2: any) {
+                    if (e2.code === 'ENOENT') {
+                        // Neither found, return 404 with availability
+                        const { available, methodsByGw } = await getAvailableGWs()
+                        return res.status(404).json({
+                            error: 'GW not available',
+                            available,
+                            methodsByGw
+                        })
+                    }
+                    throw e2
+                }
+            } else {
+                throw e
             }
-            throw e
+        }
+
+        if (!raw) {
+            const { available, methodsByGw } = await getAvailableGWs()
+            return res.status(404).json({
+                error: 'GW not available',
+                available,
+                methodsByGw
+            })
         }
 
         let json: any
@@ -84,43 +135,19 @@ export default async function handler(
         // Zod Validierung
         const parseResult = PredictionsPayloadSchema.safeParse(json)
         if (!parseResult.success) {
-            return res.status(422).json({ error: 'Validierungsfehler', details: parseResult.error.issues.map(i => i.message) })
-        }
-        const base = parseResult.data
-
-        // Methode-Anpassungen
-        if (method === 'rf') {
-            return res.status(200).json(base)
-        }
-
-        if (method === 'ma3') {
-            // Falls Spieler zusaetzliches Feld ma3 hat: predicted_points ersetzen; sonst RF behalten
-            const players = base.players.map(p => {
-                const ma3Val = (p as any).ma3
-                return typeof ma3Val === 'number'
-                    ? { ...p, predicted_points: ma3Val }
-                    : p
+            return res.status(422).json({ 
+                error: 'Validierungsfehler', 
+                details: parseResult.error.issues.map(i => i.message) 
             })
-            return res.status(200).json({ ...base, players, model_version: base.model_version + '+ma3' })
         }
+        const data = parseResult.data
 
-        if (method === 'pos') {
-            // Positionsmittel berechnen: Durchschnitt RF Punkte pro Position ersetzen fuer alle Spieler
-            const byPos: Record<string, { sum: number; count: number }> = {}
-            for (const p of base.players) {
-                if (!byPos[p.pos]) byPos[p.pos] = { sum: 0, count: 0 }
-                byPos[p.pos].sum += p.predicted_points
-                byPos[p.pos].count += 1
-            }
-            const avg: Record<string, number> = {}
-            Object.entries(byPos).forEach(([pos, v]) => {
-                avg[pos] = v.count > 0 ? v.sum / v.count : 0
-            })
-            const players = base.players.map(p => ({ ...p, predicted_points: avg[p.pos] ?? p.predicted_points }))
-            return res.status(200).json({ ...base, players, model_version: base.model_version + '+pos' })
-        }
-
-        return res.status(200).json(base)
+        // Return with gw and methode echoed
+        return res.status(200).json({ 
+            ...data, 
+            gw: gwNum, 
+            methode: usedMethod 
+        })
     } catch (err: any) {
         console.error('Error reading predictions:', err)
 
