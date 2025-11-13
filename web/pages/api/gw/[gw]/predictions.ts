@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import { readFile } from 'node:fs/promises'
+import { readFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { PredictionsPayloadSchema } from '@/src/types/fpl.schema'
 import { z } from 'zod'
@@ -8,6 +8,28 @@ const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
 
 // Unterstützte Methoden
 type PredictionMethod = 'rf' | 'ma3' | 'pos'
+
+/**
+ * Scannt das OUT_DIR und gibt alle verfügbaren GW-Nummern zurück
+ */
+async function getAvailableGWs(): Promise<number[]> {
+    try {
+        const files = await readdir(OUT_DIR)
+        const gwSet = new Set<number>()
+
+        // Suche nach predictions_gwXX.json Dateien
+        for (const file of files) {
+            const match = file.match(/^predictions_gw(\d+)\.json$/)
+            if (match) {
+                gwSet.add(Number.parseInt(match[1], 10))
+            }
+        }
+
+        return Array.from(gwSet).sort((a, b) => a - b)
+    } catch {
+        return []
+    }
+}
 
 export default async function handler(
     req: NextApiRequest,
@@ -43,7 +65,11 @@ export default async function handler(
             raw = await readFile(file, 'utf8')
         } catch (e: any) {
             if (e.code === 'ENOENT') {
-                return res.status(404).json({ error: 'Datei fehlt fuer diese Spielwoche' })
+                const available = await getAvailableGWs()
+                return res.status(404).json({
+                    error: 'GW not available',
+                    available
+                })
             }
             throw e
         }
