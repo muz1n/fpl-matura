@@ -21,7 +21,7 @@ export interface PredictionsPayload {
     players: PredictionPlayer[];
 }
 
-export type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank' | 'legacy'
+export type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank' | 'rf_pos' | 'legacy'
 
 export interface LineupPayload {
     season: string;

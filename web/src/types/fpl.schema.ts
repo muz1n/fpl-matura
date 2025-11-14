@@ -28,6 +28,8 @@ export const LineupPayloadSchema = z.object({
     gw: z.number(),
     generated_at: z.string(),
     model_version: z.string(),
+    // Optional method field (e.g. 'rf', 'ma3', 'pos', 'rf_rank', 'rf_pos', 'legacy')
+    methode: z.enum(['rf', 'ma3', 'pos', 'rf_rank', 'rf_pos', 'legacy']).optional(),
     formation: FormationStr,
     xi_ids: z.array(z.number()).length(11),
     bench_gk_id: z.number(),

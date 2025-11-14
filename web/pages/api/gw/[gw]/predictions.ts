@@ -7,7 +7,7 @@ import { z } from 'zod'
 const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
 
 // Unterstützte Methoden
-type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank'
+type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank' | 'rf_pos'
 
 /**
  * Scannt das OUT_DIR und gibt alle verfügbaren GW-Nummern zurück
@@ -65,14 +65,14 @@ export default async function handler(
         const { gw, methode } = req.query
         const gwNum = Number.parseInt(gw as string, 10)
         const methodRaw = (methode as string)?.toLowerCase() || 'rf'
-        const method: PredictionMethod = (methodRaw === 'ma3' || methodRaw === 'pos' || methodRaw === 'rf' || methodRaw === 'rf_rank') ? methodRaw : 'rf'
+        const method: PredictionMethod = (methodRaw === 'ma3' || methodRaw === 'pos' || methodRaw === 'rf' || methodRaw === 'rf_rank' || methodRaw === 'rf_pos') ? methodRaw : 'rf'
 
         if (!Number.isFinite(gwNum)) {
             return res.status(400).json({ error: 'Bad gw parameter' })
         }
 
         // Validiere Methode
-        const validMethods: PredictionMethod[] = ['rf', 'ma3', 'pos', 'rf_rank']
+        const validMethods: PredictionMethod[] = ['rf', 'ma3', 'pos', 'rf_rank', 'rf_pos']
         if (!validMethods.includes(method as PredictionMethod)) {
             return res.status(400).json({
                 error: `Invalid method. Use: ${validMethods.join(', ')}`

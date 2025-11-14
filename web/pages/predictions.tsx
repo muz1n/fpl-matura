@@ -9,12 +9,13 @@ import { LoadingState, ErrorState, EmptyState } from '../src/components/States'
 import { saveSquad, loadSquad } from '../src/lib/squad-storage'
 
 type LoadingStateType = 'idle' | 'loading' | 'success' | 'error'
-type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank'
+type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank' | 'rf_pos'
 
 // Methoden-Optionen mit deutschen Namen
 const methodOptions = [
     { value: 'rf', label: 'Random Forest (KI-Modell)' },
     { value: 'rf_rank', label: 'RF (Rank)' },
+    { value: 'rf_pos', label: 'RF (Pos)' },
     { value: 'ma3', label: 'Formdurchschnitt (MA3)' },
     { value: 'pos', label: 'Positionsmittel' },
 ]
