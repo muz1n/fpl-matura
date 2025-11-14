@@ -51,7 +51,11 @@ def check_git_repo():
 
 def get_repo_root():
     """Get the root directory of the git repository."""
-    return Path(run_git_command(["rev-parse", "--show-toplevel"]))
+    result = run_git_command(["rev-parse", "--show-toplevel"], check=False)
+    if result is None:
+        print("Error: Unable to determine repository root", file=sys.stderr)
+        sys.exit(1)
+    return Path(result)
 
 
 def get_commits(since_date, until_date, author=None):

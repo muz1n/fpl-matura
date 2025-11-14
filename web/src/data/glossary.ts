@@ -12,6 +12,8 @@ export const glossary = {
     // Methoden-Kürzel
     methodeRF: "Random Forest - KI-Modell mit höchster Genauigkeit, nutzt historische Daten und Statistiken.",
 
+    methodeRFRank: "RF (Rank) - Zeitabhängiges Random Forest mit Rolling-Form und Rangfokus (Spearman-Optimierung).",
+
     methodeMA3: "Formdurchschnitt - Einfache Methode basierend auf den letzten 3 Spielen eines Spielers.",
 
     methodePos: "Positionsmittel - Durchschnittspunkte pro Position als Baseline-Vorhersage.",

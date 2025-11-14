@@ -21,7 +21,7 @@ import argparse
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Any
 
 import numpy as np
 import pandas as pd
@@ -36,16 +36,24 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 PredictionMethod = Literal["rf", "ma3", "pos"]
 
 
-def _to_float(val: object) -> float:
+def _to_float(val: Any) -> float:
     """Best-effort conversion to float; returns np.nan on failure."""
     try:
         import pandas as pd  # local to avoid global when not available in env
+
         if isinstance(val, pd.Series):
             val = val.iloc[0] if len(val) > 0 else np.nan
     except Exception:
         pass
     try:
-        return float(val)
+        # Convert to a numpy array of floats and extract a scalar value.
+        # This safely handles scalars, numpy arrays and pandas objects.
+        arr = np.asarray(val, dtype=float)
+        if arr.size == 0:
+            return np.nan
+        return float(arr.item())
+    except (TypeError, ValueError):
+        return np.nan
     except Exception:
         return np.nan
 
@@ -85,7 +93,18 @@ def load_season_data(season: str) -> pd.DataFrame:
         df = df.loc[:, ~df.columns.duplicated()].copy()
 
     # Numeric coercion
-    for col in ["player_id", "gw", "points", "minutes", "price", "ict_index", "influence", "creativity", "threat", "home"]:
+    for col in [
+        "player_id",
+        "gw",
+        "points",
+        "minutes",
+        "price",
+        "ict_index",
+        "influence",
+        "creativity",
+        "threat",
+        "home",
+    ]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
@@ -98,12 +117,20 @@ def load_season_data(season: str) -> pd.DataFrame:
     # Position normalization
     if "pos" not in df.columns:
         if "position" in df.columns:
-            df["pos"] = df["position"].astype(str).str.upper().map(
-                {"GKP": "GK", "GK": "GK", "DEF": "DEF", "MID": "MID", "FWD": "FWD"}
-            ).fillna(df["position"].astype(str))
+            df["pos"] = (
+                df["position"]
+                .astype(str)
+                .str.upper()
+                .map(
+                    {"GKP": "GK", "GK": "GK", "DEF": "DEF", "MID": "MID", "FWD": "FWD"}
+                )
+                .fillna(df["position"].astype(str))
+            )
         elif "element_type" in df.columns:
             df["pos"] = (
-                df["element_type"].map({1: "GK", 2: "DEF", 3: "MID", 4: "FWD"}).fillna("MID")
+                df["element_type"]
+                .map({1: "GK", 2: "DEF", 3: "MID", 4: "FWD"})
+                .fillna("MID")
             )
         else:
             df["pos"] = "MID"
@@ -138,15 +165,17 @@ def get_pool_for_gw(df: pd.DataFrame, gw: int) -> list[int]:
     """Players that existed historically before the given gw in this season."""
     if "player_id" not in df.columns or "gw" not in df.columns:
         return []
-    pool = (
-        df.loc[df["gw"] < gw, "player_id"].dropna().astype(int).unique().tolist()
-    )
+    pool = df.loc[df["gw"] < gw, "player_id"].dropna().astype(int).unique().tolist()
     return pool
 
 
 def build_rolling_features(df: pd.DataFrame) -> pd.DataFrame:
     """Add r3 rolling features shifted by 1 (no leakage)."""
-    roll_cols = [c for c in ["points", "minutes", "ict_index", "influence", "creativity", "threat"] if c in df.columns]
+    roll_cols = [
+        c
+        for c in ["points", "minutes", "ict_index", "influence", "creativity", "threat"]
+        if c in df.columns
+    ]
     df = df.copy()
     for col in roll_cols:
         df[f"{col}_r3"] = (
@@ -154,11 +183,15 @@ def build_rolling_features(df: pd.DataFrame) -> pd.DataFrame:
         )
     if set(["points_r3", "minutes_r3"]).issubset(df.columns):
         with np.errstate(divide="ignore", invalid="ignore"):
-            df["points_per90_r3"] = (df["points_r3"] / df["minutes_r3"].replace(0, np.nan)) * 90
+            df["points_per90_r3"] = (
+                df["points_r3"] / df["minutes_r3"].replace(0, np.nan)
+            ) * 90
     return df
 
 
-def train_rf_model(df: pd.DataFrame, gw_target: int) -> tuple[RandomForestRegressor, list[str]]:
+def train_rf_model(
+    df: pd.DataFrame, gw_target: int
+) -> tuple[RandomForestRegressor, list[str]]:
     """Train RF using only rows with gw < gw_target in THIS season.
 
     Target = current row's points; features are shifted rolling means.
@@ -182,7 +215,9 @@ def train_rf_model(df: pd.DataFrame, gw_target: int) -> tuple[RandomForestRegres
     features = [c for c in feature_candidates if c in df_feats.columns]
 
     # Training data: only rows strictly before target gw and with a points value
-    train_df = df_feats[(df_feats["gw"] < gw_target) & df_feats["points"].notna()].copy()
+    train_df = df_feats[
+        (df_feats["gw"] < gw_target) & df_feats["points"].notna()
+    ].copy()
     # Require at least one non-NaN feature
     if not features:
         # Fallback to price if available, else zero vector
@@ -234,16 +269,15 @@ def predict_positional(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFra
     """POS baseline: mean points by position over last 5 GWs before gw."""
     window = 5
     hist = df[(df["gw"] < gw) & (df["gw"] >= gw - window)].copy()
-    pos_means = (
-        hist.groupby("pos")["points"].mean().to_dict() if not hist.empty else {}
-    )
+    pos_means = hist.groupby("pos")["points"].mean().to_dict() if not hist.empty else {}
     global_mean = float(hist["points"].mean()) if not hist.empty else 0.0
 
     # Player metadata as of gw-1
     last_meta = (
         df[df["gw"] < gw]
         .sort_values(["player_id", "gw"])
-        .groupby("player_id").tail(1)
+        .groupby("player_id")
+        .tail(1)
         .set_index("player_id")
     )
 
@@ -259,7 +293,16 @@ def predict_positional(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFra
         else:
             pos, price, name, team = "MID", np.nan, f"Player {pid}", "UNK"
         pred = float(pos_means.get(pos, global_mean))
-        rows.append({"player_id": pid, "name": name, "team": team, "pos": pos, "price": price, "predicted_points": pred})
+        rows.append(
+            {
+                "player_id": pid,
+                "name": name,
+                "team": team,
+                "pos": pos,
+                "price": price,
+                "predicted_points": pred,
+            }
+        )
 
     return pd.DataFrame(rows)
 
@@ -267,12 +310,15 @@ def predict_positional(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFra
 def predict_ma3(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFrame:
     """MA3 baseline: player mean of last up-to-3 GWs strictly before gw."""
     g = df.sort_values(["player_id", "gw"]).copy()
-    g["points_ma3"] = g.groupby("player_id")["points"].shift(1).rolling(3, min_periods=1).mean()
+    g["points_ma3"] = (
+        g.groupby("player_id")["points"].shift(1).rolling(3, min_periods=1).mean()
+    )
 
     last_meta = (
         g[g["gw"] < gw]
         .sort_values(["player_id", "gw"])
-        .groupby("player_id").tail(1)
+        .groupby("player_id")
+        .tail(1)
         .set_index("player_id")
     )
 
@@ -286,7 +332,9 @@ def predict_ma3(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFrame:
                 pred = pred_val
         if pred == 0.0:
             # fallback to mean of available history before gw
-            hist_points = g.loc[(g["player_id"] == pid) & (g["gw"] < gw), "points"].dropna()
+            hist_points = g.loc[
+                (g["player_id"] == pid) & (g["gw"] < gw), "points"
+            ].dropna()
             pred = float(hist_points.mean()) if len(hist_points) > 0 else 0.0
 
         if pid in last_meta.index:
@@ -298,7 +346,16 @@ def predict_ma3(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFrame:
             team = str(s.get("team", "UNK"))
         else:
             pos, price, name, team = "MID", np.nan, f"Player {pid}", "UNK"
-        rows.append({"player_id": pid, "name": name, "team": team, "pos": pos, "price": price, "predicted_points": pred})
+        rows.append(
+            {
+                "player_id": pid,
+                "name": name,
+                "team": team,
+                "pos": pos,
+                "price": price,
+                "predicted_points": pred,
+            }
+        )
 
     return pd.DataFrame(rows)
 
@@ -312,7 +369,8 @@ def predict_rf(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFrame:
     snap = (
         df_feats[df_feats["gw"] < gw]
         .sort_values(["player_id", "gw"])
-        .groupby("player_id").tail(1)
+        .groupby("player_id")
+        .tail(1)
         .set_index("player_id")
     )
 
@@ -334,7 +392,9 @@ def predict_rf(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFrame:
         else:
             X.append([0.0] * len(features))
             pos, price, name, team = "MID", np.nan, f"Player {pid}", "UNK"
-        meta.append({"player_id": pid, "name": name, "team": team, "pos": pos, "price": price})
+        meta.append(
+            {"player_id": pid, "name": name, "team": team, "pos": pos, "price": price}
+        )
 
     X = np.asarray(X, dtype=float) if len(X) > 0 else np.zeros((0, len(features)))
     preds = model.predict(X) if len(X) > 0 else np.array([])
@@ -345,7 +405,13 @@ def predict_rf(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def build_output(season: str, gw: int, method: str, pred_df: pd.DataFrame, season_player_ids: set[int]) -> dict:
+def build_output(
+    season: str,
+    gw: int,
+    method: str,
+    pred_df: pd.DataFrame,
+    season_player_ids: set[int],
+) -> dict:
     """Apply season guard and build JSON output schema."""
     df = pred_df.copy()
     # Season guard: drop any player not in this season's df
@@ -354,7 +420,9 @@ def build_output(season: str, gw: int, method: str, pred_df: pd.DataFrame, seaso
     dropped = before - len(df)
     if dropped > 0:
         dropped_ids = sorted(set(pred_df["player_id"]) - season_player_ids)
-        print(f"WARNING: Dropped {dropped} players not in season {season}: {dropped_ids[:5]}{'...' if len(dropped_ids)>5 else ''}")
+        print(
+            f"WARNING: Dropped {dropped} players not in season {season}: {dropped_ids[:5]}{'...' if len(dropped_ids)>5 else ''}"
+        )
 
     # Finalize fields and defaults
     for c in ["name", "team", "pos"]:
@@ -363,7 +431,9 @@ def build_output(season: str, gw: int, method: str, pred_df: pd.DataFrame, seaso
     if "price" not in df.columns:
         df["price"] = np.nan
 
-    df["predicted_points"] = pd.to_numeric(df["predicted_points"], errors="coerce").fillna(0.0)
+    df["predicted_points"] = pd.to_numeric(
+        df["predicted_points"], errors="coerce"
+    ).fillna(0.0)
     df["price"] = pd.to_numeric(df["price"], errors="coerce")
 
     players = []
@@ -375,13 +445,19 @@ def build_output(season: str, gw: int, method: str, pred_df: pd.DataFrame, seaso
                 "pos": str(row.get("pos", "MID")),
                 "team": str(row.get("team", "UNK")),
                 "predicted_points": round(float(row["predicted_points"]), 3),
-                "price": (0.0 if pd.isna(row.get("price", np.nan)) else round(float(row["price"]), 1)),
+                "price": (
+                    0.0
+                    if pd.isna(row.get("price", np.nan))
+                    else round(float(row["price"]), 1)
+                ),
             }
         )
 
     # Assertion: output player ids subset of season ids
     out_ids = {p["player_id"] for p in players}
-    assert out_ids.issubset(season_player_ids), "Season guard failed: output contains players not in this season."
+    assert out_ids.issubset(
+        season_player_ids
+    ), "Season guard failed: output contains players not in this season."
 
     result = {
         "season": season,
@@ -397,16 +473,32 @@ def build_output(season: str, gw: int, method: str, pred_df: pd.DataFrame, seaso
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate FPL predictions (rf|ma3|pos) with strict season guard")
-    parser.add_argument("--season", type=str, required=True, help="Season (e.g., 2022-23)")
+    parser = argparse.ArgumentParser(
+        description="Generate FPL predictions (rf|ma3|pos) with strict season guard"
+    )
+    parser.add_argument(
+        "--season", type=str, required=True, help="Season (e.g., 2022-23)"
+    )
     parser.add_argument("--gw", type=int, required=True, help="Gameweek number")
     # Support both --method and --methode (alias)
-    parser.add_argument("--method", "--methode", dest="method", type=str, default="rf", choices=["rf", "ma3", "pos"], help="Prediction method")
-    parser.add_argument("--output-dir", type=Path, default=OUT_DIR, help="Output directory")
+    parser.add_argument(
+        "--method",
+        "--methode",
+        dest="method",
+        type=str,
+        default="rf",
+        choices=["rf", "ma3", "pos"],
+        help="Prediction method",
+    )
+    parser.add_argument(
+        "--output-dir", type=Path, default=OUT_DIR, help="Output directory"
+    )
 
     args = parser.parse_args()
 
-    print(f"Generating predictions for Season {args.season}, GW {args.gw}, Method: {args.method}")
+    print(
+        f"Generating predictions for Season {args.season}, GW {args.gw}, Method: {args.method}"
+    )
 
     # Load strictly this season's data
     df = load_season_data(args.season)
@@ -438,7 +530,9 @@ def main():
     if output["players"]:
         print("  Top 5 predictions:")
         for i, player in enumerate(output["players"][:5], 1):
-            print(f"    {i}. {player['name']} ({player['pos']}) - {player['predicted_points']} pts")
+            print(
+                f"    {i}. {player['name']} ({player['pos']}) - {player['predicted_points']} pts"
+            )
 
 
 if __name__ == "__main__":

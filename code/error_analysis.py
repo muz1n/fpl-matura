@@ -33,6 +33,7 @@ import pandas as pd
 
 # Use a non-interactive backend to avoid display issues
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
@@ -77,7 +78,9 @@ def pick_true_col(df: pd.DataFrame) -> str:
     for key in ("actual_points", "points", "y_true", "actual", "truth"):
         if key in lower_map:
             return lower_map[key]
-    raise KeyError("Could not infer true points column (looked for 'true_points' or 'total_points').")
+    raise KeyError(
+        "Could not infer true points column (looked for 'true_points' or 'total_points')."
+    )
 
 
 def ensure_numeric(df: pd.DataFrame, cols: List[str]) -> None:
@@ -90,10 +93,10 @@ def compute_residuals(df: pd.DataFrame, pred_col: str, true_col: str) -> pd.Data
     # Standardize column name for downstream use
     if "true_points" not in df.columns:
         df["true_points"] = df[true_col]
-    ensure_numeric(df, [pred_col, "true_points"]) 
+    ensure_numeric(df, [pred_col, "true_points"])
     if "residual" not in df.columns:
         df["residual"] = df["true_points"] - df[pred_col]
-    ensure_numeric(df, ["residual"]) 
+    ensure_numeric(df, ["residual"])
     return df
 
 
@@ -101,10 +104,20 @@ def top20_outliers_by_method(df: pd.DataFrame, pred_col: str) -> pd.DataFrame:
     df = df.copy()
     df["abs_residual"] = df["residual"].abs()
     keep_cols = [
-        c for c in [
-            "method", "gw", "player_id", "name", "pos", "team",
-            pred_col, "true_points", "residual", "abs_residual"
-        ] if c in df.columns
+        c
+        for c in [
+            "method",
+            "gw",
+            "player_id",
+            "name",
+            "pos",
+            "team",
+            pred_col,
+            "true_points",
+            "residual",
+            "abs_residual",
+        ]
+        if c in df.columns
     ]
     out_list = []
     for method, g in df.groupby("method", dropna=False):
@@ -122,7 +135,9 @@ def group_spearman(x: pd.Series, y: pd.Series) -> float:
         return float("nan")
     if sp_stats is not None:
         try:
-            r = sp_stats.spearmanr(xy.iloc[:, 0].values, xy.iloc[:, 1].values, nan_policy="omit")
+            r = sp_stats.spearmanr(
+                xy.iloc[:, 0].values, xy.iloc[:, 1].values, nan_policy="omit"
+            )
             # scipy returns correlation and pvalue; guard against scalar vs object
             corr = getattr(r, "correlation", None)
             return float(corr) if corr is not None else float("nan")
@@ -147,14 +162,16 @@ def metrics_by_position(df: pd.DataFrame, pred_col: str) -> pd.DataFrame:
             mae = float(np.mean(np.abs(res)))
             rmse = float(np.sqrt(np.mean(np.square(res))))
             spearman = group_spearman(g[pred_col], g["true_points"])
-        rows.append({
-            "method": method,
-            "pos": pos,
-            "n": n,
-            "MAE": mae,
-            "RMSE": rmse,
-            "Spearman": spearman,
-        })
+        rows.append(
+            {
+                "method": method,
+                "pos": pos,
+                "n": n,
+                "MAE": mae,
+                "RMSE": rmse,
+                "Spearman": spearman,
+            }
+        )
     return pd.DataFrame(rows).sort_values(["method", "pos"]).reset_index(drop=True)
 
 
@@ -164,7 +181,9 @@ def select_methods_for_plots(df: pd.DataFrame, max_methods: int = 3) -> List[str
     return [str(m) for m in selected]
 
 
-def plot_residuals(df: pd.DataFrame, pred_col: str, methods: List[str], out_path: str) -> None:
+def plot_residuals(
+    df: pd.DataFrame, pred_col: str, methods: List[str], out_path: str
+) -> None:
     if not methods:
         log("No methods to plot for residuals.")
         return
@@ -195,7 +214,9 @@ def plot_residuals(df: pd.DataFrame, pred_col: str, methods: List[str], out_path
     plt.close(fig)
 
 
-def plot_calibration(df: pd.DataFrame, pred_col: str, methods: List[str], out_path: str) -> None:
+def plot_calibration(
+    df: pd.DataFrame, pred_col: str, methods: List[str], out_path: str
+) -> None:
     if not methods:
         log("No methods to plot for calibration.")
         return
@@ -208,20 +229,34 @@ def plot_calibration(df: pd.DataFrame, pred_col: str, methods: List[str], out_pa
             # Bin by predicted into deciles within each method
             g = g.copy()
             g["bin"] = pd.qcut(g[pred_col], q=10, labels=False, duplicates="drop")
-            agg = g.groupby("bin", dropna=True).agg(
-                mean_pred=(pred_col, "mean"),
-                mean_true=("true_points", "mean"),
-                count=(pred_col, "size"),
-            ).dropna()
-            ax.plot(agg["mean_pred"], agg["mean_true"], marker="o", lw=1.5, label=f"{method} (n={agg['count'].sum()})")
+            agg = (
+                g.groupby("bin", dropna=True)
+                .agg(
+                    mean_pred=(pred_col, "mean"),
+                    mean_true=("true_points", "mean"),
+                    count=(pred_col, "size"),
+                )
+                .dropna()
+            )
+            ax.plot(
+                agg["mean_pred"],
+                agg["mean_true"],
+                marker="o",
+                lw=1.5,
+                label=f"{method} (n={agg['count'].sum()})",
+            )
         except Exception:
             # If qcut fails due to not enough unique values
             continue
     # Perfect calibration guide
     all_vals = df[[pred_col, "true_points"]].dropna()
     if len(all_vals) > 0:
-        vmin = float(np.nanmin([all_vals[pred_col].min(), all_vals["true_points"].min()]))
-        vmax = float(np.nanmax([all_vals[pred_col].max(), all_vals["true_points"].max()]))
+        vmin = float(
+            np.nanmin([all_vals[pred_col].min(), all_vals["true_points"].min()])
+        )
+        vmax = float(
+            np.nanmax([all_vals[pred_col].max(), all_vals["true_points"].max()])
+        )
         ax.plot([vmin, vmax], [vmin, vmax], color="gray", ls="--", lw=1, label="ideal")
         ax.set_xlim(vmin, vmax)
         ax.set_ylim(vmin, vmax)
@@ -281,12 +316,16 @@ def main(argv: List[str]) -> int:
 
     # 3) Residuals plot
     resid_plot_path = os.path.join(out_dir, f"residuals_plot_{stamp}.png")
-    plot_residuals(df, pred_col="predicted_points", methods=sel_methods, out_path=resid_plot_path)
+    plot_residuals(
+        df, pred_col="predicted_points", methods=sel_methods, out_path=resid_plot_path
+    )
     log(f"Wrote residuals plot: {resid_plot_path}")
 
     # 4) Calibration plot (deciles)
     calib_plot_path = os.path.join(out_dir, f"calibration_plot_{stamp}.png")
-    plot_calibration(df, pred_col="predicted_points", methods=sel_methods, out_path=calib_plot_path)
+    plot_calibration(
+        df, pred_col="predicted_points", methods=sel_methods, out_path=calib_plot_path
+    )
     log(f"Wrote calibration plot: {calib_plot_path}")
 
     log("Done.")

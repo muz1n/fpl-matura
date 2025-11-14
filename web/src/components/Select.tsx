@@ -9,9 +9,10 @@ interface SelectProps {
     options: { value: string | number; label: string }[]
     tooltip?: React.ReactNode
     className?: string
+    disabled?: boolean
 }
 
-export function Select({ label, value, onChange, options, tooltip, className }: SelectProps) {
+export function Select({ label, value, onChange, options, tooltip, className, disabled }: SelectProps) {
     const id = React.useId?.() || `${label.replace(/\s+/g, '_')}_select`
     return (
         <div className={cn("relative", className)}>
@@ -25,7 +26,11 @@ export function Select({ label, value, onChange, options, tooltip, className }: 
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     aria-label={label}
-                    className="block w-full px-4 py-2.5 pr-10 text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900 focus:border-transparent appearance-none cursor-pointer transition-colors"
+                    disabled={!!disabled}
+                    className={cn(
+                        "block w-full px-4 py-2.5 pr-10 text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900 focus:border-transparent appearance-none cursor-pointer transition-colors",
+                        disabled ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed" : ""
+                    )}
                 >
                     {options.map((option) => (
                         <option key={option.value} value={option.value}>

@@ -55,10 +55,12 @@ def load_predictions(gw: int, method: str) -> pd.DataFrame | None:
         DataFrame with columns [player_id, name, pos, team, predicted_points, price]
         or None if file not found
     """
-    pred_file = OUT_DIR / f"predictions_gw{gw}.json"
+    pred_file = OUT_DIR / f"predictions_gw{gw}_{method}.json"
 
     if not pred_file.exists():
-        logger.warning(f"GW{gw}: Prediction file not found: {pred_file.name}")
+        logger.warning(
+            f"GW{gw} ({method}): Prediction file not found: {pred_file.name}"
+        )
         return None
 
     try:
