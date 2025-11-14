@@ -1,2 +1,6 @@
 season,start_gw,end_gw,MAE,RMSE,Spearman_rho,n_estimators,min_samples_leaf,max_depth
 2022-23,30,38,1.1491954188850086,2.458034184563879,-0.0009396704452816577,600,1,
+
+Befund (GW 30–38): rf_rank senkt die MAE deutlich (≈ 1.15 vs. 1.42 bei rf), doch die Rangkorrelation bleibt ~0 (ρ ≈ −0.001 vs. 0.001). 
+Vermutung: Die Punktverteilung pro GW ist eng und das Modell optimiert MSE statt Rangfolgen; daraus folgt wenig Signal für Spearman. 
+Nächster Schritt: Modelle pro Position (separate RFs) testen und ρ je Position erhöhen.
