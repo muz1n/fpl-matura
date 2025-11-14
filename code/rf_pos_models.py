@@ -183,10 +183,32 @@ def evaluate_predictions(y_true, y_pred):
     rmse = np.sqrt(mean_squared_error(y_true, y_pred))
 
     # Spearman
+    spearman = 0.0
     if len(y_true) > 1:
-        spearman, _ = spearmanr(y_true, y_pred)
-        if np.isnan(spearman):
+        res = spearmanr(y_true, y_pred)
+        # spearmanr may return an object with attribute 'correlation', a tuple, or a scalar
+        corr = None
+        if hasattr(res, "correlation"):
+            corr = getattr(res, "correlation", None)
+        elif isinstance(res, (tuple, list)):
+            corr = res[0] if len(res) > 0 else None
+        else:
+            # try to coerce to float (res might already be a scalar)
+            try:
+                corr = float(res)
+            except Exception:
+                corr = None
+        # Only treat None or real-NaN floats as invalid; avoid passing non-scalars to isnan
+        if corr is None or (isinstance(corr, (float, np.floating)) and np.isnan(corr)):
             spearman = 0.0
+        else:
+            # Normalize corr to a plain Python float in a robust way
+            try:
+                # Coerce via numpy to handle a wide range of numeric-like objects,
+                # then convert to a Python float.
+                spearman = float(np.asarray(corr, dtype=float).tolist())
+            except Exception:
+                spearman = 0.0
     else:
         spearman = 0.0
 
@@ -225,8 +247,9 @@ def main():
 
     df = pd.read_csv(data_path)
 
-    # Filter to season
-    df = df[df["season"] == season].copy()
+    # Filter to season (only if season column exists)
+    if "season" in df.columns:
+        df = df[df["season"] == season].copy()
 
     # Ensure position column
     if "position" not in df.columns:
