@@ -616,7 +616,7 @@ export default function PredictionsPage() {
                         Prognosen & Aufstellung
                     </h1>
                     <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400">
-                        <span>Saison: <strong className="text-gray-900 dark:text-white">{predictions.season}</strong></span>
+                        <span>Saison: <strong className="text-gray-900 dark:text-white">{predictions.season || '—'}</strong></span>
                         <span>•</span>
                         <span>Gameweek: <strong className="text-gray-900 dark:text-white">{predictions.gw}</strong></span>
                         <span>•</span>
@@ -909,42 +909,7 @@ export default function PredictionsPage() {
                     </div>
                 </div>
 
-                {/* Downloads Panel */}
-                {showDownloads && availableDownloadLinks.length > 0 && (
-                    <div className="fixed bottom-4 right-4 z-50 max-w-xs w-full">
-                        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 relative">
-                            <button
-                                aria-label="Downloads schliessen"
-                                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                onClick={() => setShowDownloads(false)}
-                                title="Schliessen"
-                            >
-                                ×
-                            </button>
-                            <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">Downloads</h3>
-                            <ul className="space-y-2">
-                                {availableDownloadLinks.map((link) => (
-                                    <li key={link.href}>
-                                        <a
-                                            href={link.href}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
-                                        >
-                                            {link.label}
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
-                            {downloadError && (
-                                <div className="mt-2 text-xs text-red-600 dark:text-red-400">{downloadError}</div>
-                            )}
-                            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                                Es werden nur Dateien angezeigt, die lokal vorhanden sind.
-                            </div>
-                        </div>
-                    </div>
-                )}
+                {/* Hinweis: Downloads-Panel entfernt. Downloads werden zukünftig als 'Materialien'-Sektion dargestellt. */}
             </div>
         </>
     )
