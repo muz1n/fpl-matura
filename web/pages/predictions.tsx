@@ -63,6 +63,42 @@ export default function PredictionsPage() {
 
     // Downloads panel state
     const [downloadError, setDownloadError] = useState<string>("")
+    const [showDownloads, setShowDownloads] = useState<boolean>(true)
+    const [availableDownloadLinks, setAvailableDownloadLinks] = useState<Array<{ href: string; label: string }>>([])
+
+    // Verfuegbare Downloads vorab pruefen (nur anzeigen, was existiert)
+    useEffect(() => {
+        let isCancelled = false
+
+        async function checkLinks() {
+            const candidates: Array<{ href: string; label: string; method?: string }> = [
+                { href: "/api/files?name=team_backtest_2022-23_gw30-38.png", label: "Team Backtest 2022-23 (PNG)" },
+                { href: "/api/files?name=team_backtest_summary_2022-23_gw30-38.csv", label: "Team Backtest Summary 2022-23 (CSV)" },
+                { href: "/api/files?name=residuals_plot_latest.png", label: "Residuals Plot (Latest)" },
+            ]
+            // Methoden-spezifische Links nur pruefen, wenn Methode aktiv ist
+            if (selectedMethod === 'rf_rank') {
+                candidates.push({ href: "/api/files?name=rf_rank_boost_summary_2022-23_gw30-38.csv", label: "RF Rank Boost Summary 2022-23 (CSV)", method: 'rf_rank' })
+            }
+
+            const results: Array<{ href: string; label: string }> = []
+            for (const c of candidates) {
+                try {
+                    const res = await fetch(c.href, { method: 'HEAD' })
+                    if (res.ok) {
+                        results.push({ href: c.href, label: c.label })
+                    }
+                } catch {
+                    // ignoriere Fehler, Link gilt als nicht vorhanden
+                }
+            }
+
+            if (!isCancelled) setAvailableDownloadLinks(results)
+        }
+
+        checkLinks()
+        return () => { isCancelled = true }
+    }, [selectedMethod])
 
     // Fetch available gameweeks on mount
     useEffect(() => {
@@ -874,64 +910,41 @@ export default function PredictionsPage() {
                 </div>
 
                 {/* Downloads Panel */}
-                <div className="fixed bottom-4 right-4 z-50 max-w-xs w-full">
-                    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4">
-                        <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">Downloads</h3>
-                        <ul className="space-y-2">
-                            {(() => {
-                                const downloadLinks: Array<{ href: string; label: string }> = [
-                                    {
-                                        href: "/api/files?name=team_backtest_2022-23_gw30-38.png",
-                                        label: "Team Backtest 2022-23 (PNG)",
-                                    },
-                                    {
-                                        href: "/api/files?name=team_backtest_summary_2022-23_gw30-38.csv",
-                                        label: "Team Backtest Summary 2022-23 (CSV)",
-                                    },
-                                    {
-                                        href: "/api/files?name=residuals_plot_latest.png",
-                                        label: "Residuals Plot (Latest)",
-                                    },
-                                ];
-                                if (selectedMethod === "rf_rank") {
-                                    downloadLinks.push({
-                                        href: "/api/files?name=rf_rank_boost_summary_2022-23_gw30-38.csv",
-                                        label: "RF Rank Boost Summary 2022-23 (CSV)",
-                                    });
-                                }
-                                return downloadLinks.map((link) => (
+                {showDownloads && availableDownloadLinks.length > 0 && (
+                    <div className="fixed bottom-4 right-4 z-50 max-w-xs w-full">
+                        <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-4 relative">
+                            <button
+                                aria-label="Downloads schliessen"
+                                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                onClick={() => setShowDownloads(false)}
+                                title="Schliessen"
+                            >
+                                ×
+                            </button>
+                            <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">Downloads</h3>
+                            <ul className="space-y-2">
+                                {availableDownloadLinks.map((link) => (
                                     <li key={link.href}>
                                         <a
                                             href={link.href}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="text-blue-600 dark:text-blue-400 hover:underline text-sm"
-                                            onClick={async (e) => {
-                                                setDownloadError("");
-                                                try {
-                                                    const res = await fetch(link.href, { method: "HEAD" });
-                                                    if (!res.ok) {
-                                                        e.preventDefault();
-                                                        setDownloadError("Datei nicht gefunden oder nicht verfügbar.");
-                                                    }
-                                                } catch {
-                                                    e.preventDefault();
-                                                    setDownloadError("Fehler beim Abrufen der Datei.");
-                                                }
-                                            }}
                                         >
                                             {link.label}
                                         </a>
                                     </li>
-                                ));
-                            })()}
-                        </ul>
-                        {downloadError && (
-                            <div className="mt-2 text-xs text-red-600 dark:text-red-400">{downloadError}</div>
-                        )}
-                        <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">Falls eine Datei nicht gefunden wird, ist sie für diese Kombination nicht verfügbar.</div>
+                                ))}
+                            </ul>
+                            {downloadError && (
+                                <div className="mt-2 text-xs text-red-600 dark:text-red-400">{downloadError}</div>
+                            )}
+                            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                Es werden nur Dateien angezeigt, die lokal vorhanden sind.
+                            </div>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </>
     )

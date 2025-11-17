@@ -2,7 +2,6 @@ import Head from 'next/head'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { TrendingUp, Calendar, Users, BarChart3, Lightbulb, BookOpen } from 'lucide-react'
-import { OnboardingBanner } from '../src/components/OnboardingBanner'
 import { ActionCard } from '../src/components/ActionCard'
 import { HelpIcon } from '../src/components/HelpIcon'
 import { glossary } from '../src/data/glossary'
@@ -16,8 +15,7 @@ export default function Home() {
             </Head>
 
             <div className="space-y-8">
-                {/* Onboarding Banner */}
-                <OnboardingBanner />
+                {/* Onboarding-Banner entfernt gemäss UX-Feedback */}
 
                 {/* Page Header */}
                 <motion.div
