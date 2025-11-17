@@ -43,3 +43,4 @@ export const LineupPayloadSchema = z.object({
 
 export type PredictionsPayload = z.infer<typeof PredictionsPayloadSchema>;
 export type LineupPayload = z.infer<typeof LineupPayloadSchema>;
+export type PredictionPlayer = z.infer<typeof PredictionPlayerSchema>;
