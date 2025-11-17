@@ -13,19 +13,18 @@ interface HistoricalResponse {
     data: PredictionsPayload
 }
 
+// Demo: Wir verwenden die vorhandenen lokalen Daten (2022-23, GW 30-38)
 const seasonOptions = [
-    { value: '2022-23', label: 'Saison 2022-23' },
-    { value: '2023-24', label: 'Saison 2023-24' },
-    { value: '2024-25', label: 'Saison 2024-25' },
+    { value: '2022-23', label: 'Saison 2022-23 (Demo)' },
 ]
 
-const gwOptions = Array.from({ length: 38 }, (_, i) => ({ value: i + 1, label: `GW ${i + 1}` }))
+const gwOptions = Array.from({ length: 9 }, (_, i) => ({ value: 30 + i, label: `GW ${30 + i}` }))
 
 type LoadingStateType = 'idle' | 'loading' | 'success' | 'error'
 
 export default function HistorischPage() {
-    const [season, setSeason] = useState<string>('2023-24')
-    const [gw, setGw] = useState<number>(1)
+    const [season, setSeason] = useState<string>('2022-23')
+    const [gw, setGw] = useState<number>(30)
     const [state, setState] = useState<LoadingStateType>('idle')
     const [error, setError] = useState<string>('')
     const [payload, setPayload] = useState<PredictionsPayload | null>(null)
@@ -96,7 +95,7 @@ export default function HistorischPage() {
                 >
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Historischer Demo-Modus</h1>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        Demo-Modus mit historischen Daten. Wähle Saison & Spielwoche, um frühere Prognosen zu betrachten.
+                        Demo-Modus mit lokalen historischen Daten. Verfuegbar: Saison 2022-23, Spielwochen 30–38.
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Select
