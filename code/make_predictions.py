@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 # Dieses Skript erstellt Vorhersagen für die Punktzahl von Fussballspielern in einer bestimmten Spielwoche.
 # Es nutzt verschiedene Methoden (RandomForest, gleitender Durchschnitt, Positionsmittelwert) und verwendet nur Daten aus der gewählten Saison.
@@ -264,7 +263,7 @@ def train_rf_model(
             mae = mean_absolute_error(y_val, y_pred)
             print(f"Validation MAE: {mae:.3f}")
     else:
-    # Triviales Modell fitten, um Fehler zu vermeiden
+        # Triviales Modell fitten, um Fehler zu vermeiden
         model.fit(np.zeros((1, len(features))), np.array([0.0]))
 
     return model, features
@@ -473,7 +472,9 @@ def build_output(
     }
     # Kurze Statistik
     mean_pp = np.mean([p["predicted_points"] for p in players]) if players else 0.0
-    print(f"Vorhergesagte Spieler: {len(players)} | Mittelwert(predicted_points)={mean_pp:.3f}")
+    print(
+        f"Vorhergesagte Spieler: {len(players)} | Mittelwert(predicted_points)={mean_pp:.3f}"
+    )
     return result
 
 
