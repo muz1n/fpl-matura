@@ -132,14 +132,23 @@ def train_position_models(
         X = np.array(X_list)
         y = np.array(y_list)
 
-        # Train model
-        model = RandomForestRegressor(
-            n_estimators=n_estimators,
-            max_depth=max_depth,
-            min_samples_leaf=min_samples_leaf,
-            random_state=random_state,
-            n_jobs=-1,
-        )
+        # Set tuned hyperparameters for FWD and DEF only
+        if pos in ["FWD", "DEF"]:
+            model = RandomForestRegressor(
+                n_estimators=100,
+                max_depth=4,
+                min_samples_leaf=3,
+                random_state=42,
+                n_jobs=-1,
+            )
+        else:
+            model = RandomForestRegressor(
+                n_estimators=n_estimators,
+                max_depth=max_depth,
+                min_samples_leaf=min_samples_leaf,
+                random_state=random_state,
+                n_jobs=-1,
+            )
         model.fit(X, y)
         models[pos] = model
 
