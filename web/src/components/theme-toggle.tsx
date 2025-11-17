@@ -15,7 +15,9 @@ export function ThemeToggle() {
 
     if (!mounted) {
         return (
-            <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-800 animate-pulse" />
+            <button className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-800 flex items-center justify-center transition-colors">
+                <Sun className="h-5 w-5 text-gray-800" />
+            </button>
         )
     }
 

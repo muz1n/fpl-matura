@@ -8,10 +8,10 @@ export const PredictionPlayerSchema = z.object({
     team: z.string(),
     pos: z.enum(["GK", "DEF", "MID", "FWD"]),
     predicted_points: z.number(),
-    minutes_exp: z.number(),
-    opponent: z.string(),
-    is_home: z.boolean(),
-    opp_strength: z.number(),
+    minutes_exp: z.number().optional(),
+    opponent: z.string().optional(),
+    is_home: z.boolean().optional(),
+    opp_strength: z.number().optional(),
     price: z.number(),
 });
 
@@ -19,7 +19,8 @@ export const PredictionsPayloadSchema = z.object({
     season: z.string(),
     gw: z.number(),
     generated_at: z.string(),
-    model_version: z.string(),
+    model_version: z.string().optional(),
+    method: z.string().optional(),
     players: z.array(PredictionPlayerSchema),
 });
 
@@ -27,7 +28,7 @@ export const LineupPayloadSchema = z.object({
     season: z.string(),
     gw: z.number(),
     generated_at: z.string(),
-    model_version: z.string(),
+    model_version: z.string().optional(),
     // Optional method field (e.g. 'rf', 'ma3', 'pos', 'rf_rank', 'rf_pos', 'legacy')
     methode: z.enum(['rf', 'ma3', 'pos', 'rf_rank', 'rf_pos', 'legacy']).optional(),
     formation: FormationStr,
