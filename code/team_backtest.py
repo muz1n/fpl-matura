@@ -4,6 +4,12 @@
 Self-contained script with no repo module imports.
 Uses only stdlib + pandas + matplotlib.
 
+Budget Model:
+- Maximum total budget of 100.0 for the 15-player squad
+- Maximum 3 players per club (FPL rule)
+- Greedy selection: players sorted by predicted points (descending)
+- A player is only added if budget and club constraints are satisfied
+
 Usage:
     python code/team_backtest.py --season 2022-23 --gw_start 30 --gw_end 38 --methods rf
 """
@@ -177,27 +183,62 @@ def load_truth(season: str) -> pd.DataFrame | None:
         return None
 
 
-def build_candidate_pool(df_pred: pd.DataFrame) -> pd.DataFrame:
+def build_candidate_pool(
+    df_pred: pd.DataFrame, max_budget: float = 100.0, max_per_club: int = 3
+) -> pd.DataFrame:
     """Build a 15-player candidate squad from predictions.
 
     Takes top N players per position by predicted_points:
     GK=2, DEF=5, MID=5, FWD=3
 
+    Enforces budget constraint (max_budget) and club constraint (max_per_club).
+
     Args:
         df_pred: DataFrame with predictions
+        max_budget: Maximum total budget for the 15-player squad (default 100.0)
+        max_per_club: Maximum players from same club (default 3)
 
     Returns:
-        DataFrame with exactly 15 players (or fewer if not enough available)
+        DataFrame with 15 players (or fewer if constraints cannot be met)
     """
     pool_limits = {"GK": 2, "DEF": 5, "MID": 5, "FWD": 3}
-    pool_parts = []
 
-    for pos, limit in pool_limits.items():
-        pos_df = df_pred[df_pred["pos"] == pos].copy()
-        pos_df = pos_df.sort_values("predicted_points", ascending=False).head(limit)
-        pool_parts.append(pos_df)
+    # Sort all candidates by predicted points (descending)
+    df_sorted = df_pred.sort_values("predicted_points", ascending=False).copy()
 
-    pool = pd.concat(pool_parts, ignore_index=True)
+    selected_players = []
+    current_budget = 0.0
+    club_counts = {}
+    position_counts = {"GK": 0, "DEF": 0, "MID": 0, "FWD": 0}
+
+    for _, player in df_sorted.iterrows():
+        pos = player["pos"]
+        club = player["team"]
+        price = player["price"]
+
+        # Check position limit
+        if position_counts.get(pos, 0) >= pool_limits.get(pos, 0):
+            continue
+
+        # Check club constraint
+        if club_counts.get(club, 0) >= max_per_club:
+            continue
+
+        # Check budget constraint
+        if current_budget + price > max_budget:
+            continue
+
+        # Add player to pool
+        selected_players.append(player)
+        current_budget += price
+        club_counts[club] = club_counts.get(club, 0) + 1
+        position_counts[pos] = position_counts.get(pos, 0) + 1
+
+        # Stop if we have 15 players
+        if len(selected_players) == 15:
+            break
+
+    pool = pd.DataFrame(selected_players)
 
     logger.debug(
         f"Candidate pool: {len(pool)} players - "
@@ -207,23 +248,28 @@ def build_candidate_pool(df_pred: pd.DataFrame) -> pd.DataFrame:
                 for pos in ["GK", "DEF", "MID", "FWD"]
             ]
         )
+        + f" - Budget: {current_budget:.1f}/{max_budget:.1f}"
     )
 
     return pool
 
 
 def pick_xi_for_formation(
-    candidates: pd.DataFrame, formation: str, max_per_club: int = 3
-) -> List[int] | None:
+    candidates: pd.DataFrame,
+    formation: str,
+    max_per_club: int = 3,
+    max_budget: float = 100.0,
+) -> tuple[List[int], float] | None:
     """Pick best XI for a given formation respecting constraints.
 
     Args:
         candidates: DataFrame with candidate players
         formation: Formation string (e.g., "4-4-2")
         max_per_club: Maximum players from same club (default 3)
+        max_budget: Maximum budget for the XI (default 100.0)
 
     Returns:
-        List of 11 player_ids, or None if cannot build valid XI
+        Tuple of (list of 11 player_ids, total budget used), or None if cannot build valid XI
     """
     if formation not in FORMATION_SLOTS:
         logger.error(f"Unknown formation: {formation}")
@@ -232,6 +278,7 @@ def pick_xi_for_formation(
     slots = FORMATION_SLOTS[formation].copy()
     xi = []
     club_counts = {}
+    current_budget = 0.0
 
     # Sort candidates by predicted points (descending)
     sorted_candidates = candidates.sort_values("predicted_points", ascending=False)
@@ -240,6 +287,7 @@ def pick_xi_for_formation(
         pos = player["pos"]
         club = player["team"]
         player_id = int(player["player_id"])
+        price = player["price"]
 
         # Check if we need this position
         if slots.get(pos, 0) <= 0:
@@ -249,10 +297,19 @@ def pick_xi_for_formation(
         if club_counts.get(club, 0) >= max_per_club:
             continue
 
+        # Check budget constraint
+        if current_budget + price > max_budget:
+            logger.debug(
+                f"  Budget limit: Skipping {player['name']} ({pos}, {price:.1f}) "
+                f"- would exceed budget ({current_budget:.1f} + {price:.1f} > {max_budget:.1f})"
+            )
+            continue
+
         # Add to XI
         xi.append(player_id)
         slots[pos] -= 1
         club_counts[club] = club_counts.get(club, 0) + 1
+        current_budget += price
 
         # Check if XI is complete
         if len(xi) == 11:
@@ -261,11 +318,11 @@ def pick_xi_for_formation(
     # Validate we got all positions filled
     if len(xi) != 11 or any(v > 0 for v in slots.values()):
         logger.debug(
-            f"Formation {formation}: Could not fill all slots (got {len(xi)}/11)"
+            f"Formation {formation}: Could not fill all slots (got {len(xi)}/11, budget: {current_budget:.1f})"
         )
         return None
 
-    return xi
+    return xi, current_budget
 
 
 def evaluate_xi(
@@ -309,19 +366,20 @@ def evaluate_xi(
 
 
 def select_best_team_for_gw(
-    pred_df: pd.DataFrame, truth_gw_df: pd.DataFrame
+    pred_df: pd.DataFrame, truth_gw_df: pd.DataFrame, max_budget: float = 100.0
 ) -> Dict | None:
     """Select the best team (XI + formation) for a gameweek.
 
     Args:
         pred_df: Predictions for all players this GW
         truth_gw_df: True points for this GW
+        max_budget: Maximum budget for team (default 100.0)
 
     Returns:
         Dict with team details or None if selection failed
     """
-    # Build candidate pool (15 players)
-    candidates = build_candidate_pool(pred_df)
+    # Build candidate pool (15 players) with budget constraint
+    candidates = build_candidate_pool(pred_df, max_budget=max_budget)
 
     if len(candidates) < 11:
         logger.warning(f"Insufficient candidates: {len(candidates)}")
@@ -340,12 +398,17 @@ def select_best_team_for_gw(
     best_formation = None
     best_xi = None
     best_predicted_total = -1
+    best_budget_used = 0.0
 
     for formation in VALID_FORMATIONS:
-        xi_ids = pick_xi_for_formation(candidates, formation, max_per_club=3)
+        result = pick_xi_for_formation(
+            candidates, formation, max_per_club=3, max_budget=max_budget
+        )
 
-        if xi_ids is None:
+        if result is None:
             continue
+
+        xi_ids, budget_used = result
 
         # Calculate predicted total for this XI
         xi_pred = candidates[candidates["player_id"].isin(xi_ids)]
@@ -355,6 +418,7 @@ def select_best_team_for_gw(
             best_predicted_total = predicted_total
             best_formation = formation
             best_xi = xi_ids
+            best_budget_used = budget_used
 
     if best_xi is None:
         logger.warning("No valid formation found")
@@ -371,6 +435,7 @@ def select_best_team_for_gw(
         "vice_id": eval_result["vice_id"],
         "n_truth_matched": eval_result["n_truth_matched"],
         "n_candidates": len(candidates),
+        "budget_used": best_budget_used,
     }
 
 
@@ -434,6 +499,7 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
                         "vice_id": None,
                         "n_truth_matched": 0,
                         "n_candidates": 0,
+                        "budget_used": 0.0,
                         "notes": "Selection failed",
                     }
                 )
@@ -442,7 +508,8 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
             logger.info(
                 f"  → {team_result['formation']}: "
                 f"{team_result['xi_points']:.1f} pts "
-                f"(C={team_result['captain_id']})"
+                f"(C={team_result['captain_id']}) "
+                f"Budget: {team_result['budget_used']:.1f}/100.0"
             )
 
             results.append(
@@ -455,6 +522,7 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
                     "vice_id": team_result["vice_id"],
                     "n_truth_matched": team_result["n_truth_matched"],
                     "n_candidates": team_result["n_candidates"],
+                    "budget_used": team_result["budget_used"],
                     "notes": "OK",
                 }
             )
