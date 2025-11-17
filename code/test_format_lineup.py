@@ -1,13 +1,13 @@
-"""Test format_lineup_table function."""
+"""Test format_lineup_table Funktion."""
 
 import pandas as pd
 from utils.team_builder import pick_lineup_autoformation, format_lineup_table
 
 
 def test_format_lineup_table():
-    """Test that format_lineup_table produces a readable string table."""
+    """Testet dass format_lineup_table eine lesbare String-Tabelle produziert."""
 
-    # Create a 15-player squad
+    # Erstelle einen 15-Spieler-Squad
     squad = pd.DataFrame(
         [
             # GK
@@ -142,17 +142,17 @@ def test_format_lineup_table():
     print("=" * 80)
     print()
 
-    # Pick lineup
+    # Aufstellung waehlen
     result = pick_lineup_autoformation(
         squad_df=squad,
-        prefer_minutes=False,  # Use raw pred_points for clarity
+        prefer_minutes=False,  # Raw pred_points fuer Klarheit verwenden
     )
 
-    print(f"Formation selected: {result['formation']}")
+    print(f"Gewaehlte Formation: {result['formation']}")
     print(f"Captain: {result['captain_id']}, Vice: {result['vice_id']}")
     print()
 
-    # Format and display the table
+    # Tabelle formatieren und anzeigen
     table = format_lineup_table(
         squad_df=squad,
         xi_ids=result["xi_ids"],
@@ -165,10 +165,10 @@ def test_format_lineup_table():
     print(table)
     print()
 
-    # Verify it's a string
+    # Pruefen dass es ein String ist
     assert isinstance(table, str), "format_lineup_table should return a string"
 
-    # Verify it contains expected sections
+    # Pruefen dass es erwartete Sektionen enthaelt
     assert "STARTING XI" in table, "Table should have STARTING XI section"
     assert "BENCH" in table, "Table should have BENCH section"
     assert "[GK]" in table, "Table should mark bench goalkeeper"
@@ -176,14 +176,14 @@ def test_format_lineup_table():
     assert "[B2]" in table, "Table should have B2 marker"
     assert "[B3]" in table, "Table should have B3 marker"
 
-    # Verify captain/vice markers
+    # Captain/Vice-Markierungen pruefen
     assert "(C)" in table, "Table should mark captain"
     assert "(VC)" in table, "Table should mark vice-captain"
 
-    print("✓ All assertions passed")
+    print("✓ Alle Assertions erfolgreich")
     print()
     print("=" * 80)
-    print("TEST COMPLETE")
+    print("TEST ABGESCHLOSSEN")
     print("=" * 80)
 
 

@@ -1,4 +1,4 @@
-"""Smoke test for attach_opponent_features."""
+"""Smoke Test fuer attach_opponent_features."""
 
 import importlib.util
 import pathlib
@@ -28,7 +28,7 @@ attach_opponent_features = mod.attach_opponent_features
 compute_team_def_metrics = mod.compute_team_def_metrics
 
 
-# build synthetic team metrics for two teams over 3 gws
+# Synthetische Team-Metriken fuer zwei Teams ueber 3 GWs erstellen
 team_rows = [
     {
         "team": "A",
@@ -61,7 +61,7 @@ team_rows = [
 ]
 team_metrics = pd.DataFrame(team_rows)
 
-# player rows: players from both teams against each other
+# Spieler-Zeilen: Spieler von beiden Teams gegeneinander
 player_rows = [
     {"gw": 1, "team": "A", "opponent": "B", "home_away": "H", "player_id": 1},
     {"gw": 1, "team": "B", "opponent": "A", "home_away": "A", "player_id": 2},

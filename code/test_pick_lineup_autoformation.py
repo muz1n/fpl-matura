@@ -1,11 +1,11 @@
 """
-Pytest test suite for pick_lineup_autoformation.
+Pytest Test-Suite fuer pick_lineup_autoformation.
 
-Tests four key scenarios:
-- Case A: MIDs dominate → 3-5-2 formation
-- Case B: FWDs dominate → 3-4-3 formation
-- Case C: Tie between formations → deterministic fallback
-- Case D: Minutes-aware scoring affects captain/bench selection
+Testet vier Schluesselszenarien:
+- Fall A: MIDs dominieren → 3-5-2-Formation
+- Fall B: FWDs dominieren → 3-4-3-Formation
+- Fall C: Gleichstand zwischen Formationen → deterministischer Fallback
+- Fall D: Minutenbewusstes Scoring beeinflusst Kapitaen/Bank-Auswahl
 """
 
 import pytest
@@ -14,21 +14,21 @@ from utils.team_builder import pick_lineup_autoformation
 
 
 class TestPickLineupAutoformation:
-    """Test suite for automatic lineup selection with various squad configurations."""
+    """Test-Suite fuer automatische Aufstellungsauswahl mit verschiedenen Squad-Konfigurationen."""
 
     def test_case_a_mids_dominate_352(self):
         """
-        Case A: MIDs dominate ⇒ 3-5-2.
+        Fall A: MIDs dominieren ⇒ 3-5-2.
 
         Squad: 2 GK, 5 DEF, 5 MID, 3 FWD.
-        MIDs have clearly higher pred_points than DEFs and FWDs.
+        MIDs haben deutlich hoehere pred_points als DEFs und FWDs.
 
-        Expects:
+        Erwartet:
         - Formation: "3-5-2"
-        - Captain: A midfielder (highest scorer)
-        - Exactly 11 starters
-        - Exactly 3 bench outfielders (ordered by score)
-        - All IDs unique
+        - Kapitaen: Ein Mittelfeldspieler (hoechster Scorer)
+        - Genau 11 Starter
+        - Genau 3 Bank-Feldspieler (sortiert nach Score)
+        - Alle IDs einzigartig
         """
         squad_data = [
             # Goalkeepers (2)
@@ -188,16 +188,16 @@ class TestPickLineupAutoformation:
 
     def test_case_b_fwds_dominate_343(self):
         """
-        Case B: FWDs dominate ⇒ 3-4-3.
+        Fall B: FWDs dominieren ⇒ 3-4-3.
 
         Squad: 2 GK, 5 DEF, 5 MID, 3 FWD.
-        FWDs have clearly highest pred_points.
+        FWDs haben die deutlich hoechsten pred_points.
 
-        Expects:
+        Erwartet:
         - Formation: "3-4-3"
-        - Captain: A forward (highest scorer)
-        - Exactly 11 starters
-        - Exactly 3 bench outfielders
+        - Kapitaen: Ein Stuermer (hoechster Scorer)
+        - Genau 11 Starter
+        - Genau 3 Bank-Feldspieler
         """
         squad_data = [
             # Goalkeepers (2)
@@ -360,24 +360,24 @@ class TestPickLineupAutoformation:
 
     def test_case_c_tie_deterministic_fallback(self):
         """
-        Case C: Tie between formations ⇒ deterministic fallback.
+        Fall C: Gleichstand zwischen Formationen ⇒ deterministischer Fallback.
 
-        Engineer scores so that 3-5-2 and 3-4-3 produce identical XI sums.
-        The function should pick deterministically based on its internal priority order.
+        Konstruiere Scores so dass 3-5-2 und 3-4-3 identische XI-Summen produzieren.
+        Die Funktion sollte deterministisch basierend auf interner Prioritaetsreihenfolge waehlen.
 
-        Typical fallback: formations are tried in ALLOWED_FORMATIONS order.
-        If 3-4-3 comes before 3-5-2 in the list, 3-4-3 wins on tie.
-        We'll verify deterministic behavior (same formation on repeated calls).
+        Typischer Fallback: Formationen werden in ALLOWED_FORMATIONS-Reihenfolge probiert.
+        Falls 3-4-3 vor 3-5-2 in der Liste kommt, gewinnt 3-4-3 bei Gleichstand.
+        Wir verifizieren deterministisches Verhalten (dieselbe Formation bei wiederholten Aufrufen).
 
-        Expects:
-        - Formation is deterministic (same on multiple runs)
-        - XI sum is identical for both candidate formations in debug
-        - Exactly 11 starters, 3 bench outfielders
+        Erwartet:
+        - Formation ist deterministisch (dieselbe bei mehreren Durchlaeufen)
+        - XI-Summe ist identisch fuer beide Kandidaten-Formationen im Debug
+        - Genau 11 Starter, 3 Bank-Feldspieler
         """
-        # Carefully craft scores so that:
+        # Scores sorgfaeltig konstruieren sodass:
         # 3-5-2: 1 GK + 3 DEF + 5 MID + 2 FWD
         # 3-4-3: 1 GK + 3 DEF + 4 MID + 3 FWD
-        # Both sums equal.
+        # Beide Summen gleich.
         #
         # Strategy: Make top 5 MIDs and top 2 FWDs have same total as top 4 MIDs and top 3 FWDs.
         # Example:

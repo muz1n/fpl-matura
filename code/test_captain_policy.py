@@ -1,13 +1,13 @@
-"""Test captain_policy parameter with prefer_minutes tiebreak."""
+"""Test captain_policy Parameter mit prefer_minutes Tiebreak."""
 
 import pandas as pd
 from utils.team_builder import pick_lineup_autoformation
 
 
 def test_captain_policy_prefer_minutes():
-    """Test that captain_policy={'prefer_minutes': True} breaks ties by p_start."""
+    """Testet dass captain_policy={'prefer_minutes': True} Gleichstaende mit p_start bricht."""
 
-    # Create a 15-player squad where top 2 have very similar scores
+    # Erstelle einen 15-Spieler-Squad wo die Top 2 sehr aehnliche Scores haben
     squad = pd.DataFrame(
         [
             # GK
@@ -140,15 +140,15 @@ def test_captain_policy_prefer_minutes():
     print("=" * 80)
     print("TEST: Captain Policy with prefer_minutes")
     print("=" * 80)
-    print("\nScenario: DEF1 (6.02 pts, 95% start) vs DEF2 (6.00 pts, 99% start)")
-    print("Score difference: 0.02 (within epsilon 0.05)")
+    print("\nSzenario: DEF1 (6.02 pts, 95% start) vs DEF2 (6.00 pts, 99% start)")
+    print("Score-Differenz: 0.02 (innerhalb epsilon 0.05)")
     print()
 
-    # Test WITHOUT captain_policy (default behavior)
-    print("--- WITHOUT captain_policy (default) ---")
+    # Test OHNE captain_policy (Standard-Verhalten)
+    print("--- OHNE captain_policy (Standard) ---")
     result_default = pick_lineup_autoformation(
         squad_df=squad,
-        prefer_minutes=False,  # Don't use p_start in score calculation
+        prefer_minutes=False,  # p_start nicht in Score-Berechnung verwenden
     )
     captain_name_default = squad[squad["player_id"] == result_default["captain_id"]][
         "name"
@@ -158,14 +158,14 @@ def test_captain_policy_prefer_minutes():
     ].values[0]
     print(f"Captain: {captain_name_default} (ID: {result_default['captain_id']})")
     print(f"Vice: {vice_name_default} (ID: {result_default['vice_id']})")
-    print("Expected: DEF1 (highest raw score)")
+    print("Erwartet: DEF1 (hoechster Raw-Score)")
     print()
 
-    # Test WITH captain_policy={'prefer_minutes': True}
-    print("--- WITH captain_policy={'prefer_minutes': True} ---")
+    # Test MIT captain_policy={'prefer_minutes': True}
+    print("--- MIT captain_policy={'prefer_minutes': True} ---")
     result_policy = pick_lineup_autoformation(
         squad_df=squad,
-        prefer_minutes=False,  # Don't use p_start in score calculation
+        prefer_minutes=False,  # p_start nicht in Score-Berechnung verwenden
         captain_policy={"prefer_minutes": True},
     )
     captain_name_policy = squad[squad["player_id"] == result_policy["captain_id"]][
@@ -176,25 +176,25 @@ def test_captain_policy_prefer_minutes():
     ].values[0]
     print(f"Captain: {captain_name_policy} (ID: {result_policy['captain_id']})")
     print(f"Vice: {vice_name_policy} (ID: {result_policy['vice_id']})")
-    print("Expected: DEF2 (higher p_start: 0.99 > 0.95, within epsilon)")
+    print("Erwartet: DEF2 (hoehere p_start: 0.99 > 0.95, innerhalb epsilon)")
     print()
 
-    # Verify behavior
+    # Verhalten verifizieren
     if result_default["captain_id"] == 3:  # DEF1
-        print("✓ Default behavior: Highest score (DEF1) is captain")
+        print("✓ Standard-Verhalten: Hoechster Score (DEF1) ist Kapitaen")
     else:
         print(
-            f"✗ Default behavior unexpected: Captain ID {result_default['captain_id']}"
+            f"✗ Standard-Verhalten unerwartet: Captain ID {result_default['captain_id']}"
         )
 
     if result_policy["captain_id"] == 4:  # DEF2
-        print("✓ Policy behavior: Higher p_start (DEF2) is captain when within epsilon")
+        print("✓ Policy-Verhalten: Hoehere p_start (DEF2) ist Kapitaen wenn innerhalb epsilon")
     else:
-        print(f"✗ Policy behavior unexpected: Captain ID {result_policy['captain_id']}")
+        print(f"✗ Policy-Verhalten unerwartet: Captain ID {result_policy['captain_id']}")
 
     print()
     print("=" * 80)
-    print("TEST COMPLETE")
+    print("TEST ABGESCHLOSSEN")
     print("=" * 80)
 
 

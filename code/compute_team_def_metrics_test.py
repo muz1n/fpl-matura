@@ -1,4 +1,4 @@
-"""Quick runner to smoke-test compute_team_def_metrics."""
+"""Schneller Runner um compute_team_def_metrics zu smoke-testen."""
 
 from pprint import pprint
 
@@ -9,7 +9,7 @@ import pathlib
 
 
 def _load_def_metrics():
-    """Dynamically load compute_team_def_metrics from the module file."""
+    """Laedt compute_team_def_metrics dynamisch aus der Modul-Datei."""
     repo = pathlib.Path(__file__).resolve().parents[1]
     module_path = repo / "code" / "utils" / "def_metrics.py"
     spec = importlib.util.spec_from_file_location("def_metrics", str(module_path))
@@ -26,15 +26,15 @@ compute_team_def_metrics = _load_def_metrics()
 
 
 def make_sample():
-    # Create a small synthetic dataset for 3 teams over 6 GWs
+    # Erstelle einen kleinen synthetischen Datensatz fuer 3 Teams ueber 6 GWs
     rows = []
     teams = ["A", "B", "C"]
     gw = 1
     for gw in range(1, 9):
         for team in teams:
-            # alternate home/away roughly
+            # Heim/Auswaerts ungefaehr abwechseln
             ha = "H" if (gw + ord(team[0])) % 2 == 0 else "A"
-            # synthetic xGA with small variation
+            # Synthetisches xGA mit kleiner Variation
             base = {"A": 1.0, "B": 1.5, "C": 1.2}[team]
             xga = base + (gw % 3) * 0.2 + (0.1 if ha == "A" else -0.05)
             rows.append(
