@@ -1,34 +1,27 @@
-"""Zentrale Auswertungspipeline fuer Spieler- und Team-Benchmarks."""  # Beschreibt grob den Zweck der Datei fuer Laien
+from __future__ import annotations
 
-from __future__ import (
-    annotations,
-)  # Erlaubt moderne Typ-Features auch auf aelteren Python-Versionen
+import argparse
+import logging
+import sys
+from pathlib import Path
+from typing import Dict, List
 
-import argparse  # Zum Einlesen der Kommandozeilenargumente
-import logging  # Fuer einheitliche Log-Ausgaben
-import sys  # Ermoeglicht das Anpassen des Python-Suchpfads
-from pathlib import Path  # Pfadobjekte statt einfacher Strings
-from typing import Dict, List, Optional, Tuple  # Typ-Hilfen fuer bessere Lesbarkeit
+# Vergleich von fünf Spieler-Vorhersagemodellen (rf, ma3, pos, rf_pos, rf_rank).
 
-import numpy as np  # Mathematische Basisfunktionen
-import pandas as pd  # Tabellendaten bequem bearbeiten
-import os  # Betriebssystemfunktionen (Pfadmanipulation etc.)
-import importlib.util  # Hilfsfunktionen zum dynamischen Laden von Modulen
+import numpy as np
+import pandas as pd
+import os
+import importlib.util
+from scipy.stats import spearmanr
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 
-# Sicherstellen, dass das Projektwurzelverzeichnis im Suchpfad liegt, egal von wo das Skript gestartet wird
-PROJECT_ROOT = (
-    Path(__file__).resolve().parents[1]
-)  # Wurzelordner (eine Ebene ueber code/)
-if str(PROJECT_ROOT) not in sys.path:  # Nur hinzufuegen, falls noch nicht vorhanden
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
-
-# --- robust local imports by file path to avoid stdlib 'code' clash ---
-# os and importlib.util are imported at the top of the module; sys was already imported above.
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
 
 def _import_local(module_name: str, rel_path: str):
-    """Import a local module from a relative file path (cross-platform)."""
     full_path = os.path.join(REPO_ROOT, *rel_path.split("/"))
     spec = importlib.util.spec_from_file_location(module_name, full_path)
     if spec is None or spec.loader is None:
@@ -40,469 +33,266 @@ def _import_local(module_name: str, rel_path: str):
 
 
 _data_io = _import_local("fpl_data_io", "code/utils/data_io.py")
-_baselines = _import_local("fpl_baselines", "code/utils/baselines.py")
-_team_builder = _import_local("fpl_team_builder", "code/utils/team_builder.py")
+_rf_pos_models = _import_local("rf_pos_models", "code/rf_pos_models.py")
 
-# re-export the symbols expected below (so the rest of the file stays unchanged)
-ensure_dirs = _data_io.ensure_dirs
 load_player_gameweeks = _data_io.load_player_gameweeks
-save_json = _data_io.save_json
-save_plot = _data_io.save_plot
+ensure_dirs = _data_io.ensure_dirs
 save_table = _data_io.save_table
+save_json = _data_io.save_json
 
-add_baseline_a1_points = _baselines.add_baseline_a1_points
-add_baseline_a2_points = _baselines.add_baseline_a2_points
-add_team_baseline_b1_score = _baselines.add_team_baseline_b1_score
-add_team_baseline_b2_score = _baselines.add_team_baseline_b2_score
+train_position_models = _rf_pos_models.train_position_models
+predict_gameweek = _rf_pos_models.predict_gameweek
+compute_rolling_features = _rf_pos_models.compute_rolling_features
 
-ALLOWED_FORMATIONS = _team_builder.ALLOWED_FORMATIONS
-build_team = _team_builder.build_team
-choose_best_formation = _team_builder.choose_best_formation
-# --- end robust imports ---
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
 
-logging.basicConfig(
-    level=logging.INFO, format="%(levelname)s: %(message)s"
-)  # Standard-Loggingformat setzen
-
-
-def parse_args() -> argparse.Namespace:  # Kapselt die CLI-Argumente
-    parser = argparse.ArgumentParser()  # Erstellt den Parser fuer Eingaben
-    parser.add_argument("--season", required=True)  # Saison als Pflichtparameter
-    parser.add_argument(
-        "--gw_start", type=int, required=True
-    )  # Start-Spieltag definieren
-    parser.add_argument("--gw_end", type=int, required=True)  # End-Spieltag definieren
-    parser.add_argument(
+def parse_args() -> argparse.Namespace:
+    p = argparse.ArgumentParser()
+    p.add_argument("--season", required=True)
+    p.add_argument("--gw_start", type=int, required=True)
+    p.add_argument("--gw_end", type=int, required=True)
+    p.add_argument(
         "--formation", default="auto"
-    )  # Formation festlegen oder Auto-Modus
-    parser.add_argument("--out", default="out")  # Ausgabeverzeichnis fuer Tabellen
-    parser.add_argument(
-        "--plots", default="docs/plots"
-    )  # Ausgabeverzeichnis fuer Grafiken
-    parser.add_argument(
-        "--random_state", type=int, default=42
-    )  # Zufallsbasis fuer reproduzierbare Modelle
-    parser.add_argument(
-        "--dry_run", action="store_true"
-    )  # Optionaler Trockenlauf ohne Dateien zu schreiben
-    return parser.parse_args()  # Rueckgabe der geparsten Argumente
+    )  # nicht mehr genutzt, bleibt fuer CLI-Kompatibilitaet
+    p.add_argument("--out", default="out")
+    p.add_argument("--random_state", type=int, default=42)
+    p.add_argument("--dry_run", action="store_true")
+    return p.parse_args()
 
 
-def mae(
-    y_true: np.ndarray, y_pred: np.ndarray
-) -> float:  # Mittlerer absoluter Fehler berechnen
-    true_arr = np.asarray(
-        y_true, dtype=float
-    )  # Wahrheitswerte in Float-Array umwandeln
-    pred_arr = np.asarray(y_pred, dtype=float)  # Prognosewerte in Float-Array umwandeln
-    mask = ~np.isnan(true_arr) & ~np.isnan(
-        pred_arr
-    )  # Nur Paare ohne Fehlwerte behalten
-    if mask.sum() == 0:  # Falls keine gueltigen Paare existieren
-        return float("nan")  # Rueckgabe von NaN als Platzhalter
-    return float(
-        np.mean(np.abs(true_arr[mask] - pred_arr[mask]))
-    )  # Durchschnitt der absoluten Abweichungen berechnen
+def safe_spearman(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    if len(y_true) < 2:
+        return float("nan")
+    try:
+        res = spearmanr(y_true, y_pred)
+        # spearmanr may return a tuple/list/ndarray or an object with .correlation
+        # use getattr to avoid static-analysis complaints about unknown attributes
+        corr = getattr(res, "correlation", None)
+        if corr is not None:
+            rho = corr
+        else:
+            # works for tuples/lists/ndarrays and plain scalars
+            try:
+                rho = res[0]
+            except Exception:
+                rho = res
+
+        # Convert to numpy array to handle array-like results, then extract scalar
+        rho_arr = np.asarray(rho)
+        if rho_arr.size == 1:
+            val = float(rho_arr.item())
+            return val if not np.isnan(val) else float("nan")
+        return float("nan")
+    except Exception:
+        return float("nan")
 
 
-def try_model_predict(  # Versucht optionales Modell aus rf_baseline zu verwenden
+def try_model_predict(
     train: pd.DataFrame, test: pd.DataFrame, season: str, random_state: int
 ) -> pd.Series:
-    """Versucht Vorhersagen eines vorhandenen Random-Forest-Modells zu nutzen."""  # Kurze Funktionsbeschreibung fuer Laien
-
+    """Baseline RF (rf_baseline.py) falls verfügbar, sonst NaN."""
     try:
-        # Dynamically import the local adapter module using the project's helper to avoid
-        # static resolution of the "code." package name in different environments.
-        rf_mod = _import_local(
-            "rf_baseline", "code/rf_baseline.py"
-        )  # Optionalen Adapter importieren
-        predict_for = getattr(rf_mod, "predict_for")
+        rf_mod = _import_local("rf_baseline", "code/rf_baseline.py")
         train_rf_until = getattr(rf_mod, "train_rf_until")
-
-        model = train_rf_until(
-            train, season=season, random_state=random_state
-        )  # Modell bis zum Zielspieltag trainieren
-        preds = predict_for(model, test)  # Vorhersagen fuer Testspieler erzeugen
-        return pd.Series(
-            preds, index=test.index, dtype=float
-        )  # Rueckgabe als Serie mit urspruenglichem Index
-    except Exception as exc:  # Falls Import oder Aufruf scheitert
-        logging.info(
-            "Kein Modell-Adapter nutzbar: %s", exc
-        )  # Hinweis im Log fuer Transparenz
-        return pd.Series(
-            np.nan, index=test.index, dtype=float
-        )  # Serie voller NaN als Fallback
-
-
-def _evaluate_gw(  # Hilfsroutine fuer einzelne Spieltage
-    df: pd.DataFrame,
-    season: str,
-    gw: int,
-    formation_mode: str,
-    random_state: int,
-) -> Optional[Tuple[pd.DataFrame, Dict[str, float]]]:
-    logging.info(
-        "Pruefe Spieltag %s", gw
-    )  # Infoausgabe welcher Spieltag behandelt wird
-    train = df[df["gw"] < gw].copy()  # Trainingsdaten bis zum Vortag
-    test = df[df["gw"] == gw].copy()  # Testdaten exakt fuer den Spieltag
-    if train.empty or test.empty:  # Falls Daten fehlen
-        logging.warning(
-            "Train oder Test leer - ueberspringe Spieltag %s", gw
-        )  # Warnung fuer fehlende Daten
-        return None  # Kein Ergebnis fuer diesen Spieltag
-    if "points" not in test.columns:  # Punktsaeule zwingend noetig
-        logging.warning(
-            "Spalte 'points' fehlt fuer Spieltag %s", gw
-        )  # Warnhinweis fuer Anwender
-        return None  # Ohne Punkte keine Bewertung
-
-    test = add_baseline_a1_points(train, test)  # Baseline A1 berechnen und anreichern
-    test = add_baseline_a2_points(train, test)  # Baseline A2 berechnen und anreichern
-    model_pred = try_model_predict(
-        train, test, season=season, random_state=random_state
-    )  # Optionales Modell ausfuehren
-    if model_pred.isna().all():  # Falls keine gueltigen Modellwerte vorhanden
-        logging.info(
-            "Kein Modell-Output gefunden - nutze A1 als Ersatz"
-        )  # Hinweis auf Fallback
-        model_pred = test["baseline_a1_points"].fillna(
-            0.0
-        )  # Baseline A1 als Ersatzvorhersage
-    test["model_points_pred"] = (
-        model_pred.values
-    )  # Prognose im Test-DataFrame speichern
-
-    rows_player: List[Dict[str, object]] = []  # Liste fuer MAE-Ergebnisse je Variante
-    for label, column in [  # Fuer Modell sowie A1 und A2
-        ("model", "model_points_pred"),
-        ("A1", "baseline_a1_points"),
-        ("A2", "baseline_a2_points"),
-    ]:
-        rows_player.append(  # Gesamtergebnis fuer alle Positionen erfassen
-            {
-                "season": season,  # Saison hinterlegen
-                "gw": gw,  # Spieltag hinterlegen
-                "who": label,  # Name der Variante
-                "position": "ALL",  # Kennzeichnung fuer Gesamtwert
-                "mae": mae(
-                    test["points"].values, test[column].values
-                ),  # MAE fuer alle Spieler
-            }  # Ende des Dictionary-Eintrags
-        )  # Ende des append-Aufrufs
-        if "position" in test.columns:  # Falls Positionsinfo vorhanden ist
-            for pos, sub in test.groupby("position"):  # Ueber jede Position iterieren
-                rows_player.append(
-                    {
-                        "season": season,  # Saison im Ergebnis belassen
-                        "gw": gw,  # Spieltag speichern
-                        "who": label,  # Variante speichern
-                        "position": pos,  # Konkrete Position
-                        "mae": mae(
-                            sub["points"].values, sub[column].values
-                        ),  # MAE fuer die Position
-                    }  # Abschluss des Blockes
-                )  # Abschluss der Positionsschleife
-
-    cand = test.copy()  # Kandidatenliste fuer Teamauswahl aufbauen
-    cand = add_team_baseline_b1_score(cand, train)  # Team-Baseline B1 berechnen
-    cand = add_team_baseline_b2_score(cand, train)  # Team-Baseline B2 berechnen
-
-    def _select_team(
-        score_col: str, allowed_formations: List[str]
-    ) -> Tuple[str, Dict]:  # Hilfsfunktion fuer Teamwahl
-        frame = cand.assign(
-            pred_points=cand[score_col].fillna(0.0)
-        )  # Zielspalte als Prognosepunkte setzen
-        if formation_mode == "auto":  # Wenn Auto-Modus aktiv ist
-            return choose_best_formation(
-                frame, allowed_formations
-            )  # Beste Formation suchen
-        return formation_mode, build_team(
-            frame, formation=formation_mode
-        )  # Sonst feste Formation nutzen
-
-    try:
-        best_form, model_team = _select_team(
-            "model_points_pred", ALLOWED_FORMATIONS
-        )  # Modell-Team bestimmen
-    except Exception as exc:  # Falls Teambau scheitert
-        logging.warning("Konnte Modell-Team nicht bauen: %s", exc)  # Warnung ausgeben
-        best_form = (
-            formation_mode if formation_mode != "auto" else ALLOWED_FORMATIONS[0]
-        )  # Ersatzformation definieren
-        model_team = {
-            "start_xi": [],
-            "captain": None,
-            "vice_captain": None,
-            "bench": [],
-        }  # Leeres Team als Fallback
-
-    try:
-        _, team_b1 = _select_team(
-            "team_b1_score", ALLOWED_FORMATIONS
-        )  # Team fuer Baseline B1 bauen
-    except Exception as exc:  # Fehlerfall auffangen
-        logging.warning("Konnte B1-Team nicht bauen: %s", exc)  # Warnhinweis schreiben
-        team_b1 = {"start_xi": [], "captain": None}  # Leeres Team als Ersatz
-
-    try:
-        _, team_b2 = _select_team(
-            "team_b2_score", ALLOWED_FORMATIONS
-        )  # Team fuer Baseline B2 bauen
-    except Exception as exc:  # Fehlerfall auffangen
-        logging.warning("Konnte B2-Team nicht bauen: %s", exc)  # Warnhinweis schreiben
-        team_b2 = {"start_xi": [], "captain": None}  # Leeres Team als Ersatz
-
-    def team_real_points(
-        team_dict: Dict,
-    ) -> float:  # Reale Punkte fuer ein Team berechnen
-        start = team_dict.get("start_xi", [])  # Startelf aus dem Dictionary holen
-        if not start:  # Falls keine Spieler vorhanden sind
-            return 0.0  # Kein Punktwert moeglich
-        start_ids = [
-            p.get("player_id") for p in start
-        ]  # Spieler-IDs der Startelf sammeln
-        captain_id = team_dict.get("captain", {}).get(
-            "player_id"
-        )  # Kapitaens-ID auslesen
-        result = 0.0  # Akkumulator fuer Gesamtpunkte
-        for _, row in test[
-            test["player_id"].isin(start_ids)
-        ].iterrows():  # Nur Spieler der Startelf betrachten
-            pts = float(row.get("points", 0.0))  # Tatsachenpunkte des Spielers
-            if (
-                captain_id is not None and row.get("player_id") == captain_id
-            ):  # Kapitaen zaehlt doppelt
-                pts *= 2  # Punkte verdoppeln
-            result += pts  # Punkte aufsummieren
-        return result  # Gesamtpunkte zurueckgeben
-
-    rows_team = {
-        "season": season,  # Saison merken
-        "gw": gw,  # Spieltag merken
-        "formation": best_form,  # Genutzte Formation vermerken
-        "model_team_points": team_real_points(
-            model_team
-        ),  # Reale Punkte des Modellteams
-        "b1_team_points": team_real_points(team_b1),  # Reale Punkte des B1-Teams
-        "b2_team_points": team_real_points(team_b2),  # Reale Punkte des B2-Teams
-    }  # Abschluss des Blockes
-    return (
-        pd.DataFrame(rows_player),
-        rows_team,
-    )  # Rueckgabe der Spieler- und Teamresultate
-
-
-def evaluate_span(  # Hauptschleife ueber alle Spieltage
-    df: pd.DataFrame,
-    season: str,
-    gw_start: int,
-    gw_end: int,
-    formation_mode: str,
-    out_dir: Path,
-    plots_dir: Path,
-    random_state: int,
-    dry_run: bool,
-) -> None:
-    ensure_dirs(out_dir, plots_dir)  # Sicherstellen, dass Ausgabepfade existieren
-    player_rows: List[pd.DataFrame] = []  # Sammelbehälter fuer Spieler-Metriken
-    team_rows: List[Dict[str, float]] = []  # Sammelbehälter fuer Team-Metriken
-
-    for gw in range(gw_start, gw_end + 1):  # Schleife ueber alle Zielspieltage
-        result = _evaluate_gw(
-            df, season, gw, formation_mode, random_state
-        )  # Einzelspieltag berechnen
-        if result is None:  # Falls Spieltag ausgelassen wurde
-            continue  # Naechsten Spieltag ansehen
-        player_rows.append(result[0])  # Spieler-Metriken hinzufuegen
-        team_rows.append(result[1])  # Team-Metriken hinzufuegen
-
-    player_df = (
-        pd.concat(player_rows, ignore_index=True) if player_rows else pd.DataFrame()
-    )  # Tabellen zusammenfuehren
-    team_df = pd.DataFrame(team_rows)  # Teamresultate in DataFrame verwandeln
-
-    if dry_run:  # Im Trockenlauf nichts abspeichern
-        logging.info(
-            "Trockenlauf aktiv - ueberspringe das Speichern von Artefakten"
-        )  # Hinweis fuer Anwender
-    else:
-        save_table(player_df, out_dir / "player_mae.csv")  # Spielermae-Tabelle sichern
-        save_table(team_df, out_dir / "team_points.csv")  # Teampunkte-Tabelle sichern
-
-    run_meta = {
-        "season": season,  # Saison fuer Nachvollziehbarkeit
-        "gw_start": gw_start,  # Startspieltag dokumentieren
-        "gw_end": gw_end,  # Endspieltag dokumentieren
-        "formation_mode": formation_mode,  # Genutzter Formationsmodus
-        "random_state": random_state,  # Zufallsbasis
-        "gws_evaluated": (
-            sorted(team_df["gw"].tolist()) if not team_df.empty else []
-        ),  # Aufgelistete Spieltage
-        "dry_run": dry_run,  # Kennzeichnung ob Trockenlauf
-    }  # Abschluss des Blockes
-    if not dry_run:  # Nur im echten Lauf Metadaten speichern
-        save_json(run_meta, out_dir / "run_settings.json")  # Konfiguration sichern
-
-    if dry_run:  # Bei Trockenlauf hier stoppen
-        return  # Keine Plots anlegen
-
-    try:
-        import matplotlib.pyplot as plt
-
-        # ----- PLAYER MAE -----
-        if not player_df.empty:
-            # Absoluter MAE (mit Zahlen über den Balken)
-            fig = plt.figure()
-            ax = plt.gca()
-            summary = (
-                player_df[player_df["position"] == "ALL"]
-                .groupby("who")["mae"]
-                .mean()
-                .sort_values()
-            )
-            summary.plot(kind="bar", ax=ax)
-            ax.set_ylabel("MAE (Ø über Zeitraum)")
-            for i, v in enumerate(summary.values):
-                ax.text(i, v, f"{v:.2f}", ha="center", va="bottom")
-            save_plot(fig, plots_dir / "player_mae_bar.png")
-
-            # Δ zu A1 (negativ = besser als A1) -> zeigt Unterschiede sofort
-            base = summary.get("A1", summary.iloc[0])
-            delta = summary - base
-            fig2 = plt.figure()
-            ax2 = plt.gca()
-            delta.plot(kind="bar", ax=ax2)
-            ax2.axhline(0, linewidth=1)
-            ax2.set_ylabel("Δ MAE vs A1 (↓ = besser)")
-            for i, v in enumerate(delta.values):
-                ax2.text(
-                    i, v, f"{v:+.2f}", ha="center", va="bottom" if v >= 0 else "top"
-                )
-            save_plot(fig2, plots_dir / "player_mae_delta_vs_A1.png")
-
-        # ----- TEAM PUNKTE -----
-        if not team_df.empty:
-            series = {
-                "model_team_points": "Model",
-                "b1_team_points": "B1",
-                "b2_team_points": "B2",
-            }
-            ymin = team_df[list(series.keys())].min().min()
-            ymax = team_df[list(series.keys())].max().max()
-            pad = max(1.0, 0.05 * (ymax - ymin))
-
-            if team_df["gw"].nunique() < 3:
-                # Wenige GWs -> gruppiertes Balkendiagramm mit Zahlen
-                fig = plt.figure()
-                ax = plt.gca()
-                gws = team_df["gw"].to_numpy()
-                idx = np.arange(len(gws))
-                width = 0.25
-                for j, (col, label) in enumerate(series.items()):
-                    vals = team_df[col].to_numpy()
-                    ax.bar(idx + j * width, vals, width, label=label)
-                    for i, val in enumerate(vals):
-                        ax.text(
-                            idx[i] + j * width,
-                            val,
-                            f"{val:.1f}",
-                            ha="center",
-                            va="bottom",
-                        )
-                ax.set_xticks(idx + width)
-                ax.set_xticklabels(gws)
-                ax.set_xlabel("GW")
-                ax.set_ylabel("Reale Team-Punkte")
-                ax.set_ylim(ymin - pad, ymax + pad)
-                ax.legend()
-                save_plot(fig, plots_dir / "team_points_bar.png")
-            else:
-                # Viele GWs -> Linien + Marker + Werte
-                fig = plt.figure()
-                ax = plt.gca()
-                for col, label in series.items():
-                    ax.plot(team_df["gw"], team_df[col], marker="o", label=label)
-                    for x, y in zip(team_df["gw"], team_df[col]):
-                        ax.annotate(
-                            f"{y:.1f}",
-                            (x, y),
-                            textcoords="offset points",
-                            xytext=(0, 5),
-                            ha="center",
-                        )
-                ax.set_xlabel("GW")
-                ax.set_ylabel("Reale Team-Punkte")
-                ax.set_ylim(ymin - pad, ymax + pad)
-                ax.legend()
-                save_plot(fig, plots_dir / "team_points_over_gw.png")
-
+        predict_for = getattr(rf_mod, "predict_for")
+        model = train_rf_until(train, season=season, random_state=random_state)
+        preds = predict_for(model, test)
+        return pd.Series(preds, index=test.index, dtype=float)
     except Exception as exc:
-        logging.warning("Plotten übersprungen: %s", exc)
+        logging.info("RF Baseline nicht verfügbar: %s", exc)
+        return pd.Series(np.nan, index=test.index, dtype=float)
 
 
-if __name__ == "__main__":  # Nur ausfuehren wenn Datei direkt gestartet wird
-    args = parse_args()  # CLI-Argumente einlesen
-    out_dir = Path(args.out)  # Ausgabepfad in Path umwandeln
-    plots_dir = Path(args.plots)  # Plotpfad in Path umwandeln
-    if (
-        args.formation != "auto" and args.formation not in ALLOWED_FORMATIONS
-    ):  # Formation gueltig?
-        logging.error(
-            "Unbekannte Formation: %s", args.formation
-        )  # Fehlermeldung ausgeben
-        raise SystemExit(1)  # Programm beenden
-    ensure_dirs(out_dir, plots_dir)  # Verzeichnisse anlegen
+def evaluate_rf_pos(train_df: pd.DataFrame, test_df: pd.DataFrame) -> pd.Series:
+    """Trainiert positionsspezifische RF Modelle und liefert Punktvorhersagen."""
+    # rf_pos_models erwartet 'total_points' und 'name', aber data hat 'points' und 'player_id'
+    train_work = train_df.copy()
+    test_work = test_df.copy()
+    if "total_points" not in train_work.columns and "points" in train_work.columns:
+        train_work["total_points"] = train_work["points"]
+    if "total_points" not in test_work.columns and "points" in test_work.columns:
+        test_work["total_points"] = test_work["points"]
+    if "name" not in train_work.columns and "player_id" in train_work.columns:
+        train_work["name"] = train_work["player_id"].astype(str)
+    if "name" not in test_work.columns and "player_id" in test_work.columns:
+        test_work["name"] = test_work["player_id"].astype(str)
+    models = train_position_models(train_work, positions=["GK", "DEF", "MID", "FWD"])
+    preds_dict = predict_gameweek(models, test_work)
+    vals = [preds_dict.get(row.get("name"), 0.0) for _, row in test_work.iterrows()]
+    return pd.Series(vals, index=test_df.index, dtype=float)
 
-    data = load_player_gameweeks(args.season)  # Spielerdaten laden
-    if data.empty:  # Falls keine Daten vorhanden sind
-        logging.warning(
-            "Keine Daten geladen - erzeuge Dummy-Outputs und beende."
-        )  # Hinweis ausgeben
-        if not args.dry_run:  # Nur Dateien schreiben falls kein Trockenlauf
-            save_table(  # Leere Spielerdatei anlegen
-                pd.DataFrame(columns=["season", "gw", "who", "position", "mae"]),
-                out_dir / "player_mae.csv",
+
+def rank_transform(points: pd.Series, reference_mean: float) -> pd.Series:
+    """Transformiert Punktvorhersagen auf Rang-Prozent-Skala * Referenzmittelwert."""
+    if points.empty:
+        return pd.Series([], dtype=float)
+    ranks = points.rank(method="average", ascending=False)
+    pct = ranks / ranks.max()  # 1.0 = bester Spieler
+    return pct * reference_mean
+
+
+def ensure_rolling(df: pd.DataFrame, id_col: str = "player_id") -> pd.DataFrame:
+    base_stats = ["minutes", "points", "ict_index", "influence", "creativity", "threat"]
+    for col in base_stats:
+        if col not in df.columns:
+            df[col] = 0.0
+        roll_col = f"{col}_ma3"
+        if roll_col not in df.columns:
+            df[roll_col] = (
+                df.groupby(id_col)[col].shift(1).rolling(window=3, min_periods=1).mean()
             )
-            save_table(  # Leere Teamdatei anlegen
-                pd.DataFrame(
-                    columns=[
-                        "season",
-                        "gw",
-                        "formation",
-                        "model_team_points",
-                        "b1_team_points",
-                        "b2_team_points",
-                    ]
-                ),
-                out_dir / "team_points.csv",
+    # One-hot Position
+    if "position" in df.columns:
+        for p in ["GK", "DEF", "MID", "FWD"]:
+            c = f"pos_{p}"
+            if c not in df.columns:
+                df[c] = (df["position"] == p).astype(int)
+    # Name aus player_id ableiten falls fehlend
+    if "name" not in df.columns and "player_id" in df.columns:
+        df["name"] = df["player_id"].astype(str)
+    return df
+
+
+def evaluate_span(
+    df: pd.DataFrame, season: str, gw_start: int, gw_end: int, random_state: int
+) -> pd.DataFrame:
+    model_names = ["rf", "ma3", "pos", "rf_pos", "rf_rank"]
+    results: Dict[str, Dict[str, List[float]]] = {
+        m: {"y_true": [], "y_pred": []} for m in model_names
+    }
+
+    df = df.copy()
+    if "season" in df.columns:
+        df = df[df["season"] == season]
+    if "gw" not in df.columns:
+        logging.error("Spalte 'gw' fehlt in den Daten – Abbruch.")
+        return pd.DataFrame()
+    df = ensure_rolling(df)
+
+    for gw in range(gw_start, gw_end + 1):
+        train = df[df["gw"] < gw].copy()
+        test = df[df["gw"] == gw].copy()
+        if train.empty or test.empty:
+            continue
+        if "points" not in test.columns:
+            continue
+
+        # rf
+        rf_pred = try_model_predict(
+            train, test, season=season, random_state=random_state
+        )
+        if rf_pred.isna().all():
+            rf_pred = (
+                test["points"].groupby(test["position"]).transform("mean")
+                if "position" in test.columns
+                else pd.Series(0.0, index=test.index)
             )
-            save_json(  # Metadaten zum Lauf sichern
+        results["rf"]["y_true"].extend(test["points"].values.tolist())
+        results["rf"]["y_pred"].extend(rf_pred.values.tolist())
+
+        # ma3
+        if "points_ma3" not in test.columns:
+            test["points_ma3"] = (
+                test.groupby("player_id")["points"].shift(1).rolling(3, 1).mean()
+            )
+        ma3_pred = test["points_ma3"].fillna(0.0)
+        results["ma3"]["y_true"].extend(test["points"].values.tolist())
+        results["ma3"]["y_pred"].extend(ma3_pred.values.tolist())
+
+        # pos (Positionsmittelwert aus TRAIN)
+        if "position" in test.columns:
+            pos_means_train = train.groupby("position")["points"].mean()
+            pos_pred = (
+                test["position"].map(pos_means_train).fillna(train["points"].mean())
+            )
+        else:
+            pos_pred = pd.Series(train["points"].mean(), index=test.index)
+        results["pos"]["y_true"].extend(test["points"].values.tolist())
+        results["pos"]["y_pred"].extend(pos_pred.values.tolist())
+
+        # rf_pos (positionsspezifische Modelle)
+        rf_pos_pred = evaluate_rf_pos(train, test)
+        results["rf_pos"]["y_true"].extend(test["points"].values.tolist())
+        results["rf_pos"]["y_pred"].extend(rf_pos_pred.values.tolist())
+
+        # rf_rank: Rangtransformation der rf_pos oder rf Vorhersage (hier rf_pos bevorzugt)
+        reference_mean = train["points"].mean()
+        rf_rank_pred = rank_transform(
+            pd.Series(rf_pos_pred.values, index=test.index), reference_mean
+        )
+        results["rf_rank"]["y_true"].extend(test["points"].values.tolist())
+        results["rf_rank"]["y_pred"].extend(rf_rank_pred.values.tolist())
+
+    # Zusammenfassung
+    rows = []
+    for name in model_names:
+        y_true = np.array(results[name]["y_true"], dtype=float)
+        y_pred = np.array(results[name]["y_pred"], dtype=float)
+        if len(y_true) == 0:
+            continue
+        rows.append(
+            {
+                "model": name,
+                "mae": mean_absolute_error(y_true, y_pred),
+                "rmse": np.sqrt(mean_squared_error(y_true, y_pred)),
+                "spearman": safe_spearman(y_true, y_pred),
+                "n_samples": int(len(y_true)),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def main():
+    args = parse_args()
+    # Re-Use out Verzeichnis auch als plots_dir Dummy
+    ensure_dirs(Path(args.out), Path(args.out))
+    data = load_player_gameweeks(args.season)
+    if data.empty:
+        logging.warning("Keine Daten – leere Auswertung.")
+        print("| Modell | MAE | RMSE | Spearman | Samples |")
+        return
+    summary = evaluate_span(
+        data, args.season, args.gw_start, args.gw_end, args.random_state
+    )
+    if summary.empty:
+        logging.warning("Keine GWs ausgewertet.")
+    else:
+        print(
+            "\nModellvergleich ({} GW {}-{}):".format(
+                args.season, args.gw_start, args.gw_end
+            )
+        )
+        print(
+            "{:<8} {:>8} {:>8} {:>9} {:>9}".format(
+                "Modell", "MAE", "RMSE", "Spearman", "Samples"
+            )
+        )
+        for _, r in summary.sort_values("mae").iterrows():
+            print(
+                "{:<8} {:8.3f} {:8.3f} {:9.3f} {:9d}".format(
+                    r.model, r.mae, r.rmse, r.spearman, r.n_samples
+                )
+            )
+        # Markdown
+        print("\n| Modell | MAE | RMSE | Spearman | Samples |")
+        print("|--------|-----|------|----------|---------|")
+        for _, r in summary.iterrows():
+            print(
+                f"| {r.model} | {r.mae:.3f} | {r.rmse:.3f} | {r.spearman:.3f} | {r.n_samples} |"
+            )
+        if not args.dry_run:
+            save_table(summary, Path(args.out) / "model_comparison.csv")
+            save_json(
                 {
                     "season": args.season,
                     "gw_start": args.gw_start,
                     "gw_end": args.gw_end,
-                    "formation_mode": args.formation,
-                    "random_state": args.random_state,
-                    "gws_evaluated": [],
-                    "dry_run": args.dry_run,
-                    "hinweis": "keine daten verfuegbar",
-                },  # Abschluss des Blockes mit Komma
-                out_dir / "run_settings.json",
+                    "models": summary["model"].tolist(),
+                },
+                Path(args.out) / "run_settings.json",
             )
-        raise SystemExit(0)  # Programm sauber beenden
 
-    evaluate_span(  # Hauptauswertung starten
-        data,
-        args.season,
-        args.gw_start,
-        args.gw_end,
-        args.formation,
-        out_dir,
-        plots_dir,
-        args.random_state,
-        args.dry_run,
-    )
+
+if __name__ == "__main__":
+    main()
