@@ -1,11 +1,12 @@
-"""A/B evaluation of opponent-strength features.
+"""A/B-Auswertung der Gegnerstaerke-Merkmale.
 
-Runs the same time-based train/test split twice per GW:
-  - run_a: without ['home_flag','opp_def_xga_l5_adj']
-  - run_b: with these features
+Pro Spielwoche wird derselbe zeitbasierte Train/Test-Split zweimal ausgefuehrt:
+    - run_a: ohne ['home_flag','opp_def_xga_l5_adj']
+    - run_b: mit diesen Merkmalen
 
-Trains a simple RandomForestRegressor on a compact feature set and reports MAE
-per GW and overall. Saves results to CSV and a plot ab_mae_per_gw.png.
+Trainiert einen einfachen RandomForestRegressor auf einem kompakten Feature-Set
+und meldet den MAE pro Spielwoche sowie gesamt. Speichert Resultate als CSV und
+erstellt einen Plot ab_mae_per_gw.png.
 """
 
 from __future__ import annotations
@@ -30,7 +31,7 @@ def _load_module(path: pathlib.Path):
 
 
 def _prepare_base_features(df: pd.DataFrame) -> pd.DataFrame:
-    # Rolling per player over past 3 matches, shifted by 1 (no leakage)
+    # Gleitende Werte pro Spieler ueber die letzten 3 Partien, um 1 verschoben (keine Leaks)
     out = df.copy()
     out = (
         out.sort_values(["player_id", "gw"])
@@ -55,7 +56,7 @@ def _prepare_base_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _features_for(df: pd.DataFrame, with_opp: bool) -> Tuple[pd.DataFrame, List[str]]:
-    # Candidate base features
+    # Moegliche Basis-Merkmale
     base_candidates = [
         "price",
         "ownership",
@@ -65,7 +66,7 @@ def _features_for(df: pd.DataFrame, with_opp: bool) -> Tuple[pd.DataFrame, List[
     ]
     feats = [c for c in base_candidates if c in df.columns]
     if with_opp:
-        # Opponent features if present
+        # Gegner-Merkmale falls vorhanden
         if "home_flag" in df.columns:
             feats.append("home_flag")
         if "opp_def_xga_l5_adj" in df.columns:
@@ -136,7 +137,7 @@ def main():
             ]
         )
 
-    # We will evaluate last 8 GWs by default (similar to rf_baseline)
+    # Standard: die letzten 8 Spielwochen werden ausgewertet (analog rf_baseline)
     gws = sorted(int(g) for g in pd.unique(df_feat["gw"].dropna()))
     if not gws:
         print("No GWs in data")
@@ -156,10 +157,10 @@ def main():
         if train.empty or test.empty:
             continue
 
-        # Attach opponent features to both train and test for run B (train to learn mapping)
+    # Gegner-Merkmale fuer Lauf B an Train und Test anhaengen (Train lernt Zuordnung)
         train_b = def_metrics.attach_opponent_features(train, team_metrics)
         test_b = def_metrics.attach_opponent_features(test, team_metrics)
-        # Run A (without opponent features)
+    # Lauf A (ohne Gegner-Merkmale)
         Xa, feats_a = _features_for(train, with_opp=False)
         Xtest_a, _ = _features_for(test, with_opp=False)
         ya = train["points"].to_numpy(dtype=float)
@@ -171,7 +172,7 @@ def main():
         y_true_all_a.append(truth)
         y_pred_all_a.append(pred_a)
 
-        # Run B (with opponent features)
+    # Lauf B (mit Gegner-Merkmalen)
         Xb, feats_b = _features_for(train_b, with_opp=True)
         Xtest_b, _ = _features_for(test_b, with_opp=True)
         yb = train_b["points"].to_numpy(dtype=float)
@@ -187,7 +188,7 @@ def main():
 
     res = pd.DataFrame(rows)
 
-    # Overall MAE rows
+    # Gesamt-MAE-Zeilen
     def _overall(y_true_list, y_pred_list):
         if not y_true_list:
             return float("nan")
@@ -219,7 +220,7 @@ def main():
     out_csv = out_dir / f"ab_mae_{args.season}.csv"
     pd.concat([res, res_overall], ignore_index=True).to_csv(out_csv, index=False)
 
-    # Plot per-GW MAE
+    # Plot: MAE pro Spielwoche
     try:
         import matplotlib.pyplot as plt
 

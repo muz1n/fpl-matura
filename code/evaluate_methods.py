@@ -44,7 +44,7 @@ def load_actual_points(season: str, gw: int) -> pd.DataFrame:
     Returns:
         DataFrame with player_id, gw, actual_points
     """
-    # Lade historische GW-Daten
+    # Lade tatsächliche GW-Daten
     possible_files = [
         DATA_DIR / f"merged_gw_{season}.csv",
         DATA_DIR / "merged_gw_2022-23.csv",
@@ -149,7 +149,7 @@ def apply_ma3_method(predictions_data: Dict[str, Any]) -> Dict[str, Any]:
     result["model_version"] = result["model_version"] + "+ma3"
     return result
 
-
+    # Für jetzt, einfach RF-Prognosen als Basis verwenden
 def apply_pos_method(predictions_data: Dict[str, Any]) -> Dict[str, Any]:
     """Apply position-based average method."""
     result = predictions_data.copy()

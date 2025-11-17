@@ -1,8 +1,8 @@
-"""Evaluate prediction accuracy against actual FPL points.
+"""Bewertet Prognosegenauigkeit gegenueber echten FPL-Punkten.
 
-This script loads prediction JSON files, merges them with actual points data,
-and computes various evaluation metrics including MAE, RMSE, Spearman correlation,
-and calibration analysis.
+Dieses Skript ladet Prognose-JSON-Dateien, fuehrt sie mit echten Punkten
+zusammen und berechnet diverse Kennzahlen inklusive MAE, RMSE,
+Spearman-Korrelation sowie eine Kalibrationsanalyse.
 """
 
 import argparse
@@ -18,17 +18,17 @@ from scipy import stats
 
 
 def load_predictions(pattern: str) -> pd.DataFrame:
-    """Load all prediction JSON files matching the pattern.
+    """Ladet alle Prognose-JSONs, die zum Muster passen.
 
     Args:
-        pattern: Glob pattern for prediction files (e.g., 'out/predictions_gw*.json')
+        pattern: Glob-Muster fuer Prognosedateien (z.B. 'out/predictions_gw*.json')
 
     Returns:
-        DataFrame with columns: player_id, gw, pred_points
+        DataFrame mit Spalten: player_id, gw, pred_points
 
     Raises:
-        FileNotFoundError: If no prediction files are found
-        ValueError: If JSON files have unexpected structure
+        FileNotFoundError: Wenn keine Dateien gefunden werden
+        ValueError: Bei unerwarteter JSON-Struktur
     """
     pred_files = glob.glob(pattern)
 
@@ -46,12 +46,12 @@ def load_predictions(pattern: str) -> pd.DataFrame:
             with open(pred_file, "r") as f:
                 data = json.load(f)
 
-            # Handle different possible JSON structures
+            # Unterstuetze verschiedene moegliche JSON-Strukturen
             if isinstance(data, list):
-                # Assume list of dicts with player_id, gw, pred_points
+                # Liste von Dicts mit player_id, gw, pred_points annehmen
                 df = pd.DataFrame(data)
             elif isinstance(data, dict):
-                # Could be nested structure, try to flatten
+                # Koennte verschachtelt sein; flachziehen versuchen
                 if "predictions" in data:
                     df = pd.DataFrame(data["predictions"])
                 else:
@@ -59,7 +59,7 @@ def load_predictions(pattern: str) -> pd.DataFrame:
             else:
                 raise ValueError(f"Unexpected JSON structure in {pred_file}")
 
-            # Validate required columns
+            # Pflichtspalten pruefen
             required_cols = {"player_id", "gw", "pred_points"}
             missing_cols = required_cols - set(df.columns)
             if missing_cols:
@@ -89,16 +89,16 @@ def load_predictions(pattern: str) -> pd.DataFrame:
 
 
 def load_actuals(data_paths: List[str]) -> pd.DataFrame:
-    """Load actual points from merged gameweek CSV files.
+    """Ladet echte Punkte aus zusammengefuehrten GW-CSV-Dateien.
 
     Args:
-        data_paths: List of paths to merged_gw CSV files
+        data_paths: Liste von Pfaden zu merged_gw-CSV-Dateien
 
     Returns:
-        DataFrame with columns: player_id, gw, total_points, position, price
+        DataFrame mit Spalten: player_id, gw, total_points, position, price
 
     Raises:
-        FileNotFoundError: If no data files exist
+        FileNotFoundError: Falls keine Datendateien existieren
     """
     all_actuals = []
 
@@ -111,8 +111,8 @@ def load_actuals(data_paths: List[str]) -> pd.DataFrame:
         try:
             df = pd.read_csv(data_path)
 
-            # Check for required columns
-            # Based on the CSV structure, we need 'element' (player_id), 'GW', 'total_points'
+            # Pflichtspalten pruefen
+            # Basierend auf CSV-Struktur: 'element' (player_id), 'GW', 'total_points'
             if "element" not in df.columns:
                 print(
                     f"Warning: 'element' column not found in {data_path}",
@@ -129,7 +129,7 @@ def load_actuals(data_paths: List[str]) -> pd.DataFrame:
                 )
                 continue
 
-            # Select columns (position and value are optional but useful for baselines)
+            # Spalten auswaehlen (position und value optional, aber nuetzlich fuer Baselines)
             cols_to_keep = ["element", "GW", "total_points"]
             new_col_names = ["player_id", "gw", "total_points"]
 
@@ -141,7 +141,7 @@ def load_actuals(data_paths: List[str]) -> pd.DataFrame:
                 cols_to_keep.append("value")
                 new_col_names.append("price")
 
-            # Rename to standard names
+            # Auf Standardnamen umbenennen
             actuals = df[cols_to_keep].copy()
             actuals.columns = new_col_names
 
@@ -167,18 +167,18 @@ def load_actuals(data_paths: List[str]) -> pd.DataFrame:
 def merge_predictions_actuals(
     predictions: pd.DataFrame, actuals: pd.DataFrame
 ) -> pd.DataFrame:
-    """Merge predictions with actuals on (player_id, gw).
+    """Führt Prognosen und echte Werte anhand (player_id, gw) zusammen.
 
     Args:
-        predictions: DataFrame with player_id, gw, pred_points
-        actuals: DataFrame with player_id, gw, total_points
+        predictions: DataFrame mit player_id, gw, pred_points
+        actuals: DataFrame mit player_id, gw, total_points
 
     Returns:
-        Merged DataFrame with both predictions and actuals, missing values dropped
+        Gemergter DataFrame mit Prognosen und echten Werten; fehlende Werte entfernt
     """
     merged = predictions.merge(actuals, on=["player_id", "gw"], how="inner")
 
-    # Drop rows with missing values
+    # Zeilen mit fehlenden Werten entfernen
     initial_len = len(merged)
     merged = merged.dropna(subset=["pred_points", "total_points"])
     dropped = initial_len - len(merged)
@@ -192,19 +192,19 @@ def merge_predictions_actuals(
 
 
 def compute_metrics(df: pd.DataFrame) -> Dict[str, float]:
-    """Compute overall evaluation metrics.
+    """Berechnet uebergeordnete Auswertungsmetriken.
 
     Args:
-        df: DataFrame with pred_points and total_points columns
+        df: DataFrame mit pred_points und total_points
 
     Returns:
-        Dictionary with MAE, RMSE, and Spearman correlation
+        Dictionary mit MAE, RMSE und Spearman-Korrelation
     """
-    # Ensure we operate on numeric numpy arrays to avoid ExtensionArray issues
+    # Sicherstellen, dass auf numerischen NumPy-Arrays gearbeitet wird (keine ExtensionArray-Probleme)
     y_true = pd.to_numeric(df["total_points"], errors="coerce").to_numpy(dtype=float)
     y_pred = pd.to_numeric(df["pred_points"], errors="coerce").to_numpy(dtype=float)
 
-    # Remove pairs where either side is NaN
+    # Paare entfernen, bei denen eine Seite NaN ist
     mask = ~np.isnan(y_true) & ~np.isnan(y_pred)
     n_samples = int(mask.sum())
     if n_samples == 0:
@@ -222,14 +222,13 @@ def compute_metrics(df: pd.DataFrame) -> Dict[str, float]:
     mae = float(np.mean(np.abs(y_true - y_pred)))
     rmse = float(np.sqrt(np.mean((y_true - y_pred) ** 2)))
 
-    # Spearman correlation (handle edge case of constant values)
+    # Spearman-Korrelation (Sonderfall: konstante Werte)
     try:
         if len(np.unique(y_true)) > 1 and len(np.unique(y_pred)) > 1:
             res = stats.spearmanr(y_true, y_pred)
 
-            # scipy.stats.spearmanr may return an object with attributes or a tuple-like result.
-            # Prefer attribute access, fall back to sequence access, and ensure any array-like
-            # or sequence is converted to a scalar float safely.
+            # scipy.stats.spearmanr kann Objekt mit Attributen oder ein Tuple liefern.
+            # Zuerst Attributzugriff, sonst Sequenzzugriff; stets auf Skalar-Float abbilden.
             def _to_scalar(x):
                 if x is None:
                     return float("nan")
@@ -274,13 +273,13 @@ def compute_metrics(df: pd.DataFrame) -> Dict[str, float]:
 
 
 def compute_per_gw_metrics(df: pd.DataFrame) -> pd.DataFrame:
-    """Compute metrics separately for each gameweek.
+    """Berechnet Metriken separat pro Spielwoche.
 
     Args:
-        df: DataFrame with pred_points, total_points, and gw columns
+        df: DataFrame mit pred_points, total_points und gw
 
     Returns:
-        DataFrame with one row per gameweek containing metrics
+        DataFrame mit einer Zeile pro Spielwoche inkl. Kennzahlen
     """
     gw_metrics = []
 
@@ -320,7 +319,7 @@ def compute_per_gw_metrics(df: pd.DataFrame) -> pd.DataFrame:
             mae = float(np.mean(np.abs(y_true - y_pred)))
             rmse = float(np.sqrt(np.mean((y_true - y_pred) ** 2)))
 
-            # Spearman correlation (handle edge case of constant values)
+            # Spearman-Korrelation (Sonderfall: konstante Werte)
             try:
                 if len(np.unique(y_true)) > 1 and len(np.unique(y_pred)) > 1:
                     res = stats.spearmanr(y_true, y_pred)
@@ -351,16 +350,16 @@ def compute_per_gw_metrics(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def compute_calibration(df: pd.DataFrame, n_bins: int = 10) -> pd.DataFrame:
-    """Compute calibration table using equal-frequency binning.
+    """Berechnet eine Kalibrationstabelle mittels gleich-haeufiger Binning.
 
     Args:
-        df: DataFrame with pred_points and total_points columns
-        n_bins: Number of bins for calibration analysis
+        df: DataFrame mit pred_points und total_points
+        n_bins: Anzahl Bins fuer die Kalibrationsanalyse
 
     Returns:
-        DataFrame with bin_mean_pred, bin_mean_actual, count for each bin
+        DataFrame mit bin_mean_pred, bin_mean_actual, count pro Bin
     """
-    # Use qcut for equal-frequency binning
+    # qcut fuer gleich-haeufiges Binning verwenden
     df = df.copy()
 
     try:
@@ -389,7 +388,7 @@ def compute_calibration(df: pd.DataFrame, n_bins: int = 10) -> pd.DataFrame:
         .reset_index()
     )
 
-    # Flatten column names
+    # Spaltennamen abflachen
     calibration.columns = [
         "bin",
         "bin_mean_pred",
@@ -405,26 +404,26 @@ def compute_calibration(df: pd.DataFrame, n_bins: int = 10) -> pd.DataFrame:
 
 
 def build_rolling_mean_baseline(actuals: pd.DataFrame, window: int = 3) -> pd.DataFrame:
-    """Build rolling mean baseline: predict based on last N gameweeks' actual points.
+    """Erstellt Rolling-Mean-Baseline: Prognose basierend auf den letzten N Spielwochen.
 
     Args:
-        actuals: DataFrame with player_id, gw, total_points
-        window: Number of previous gameweeks to average (default: 3)
+        actuals: DataFrame mit player_id, gw, total_points
+        window: Anzahl vorheriger Spielwochen fuer den Durchschnitt (Standard: 3)
 
     Returns:
-        DataFrame with player_id, gw, baseline_rolling columns
+        DataFrame mit player_id, gw, baseline_rolling
     """
-    # Sort by player and gameweek
+    # Nach Spieler und Spielwoche sortieren
     actuals_sorted = actuals.sort_values(["player_id", "gw"]).copy()
 
-    # For each player, compute rolling mean of previous gameweeks
+    # Fuer jeden Spieler Rolling-Mean der vorherigen Spielwochen berechnen
     baselines = []
 
     for player_id in actuals_sorted["player_id"].unique():
         player_data = actuals_sorted[actuals_sorted["player_id"] == player_id].copy()
         player_data = player_data.sort_values("gw")
 
-        # Compute rolling mean of previous points (shift by 1 to avoid lookahead)
+    # Rolling-Mean vorheriger Punkte (um 1 verschieben, um Lookahead zu vermeiden)
         player_data["baseline_rolling"] = (
             player_data["total_points"]
             .shift(1)
@@ -439,14 +438,14 @@ def build_rolling_mean_baseline(actuals: pd.DataFrame, window: int = 3) -> pd.Da
 
 
 def build_price_baseline(actuals: pd.DataFrame, train_gws: List[int]) -> pd.DataFrame:
-    """Build price-based baseline: predict points = k * price, fit k per position.
+    """Erstellt Preis-basierte Baseline: Punkte = k * Preis, k pro Position fitten.
 
     Args:
-        actuals: DataFrame with player_id, gw, total_points, position, price
-        train_gws: List of gameweeks to use for training (fitting k)
+        actuals: DataFrame mit player_id, gw, total_points, position, price
+        train_gws: Liste von Spielwochen fuer das Training (k-Schaetzung)
 
     Returns:
-        DataFrame with player_id, gw, baseline_price columns
+        DataFrame mit player_id, gw, baseline_price
     """
     if "position" not in actuals.columns or "price" not in actuals.columns:
         print("Warning: position or price column missing, price baseline will be NaN")
@@ -454,7 +453,7 @@ def build_price_baseline(actuals: pd.DataFrame, train_gws: List[int]) -> pd.Data
         result["baseline_price"] = np.nan
         return result
 
-    # Fit k per position on training data
+    # k pro Position auf Trainingsdaten fitten
     train_data = actuals[actuals["gw"].isin(train_gws)].copy()
 
     # Handle missing or zero prices
@@ -464,14 +463,14 @@ def build_price_baseline(actuals: pd.DataFrame, train_gws: List[int]) -> pd.Data
     for pos in train_data["position"].unique():
         pos_data = train_data[train_data["position"] == pos]
         if len(pos_data) > 0:
-            # Simple linear regression: points = k * price
-            # k = mean(points / price)
+            # Einfache lineare Regression: points = k * price
+            # k = Mittelwert(points / price)
             k = (pos_data["total_points"] / pos_data["price"]).mean()
             position_k[pos] = k
         else:
             position_k[pos] = 0.0
 
-    # Apply k to all data
+    # k auf alle Daten anwenden
     result = actuals[["player_id", "gw", "position", "price"]].copy()
     result["baseline_price"] = result.apply(
         lambda row: (
@@ -488,17 +487,17 @@ def build_price_baseline(actuals: pd.DataFrame, train_gws: List[int]) -> pd.Data
 def compute_significance_tests(
     merged: pd.DataFrame, baseline_col: str, model_col: str = "pred_points"
 ) -> Dict:
-    """Compute paired statistical tests comparing model vs baseline.
+    """Berechnet gepaarte statistische Tests: Modell vs. Baseline.
 
     Args:
-        merged: DataFrame with total_points, model predictions, and baseline predictions
-        baseline_col: Name of baseline prediction column
-        model_col: Name of model prediction column (default: 'pred_points')
+        merged: DataFrame mit total_points, Modell- und Baseline-Prognosen
+        baseline_col: Spaltenname der Baseline-Prognose
+        model_col: Spaltenname der Modellprognose (Standard: 'pred_points')
 
     Returns:
-        Dictionary with test results and effect sizes
+        Dictionary mit Testergebnissen und Effektgroessen
     """
-    # Filter to rows where both predictions are available
+    # Auf Zeilen filtern, in denen beide Prognosen vorhanden sind
     valid = merged.dropna(subset=["total_points", model_col, baseline_col])
 
     if len(valid) == 0:
@@ -517,19 +516,19 @@ def compute_significance_tests(
     y_model = valid[model_col].values
     y_baseline = valid[baseline_col].values
 
-    # Compute absolute errors
+    # Absolute Fehler berechnen
     ae_model = np.abs(y_true - y_model)  # type: ignore
     ae_baseline = np.abs(y_true - y_baseline)  # type: ignore
 
-    # Compute MAE for both
+    # MAE fuer beide berechnen
     mae_model = float(np.mean(ae_model))
     mae_baseline = float(np.mean(ae_baseline))
     mae_improvement = mae_baseline - mae_model
 
-    # Paired differences (positive = model is better)
+    # Gepaarte Differenzen (positiv = Modell ist besser)
     diff = ae_baseline - ae_model
 
-    # Paired t-test
+    # Gepaarter t-Test
     try:
         t_result = stats.ttest_rel(ae_baseline, ae_model)
         # Handle both tuple and result object returns
@@ -540,7 +539,7 @@ def compute_significance_tests(
     except Exception:
         t_pval = np.nan
 
-    # Wilcoxon signed-rank test
+    # Wilcoxon-Vorzeichenrangtest
     try:
         # Remove zeros for Wilcoxon (ties)
         diff_nonzero = diff[diff != 0]
@@ -556,7 +555,7 @@ def compute_significance_tests(
     except Exception:
         w_pval = np.nan
 
-    # Cohen's d effect size
+    # Cohen's d Effektstaerke
     try:
         mean_diff = np.mean(diff)
         std_diff = np.std(diff, ddof=1)
@@ -583,13 +582,13 @@ def print_summary(
     calibration: pd.DataFrame,
     significance: Optional[Dict] = None,
 ) -> None:
-    """Print a compact summary of evaluation results.
+    """Gibt eine kompakte Zusammenfassung der Auswertung aus.
 
     Args:
-        overall_metrics: Dictionary of overall metrics
-        per_gw_metrics: DataFrame of per-gameweek metrics
-        calibration: DataFrame of calibration results
-        significance: Dictionary of significance test results (optional)
+        overall_metrics: Dictionary der Gesamtmetriken
+        per_gw_metrics: DataFrame der GW-spezifischen Metriken
+        calibration: DataFrame der Kalibrationsergebnisse
+        significance: Dictionary der Signifikanztests (optional)
     """
     print("\n" + "=" * 70)
     print("PREDICTION EVALUATION SUMMARY")
@@ -642,14 +641,14 @@ def save_results(
     output_dir: str = "out",
     significance: Optional[Dict] = None,
 ) -> None:
-    """Save evaluation results to files.
+    """Speichert Auswertungsergebnisse in Dateien.
 
     Args:
-        overall_metrics: Dictionary of overall metrics
-        per_gw_metrics: DataFrame of per-gameweek metrics
-        calibration: DataFrame of calibration results
-        output_dir: Directory to save results
-        significance: Dictionary of significance test results (optional)
+        overall_metrics: Dictionary der Gesamtmetriken
+        per_gw_metrics: DataFrame der GW-spezifischen Metriken
+        calibration: DataFrame der Kalibrationsergebnisse
+        output_dir: Verzeichnis zum Speichern der Resultate
+        significance: Dictionary der Signifikanztests (optional)
     """
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -677,7 +676,7 @@ def save_results(
 
 
 def main():
-    """Main entry point for the evaluation script."""
+    """Haupteinstiegspunkt fuer das Evaluationsskript."""
     parser = argparse.ArgumentParser(
         description="Evaluate FPL prediction accuracy against actual points",
         formatter_class=argparse.RawDescriptionHelpFormatter,

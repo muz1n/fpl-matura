@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-"""Team Backtest: Compare RF vs MA3 vs POS methods via team selection.
+"""Team-Backtest: Vergleich RF vs. MA3 vs. POS via Teamselektion.
 
-Self-contained script with no repo module imports.
-Uses only stdlib + pandas + matplotlib.
+Eigenstaendiges Skript ohne Repo-Imports.
+Verwendet nur Stdlib + pandas + matplotlib.
 
-Budget Model:
-- Maximum total budget of 100.0 for the 15-player squad
-- Maximum 3 players per club (FPL rule)
-- Greedy selection: players sorted by predicted points (descending)
-- A player is only added if budget and club constraints are satisfied
+Budget-Modell:
+- Maximales Gesamtbudget 100.0 fuer den 15-Mann-Kader
+- Maximal 3 Spieler pro Klub (FPL-Regel)
+- Gierige Auswahl: Spieler nach prognostizierten Punkten absteigend sortiert
+- Ein Spieler wird nur hinzugefuegt, wenn Budget- und Klubgrenzen eingehalten sind
 
-Usage:
+Verwendung:
     python code/team_backtest.py --season 2022-23 --gw_start 30 --gw_end 38 --methods rf
 """
 
@@ -23,22 +23,22 @@ from typing import Dict, List
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# Setup paths
+# Pfade einrichten
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
 OUT_DIR = ROOT / "out"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-# Configure logging
+# Logging konfigurieren
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
-# Valid FPL formations (DEF-MID-FWD)
+# Gueltige FPL-Formationen (DEF-MID-FWD)
 VALID_FORMATIONS = ["3-4-3", "3-5-2", "4-4-2", "4-3-3", "4-5-1", "5-4-1", "5-3-2"]
 
-# Formation position requirements
+# Positionsanforderungen pro Formation
 FORMATION_SLOTS = {
     "3-4-3": {"GK": 1, "DEF": 3, "MID": 4, "FWD": 3},
     "3-5-2": {"GK": 1, "DEF": 3, "MID": 5, "FWD": 2},
@@ -51,15 +51,15 @@ FORMATION_SLOTS = {
 
 
 def load_predictions(gw: int, method: str) -> pd.DataFrame | None:
-    """Load predictions from JSON file for a specific gameweek.
+    """Ladet Prognosen aus JSON fuer eine bestimmte Spielwoche.
 
     Args:
-        gw: Gameweek number
-        method: Prediction method (rf, ma3, pos)
+        gw: Spielwochen-Nummer
+        method: Prognosemethode (rf, ma3, pos)
 
     Returns:
-        DataFrame with columns [player_id, name, pos, team, predicted_points, price]
-        or None if file not found
+        DataFrame mit Spalten [player_id, name, pos, team, predicted_points, price]
+        oder None, falls Datei nicht gefunden
     """
     pred_file = OUT_DIR / f"predictions_gw{gw}_{method}.json"
 
@@ -100,13 +100,13 @@ def load_predictions(gw: int, method: str) -> pd.DataFrame | None:
 
 
 def load_truth(season: str) -> pd.DataFrame | None:
-    """Load true points data for a season.
+    """Ladet echte Punktedaten fuer eine Saison.
 
     Args:
-        season: Season string (e.g., "2023-24", "2022-23")
+        season: Saisonstring (z.B. "2023-24", "2022-23")
 
     Returns:
-        DataFrame with columns [gw, player_id, points] or None if not found
+        DataFrame mit Spalten [gw, player_id, points] oder None, falls nicht gefunden
     """
     # Try to find the right file for this season
     possible_files = [
@@ -130,7 +130,7 @@ def load_truth(season: str) -> pd.DataFrame | None:
     try:
         df = pd.read_csv(truth_file)
 
-        # Handle different column name conventions
+    # Verschiedene Spaltenkonventionen handhaben
         rename_map = {}
         if "element" in df.columns and "player_id" not in df.columns:
             rename_map["element"] = "player_id"
@@ -144,7 +144,7 @@ def load_truth(season: str) -> pd.DataFrame | None:
         if rename_map:
             df = df.rename(columns=rename_map)
 
-        # Ensure required columns
+    # Pflichtspalten sicherstellen
         if "gw" not in df.columns:
             logger.error(
                 f"No 'gw' column in {truth_file.name}. Available: {list(df.columns[:10])}"
@@ -157,7 +157,7 @@ def load_truth(season: str) -> pd.DataFrame | None:
             logger.error(f"No 'points' column in {truth_file.name}")
             return None
 
-        # Clean data
+    # Daten bereinigen
         df = df.copy()  # Ensure we have a proper DataFrame
         df["player_id"] = pd.to_numeric(df["player_id"], errors="coerce")
         df["gw"] = pd.to_numeric(df["gw"], errors="coerce")
@@ -186,24 +186,24 @@ def load_truth(season: str) -> pd.DataFrame | None:
 def build_candidate_pool(
     df_pred: pd.DataFrame, max_budget: float = 100.0, max_per_club: int = 3
 ) -> pd.DataFrame:
-    """Build a 15-player candidate squad from predictions.
+    """Erstellt aus Prognosen einen 15-Spieler-Kader.
 
-    Takes top N players per position by predicted_points:
+    Nimmt die Top-N Spieler pro Position nach predicted_points:
     GK=2, DEF=5, MID=5, FWD=3
 
-    Enforces budget constraint (max_budget) and club constraint (max_per_club).
+    Erzwingt Budgetgrenze (max_budget) und Klubgrenze (max_per_club).
 
     Args:
-        df_pred: DataFrame with predictions
-        max_budget: Maximum total budget for the 15-player squad (default 100.0)
-        max_per_club: Maximum players from same club (default 3)
+        df_pred: DataFrame mit Prognosen
+        max_budget: Max. Gesamtbudget fuer den 15er-Kader (Standard 100.0)
+        max_per_club: Max. Spieler desselben Klubs (Standard 3)
 
     Returns:
-        DataFrame with 15 players (or fewer if constraints cannot be met)
+        DataFrame mit 15 Spielern (oder weniger, falls nicht erfuellbar)
     """
     pool_limits = {"GK": 2, "DEF": 5, "MID": 5, "FWD": 3}
 
-    # Sort all candidates by predicted points (descending)
+    # Alle Kandidaten nach prognostizierten Punkten absteigend sortieren
     df_sorted = df_pred.sort_values("predicted_points", ascending=False).copy()
 
     selected_players = []
@@ -216,25 +216,25 @@ def build_candidate_pool(
         club = player["team"]
         price = player["price"]
 
-        # Check position limit
+    # Positionslimit pruefen
         if position_counts.get(pos, 0) >= pool_limits.get(pos, 0):
             continue
 
-        # Check club constraint
+    # Klubgrenze pruefen
         if club_counts.get(club, 0) >= max_per_club:
             continue
 
-        # Check budget constraint
+    # Budgetgrenze pruefen
         if current_budget + price > max_budget:
             continue
 
-        # Add player to pool
+    # Spieler dem Pool hinzufuegen
         selected_players.append(player)
         current_budget += price
         club_counts[club] = club_counts.get(club, 0) + 1
         position_counts[pos] = position_counts.get(pos, 0) + 1
 
-        # Stop if we have 15 players
+    # Stoppen, sobald 15 Spieler erreicht
         if len(selected_players) == 15:
             break
 
@@ -260,16 +260,16 @@ def pick_xi_for_formation(
     max_per_club: int = 3,
     max_budget: float = 100.0,
 ) -> tuple[List[int], float] | None:
-    """Pick best XI for a given formation respecting constraints.
+    """Waehlt die beste Startelf fuer eine Formation unter Einhaltung der Regeln.
 
     Args:
-        candidates: DataFrame with candidate players
-        formation: Formation string (e.g., "4-4-2")
-        max_per_club: Maximum players from same club (default 3)
-        max_budget: Maximum budget for the XI (default 100.0)
+        candidates: DataFrame der Kandidaten
+        formation: Formation (z.B. "4-4-2")
+        max_per_club: Max. Spieler je Klub (Standard 3)
+        max_budget: Max. Budget fuer die Startelf (Standard 100.0)
 
     Returns:
-        Tuple of (list of 11 player_ids, total budget used), or None if cannot build valid XI
+        Tupel (Liste von 11 player_ids, verwendetes Budget) oder None bei Scheitern
     """
     if formation not in FORMATION_SLOTS:
         logger.error(f"Unknown formation: {formation}")
@@ -280,7 +280,7 @@ def pick_xi_for_formation(
     club_counts = {}
     current_budget = 0.0
 
-    # Sort candidates by predicted points (descending)
+    # Kandidaten nach prognostizierten Punkten absteigend sortieren
     sorted_candidates = candidates.sort_values("predicted_points", ascending=False)
 
     for _, player in sorted_candidates.iterrows():
@@ -289,15 +289,15 @@ def pick_xi_for_formation(
         player_id = int(player["player_id"])
         price = player["price"]
 
-        # Check if we need this position
+    # Pruefen, ob diese Position noch benoetigt ist
         if slots.get(pos, 0) <= 0:
             continue
 
-        # Check club constraint
+    # Klubgrenze pruefen
         if club_counts.get(club, 0) >= max_per_club:
             continue
 
-        # Check budget constraint
+    # Budgetgrenze pruefen
         if current_budget + price > max_budget:
             logger.debug(
                 f"  Budget limit: Skipping {player['name']} ({pos}, {price:.1f}) "
@@ -305,17 +305,17 @@ def pick_xi_for_formation(
             )
             continue
 
-        # Add to XI
+    # Zur Startelf hinzufuegen
         xi.append(player_id)
         slots[pos] -= 1
         club_counts[club] = club_counts.get(club, 0) + 1
         current_budget += price
 
-        # Check if XI is complete
+    # Pruefen, ob die Startelf komplett ist
         if len(xi) == 11:
             break
 
-    # Validate we got all positions filled
+    # Validieren, dass alle Positionen besetzt sind
     if len(xi) != 11 or any(v > 0 for v in slots.values()):
         logger.debug(
             f"Formation {formation}: Could not fill all slots (got {len(xi)}/11, budget: {current_budget:.1f})"
@@ -328,30 +328,30 @@ def pick_xi_for_formation(
 def evaluate_xi(
     xi_ids: List[int], truth_gw_df: pd.DataFrame, pred_df: pd.DataFrame
 ) -> Dict:
-    """Evaluate an XI using true points and select captain.
+    """Bewertet eine Startelf anhand echter Punkte und waehlt den Captain.
 
     Args:
-        xi_ids: List of 11 player_ids in the XI
-        truth_gw_df: True points for this gameweek
-        pred_df: Predictions (to select captain by predicted points)
+        xi_ids: Liste mit 11 player_ids der Startelf
+        truth_gw_df: Echte Punkte fuer diese Spielwoche
+        pred_df: Prognosen (zur Captain-Auswahl nach predicted points)
 
     Returns:
-        Dict with xi_points (including captain bonus), captain_id, vice_id
+        Dict mit xi_points (inkl. Captain-Bonus), captain_id, vice_id
     """
-    # Get true points for XI players
+    # Echte Punkte fuer Startelf-Spieler holen
     xi_truth = truth_gw_df[truth_gw_df["player_id"].isin(xi_ids)].copy()
 
-    # Get predictions for XI to determine captain
+    # Prognosen fuer die Startelf, um den Captain zu bestimmen
     xi_pred = pred_df[pred_df["player_id"].isin(xi_ids)].copy()
     xi_pred = xi_pred.sort_values("predicted_points", ascending=False)
 
     captain_id = int(xi_pred.iloc[0]["player_id"]) if len(xi_pred) > 0 else None
     vice_id = int(xi_pred.iloc[1]["player_id"]) if len(xi_pred) > 1 else captain_id
 
-    # Calculate total points
+    # Gesamtpunkte berechnen
     base_points = xi_truth["points"].sum()
 
-    # Add captain bonus (captain gets double points)
+    # Captain-Bonus addieren (Captain erhaelt doppelte Punkte)
     if captain_id:
         captain_points = xi_truth[xi_truth["player_id"] == captain_id]["points"].values
         if len(captain_points) > 0:
@@ -368,24 +368,24 @@ def evaluate_xi(
 def select_best_team_for_gw(
     pred_df: pd.DataFrame, truth_gw_df: pd.DataFrame, max_budget: float = 100.0
 ) -> Dict | None:
-    """Select the best team (XI + formation) for a gameweek.
+    """Waehlt das beste Team (Startelf + Formation) fuer eine Spielwoche.
 
     Args:
-        pred_df: Predictions for all players this GW
-        truth_gw_df: True points for this GW
-        max_budget: Maximum budget for team (default 100.0)
+        pred_df: Prognosen fuer alle Spieler dieser GW
+        truth_gw_df: Echte Punkte dieser GW
+        max_budget: Max. Budget fuer das Team (Standard 100.0)
 
     Returns:
-        Dict with team details or None if selection failed
+        Dict mit Teamdetails oder None bei Fehlschlag
     """
-    # Build candidate pool (15 players) with budget constraint
+    # Kandidatenpool (15 Spieler) unter Budgetgrenze bilden
     candidates = build_candidate_pool(pred_df, max_budget=max_budget)
 
     if len(candidates) < 11:
         logger.warning(f"Insufficient candidates: {len(candidates)}")
         return None
 
-    # Merge with truth to filter only players with known results
+    # Mit echten Daten mergen, um nur Spieler mit Resultaten zu behalten
     candidates = candidates.merge(
         truth_gw_df[["player_id"]], on="player_id", how="inner"
     )
@@ -394,7 +394,7 @@ def select_best_team_for_gw(
         logger.warning(f"Insufficient candidates with truth data: {len(candidates)}")
         return None
 
-    # Try all formations and pick best based on PREDICTED points
+    # Alle Formationen testen und nach prognostizierten Punkten beste waehlen
     best_formation = None
     best_xi = None
     best_predicted_total = -1
@@ -410,7 +410,7 @@ def select_best_team_for_gw(
 
         xi_ids, budget_used = result
 
-        # Calculate predicted total for this XI
+    # Prognostizierte Gesamtsumme fuer diese Startelf berechnen
         xi_pred = candidates[candidates["player_id"].isin(xi_ids)]
         predicted_total = xi_pred["predicted_points"].sum()
 
@@ -424,7 +424,7 @@ def select_best_team_for_gw(
         logger.warning("No valid formation found")
         return None
 
-    # Now evaluate using TRUE points
+    # Nun mit echten Punkten bewerten
     eval_result = evaluate_xi(best_xi, truth_gw_df, candidates)
 
     return {
@@ -440,20 +440,20 @@ def select_best_team_for_gw(
 
 
 def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) -> None:
-    """Run team backtest and generate outputs.
+    """Fuehrt Team-Backtest aus und erzeugt Ausgaben.
 
     Args:
-        season: Season string (e.g., "2023-24")
-        gw_start: First gameweek
-        gw_end: Last gameweek (inclusive)
-        methods: List of methods to evaluate (e.g., ["rf", "ma3", "pos"])
+        season: Saisonstring (z.B. "2023-24")
+        gw_start: Erste Spielwoche
+        gw_end: Letzte Spielwoche (inklusive)
+        methods: Liste der Methoden (z.B. ["rf", "ma3", "pos"])
     """
     logger.info("=" * 70)
     logger.info(f"Team Backtest: {season}, GW{gw_start}-{gw_end}")
     logger.info(f"Methods: {', '.join(methods)}")
     logger.info("=" * 70)
 
-    # Load truth data once
+    # Echte Daten einmal laden
     truth_df = load_truth(season)
     if truth_df is None:
         logger.error("Cannot proceed without truth data")
@@ -466,7 +466,7 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
         logger.info(f"GW{gw}")
         logger.info(f"{'='*70}")
 
-        # Get truth for this GW
+    # Echte Daten fuer diese GW holen
         truth_gw = truth_df[truth_df["gw"] == gw].copy()
 
         if truth_gw.empty:
@@ -478,13 +478,13 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
         for method in methods:
             logger.info(f"\n  Method: {method.upper()}")
 
-            # Load predictions
+        # Prognosen laden
             pred_df = load_predictions(gw, method)
             if pred_df is None:
                 logger.warning(f"  GW{gw} ({method}): No predictions, skipping")
                 continue
 
-            # Select team
+        # Team auswaehlen
             team_result = select_best_team_for_gw(pred_df, truth_gw)
 
             if team_result is None:
@@ -531,16 +531,16 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
         logger.error("No results generated!")
         return
 
-    # Create detailed results DataFrame
+    # Detaillierten Ergebnis-DataFrame erstellen
     results_df = pd.DataFrame(results)
 
-    # Save detailed results
+    # Detaillierte Resultate speichern
     detail_filename = f"team_backtest_{season}_gw{gw_start}-{gw_end}.csv"
     detail_path = OUT_DIR / detail_filename
     results_df.to_csv(detail_path, index=False)
     logger.info(f"\n✓ Saved detailed results: {detail_filename}")
 
-    # Compute summary statistics
+    # Zusammenfassende Statistik berechnen
     summary_df = (
         results_df[results_df["xi_points"] > 0]
         .groupby("method")
@@ -554,13 +554,13 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
 
     summary_df = summary_df.sort_values("avg_xi_points", ascending=False)
 
-    # Save summary
+    # Zusammenfassung speichern
     summary_filename = f"team_backtest_summary_{season}_gw{gw_start}-{gw_end}.csv"
     summary_path = OUT_DIR / summary_filename
     summary_df.to_csv(summary_path, index=False)
     logger.info(f"✓ Saved summary: {summary_filename}")
 
-    # Display summary
+    # Zusammenfassung anzeigen
     logger.info("\n" + "=" * 70)
     logger.info("SUMMARY STATISTICS")
     logger.info("=" * 70)
@@ -577,13 +577,13 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
 def create_comparison_plot(
     summary_df: pd.DataFrame, season: str, gw_start: int, gw_end: int
 ) -> None:
-    """Create bar chart comparing methods.
+    """Erstellt ein Balkendiagramm zum Methodenvergleich.
 
     Args:
-        summary_df: Summary statistics DataFrame
-        season: Season string
-        gw_start: First gameweek
-        gw_end: Last gameweek
+        summary_df: DataFrame mit Zusammenfassungsstatistik
+        season: Saisonstring
+        gw_start: Erste Spielwoche
+        gw_end: Letzte Spielwoche
     """
     if summary_df.empty:
         logger.warning("No data to plot")
@@ -595,15 +595,15 @@ def create_comparison_plot(
     avg_points = summary_df["avg_xi_points"].tolist()
     std_points = summary_df["std_xi_points"].fillna(0).tolist()
 
-    # Use distinct colors
+    # Unterschiedliche Farben verwenden
     colors = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"][: len(methods)]
 
-    # Create bar chart
+    # Balkendiagramm erstellen
     bars = plt.bar(
         methods, avg_points, color=colors, alpha=0.8, edgecolor="black", linewidth=1.5
     )
 
-    # Add error bars
+    # Fehlerbalken hinzufuegen
     plt.errorbar(
         range(len(methods)),
         avg_points,
@@ -615,7 +615,7 @@ def create_comparison_plot(
         elinewidth=2,
     )
 
-    # Add value labels on bars
+    # Wertebeschriftungen auf die Balken setzen
     for i, (bar, val) in enumerate(zip(bars, avg_points)):
         height = bar.get_height()
         plt.text(
@@ -642,7 +642,7 @@ def create_comparison_plot(
     plt.ylim(bottom=0)
     plt.tight_layout()
 
-    # Save plot
+    # Grafik speichern
     plot_filename = f"team_backtest_{season}_gw{gw_start}-{gw_end}.png"
     plot_path = OUT_DIR / plot_filename
     plt.savefig(plot_path, dpi=300, bbox_inches="tight")
@@ -651,7 +651,7 @@ def create_comparison_plot(
 
 
 def main():
-    """Main entry point."""
+    """Haupteinstiegspunkt."""
     parser = argparse.ArgumentParser(
         description="Team backtest: Compare prediction methods via team selection"
     )

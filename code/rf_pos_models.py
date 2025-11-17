@@ -2,10 +2,11 @@
 """
 rf_pos_models.py
 
-Train four position-specific RandomForestRegressor models (GK/DEF/MID/FWD) using rolling features.
-Evaluate sequentially on test gameweeks without leakage and output predictions + summaries.
+Trainiert vier positionsspezifische RandomForestRegressor-Modelle (GK/DEF/MID/FWD)
+unter Verwendung von Rolling-Features. Bewertet sequentiell auf Test-Spielwochen
+ohne Leakage und gibt Prognosen sowie Zusammenfassungen aus.
 
-Usage:
+Verwendung:
     python code/rf_pos_models.py --season 2022-23 --start_gw 30 --end_gw 38
 """
 
@@ -25,14 +26,14 @@ warnings.filterwarnings("ignore")
 
 
 # -------------------------------------------------------------------------
-# Feature engineering
+# Feature Engineering
 # -------------------------------------------------------------------------
 def compute_rolling_features(df, group_cols=None, window=3):
     """
-    Compute rolling features for each player (grouped by name).
-    Strictly uses past data (shift(1) before rolling).
+    Berechnet Rolling-Features je Spieler (gruppiert nach Name).
+    Verwendet strikt Vergangenheitsdaten (shift(1) vor dem Rolling).
 
-    Returns a DataFrame with original columns + rolling features.
+    Liefert einen DataFrame mit Originalspalten plus Rolling-Features.
     """
     if group_cols is None:
         group_cols = ["name"]
@@ -46,13 +47,13 @@ def compute_rolling_features(df, group_cols=None, window=3):
         "threat",
     ]
 
-    # Ensure we have the columns
+    # Sicherstellen, dass die Spalten vorhanden sind
     available = [c for c in feature_cols if c in df.columns]
 
     df_sorted = df.sort_values(group_cols + ["GW"]).copy()
 
     for col in available:
-        # Shift by 1 to avoid leakage, then rolling mean
+    # Um 1 verschieben, um Leakage zu vermeiden; dann Gleitmittelwert
         shifted = df_sorted.groupby(group_cols)[col].shift(1)
         rolled = shifted.rolling(window=window, min_periods=1).mean()
         df_sorted[f"{col}_ma{window}"] = rolled
@@ -62,12 +63,12 @@ def compute_rolling_features(df, group_cols=None, window=3):
 
 def build_features(row):
     """
-    Build feature vector for a single row.
-    Returns dict of features with robust defaults.
+    Erstellt einen Feature-Vektor fuer eine einzelne Zeile.
+    Gibt ein Dict der Features mit robusten Defaults zurueck.
     """
     feats = {}
 
-    # Rolling features
+    # Rolling-Features
     for col in [
         "minutes_ma3",
         "total_points_ma3",
@@ -80,24 +81,24 @@ def build_features(row):
         if pd.isna(feats[col]):
             feats[col] = 0.0
 
-    # Home flag
+    # Heim-Flag
     feats["home"] = 1.0 if row.get("was_home", False) else 0.0
 
-    # Opponent strength (optional)
+    # Gegnerstaerke (optional)
     opp_str = row.get("opponent_strength", None)
     if opp_str is not None and not pd.isna(opp_str):
         feats["opponent_strength"] = float(opp_str)
     else:
         feats["opponent_strength"] = 3.0  # neutral default
 
-    # Simple interaction
+    # Einfache Interaktion
     feats["minutes_x_ict"] = feats["minutes_ma3"] * feats["ict_index_ma3"]
 
     return feats
 
 
 # -------------------------------------------------------------------------
-# Model training & prediction
+# Modell-Training & Prognose
 # -------------------------------------------------------------------------
 def train_position_models(
     train_df,
@@ -108,8 +109,8 @@ def train_position_models(
     random_state=42,
 ):
     """
-    Train one RandomForestRegressor per position on training data.
-    Returns dict: {pos: model}
+    Trainiert je Position einen RandomForestRegressor auf den Trainingsdaten.
+    Rueckgabe: Dict {pos: model}
     """
     models = {}
 
@@ -120,7 +121,7 @@ def train_position_models(
             models[pos] = None
             continue
 
-        # Build feature matrix
+    # Feature-Matrix erstellen
         X_list = []
         y_list = []
 
@@ -132,7 +133,7 @@ def train_position_models(
         X = np.array(X_list)
         y = np.array(y_list)
 
-        # Set tuned hyperparameters for FWD and DEF only
+    # Abgestimmte Hyperparameter nur fuer FWD und DEF verwenden
         if pos in ["FWD", "DEF"]:
             model = RandomForestRegressor(
                 n_estimators=100,
@@ -159,8 +160,8 @@ def train_position_models(
 
 def predict_gameweek(models, gw_df):
     """
-    Predict total_points for all players in gw_df using position-specific models.
-    Returns dict: {player_name: prediction}
+    Sagt total_points fuer alle Spieler in gw_df anhand positionsspezifischer Modelle voraus.
+    Rueckgabe: Dict {player_name: prediction}
     """
     predictions = {}
 
@@ -179,11 +180,11 @@ def predict_gameweek(models, gw_df):
 
 
 # -------------------------------------------------------------------------
-# Evaluation
+# Auswertung
 # -------------------------------------------------------------------------
 def evaluate_predictions(y_true, y_pred):
     """
-    Compute MAE, RMSE, Spearman correlation.
+    Berechnet MAE, RMSE und Spearman-Korrelation.
     """
     y_true = np.array(y_true)
     y_pred = np.array(y_pred)

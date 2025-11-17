@@ -1,11 +1,11 @@
-"""Defensive team metrics: rolling xGA with shrinkage.
+"""Defensive Teamkennzahlen: Rolling-xGA mit Shrinkage.
 
-Provides compute_team_def_metrics which builds rolling defensive metrics
-per team and gameweek and applies James-Stein-like shrinkage towards the
-league mean for each GW and context (home/away/all).
+Stellt compute_team_def_metrics bereit, welches rolling defensive Kennzahlen
+pro Team und Spielwoche erstellt und eine James-Stein-aehnliche Shrinkage
+gegenueber dem Liga-Mittel pro GW und Kontext (home/away/all) anwendet.
 
-The function is defensive about missing columns and will prefer 'xGA'
-if present, otherwise 'goals_against'.
+Die Funktion geht vorsichtig mit fehlenden Spalten um und bevorzugt 'xGA',
+falls vorhanden, sonst 'goals_against'.
 """
 
 from __future__ import annotations
@@ -24,25 +24,24 @@ def compute_team_def_metrics(
     results_df: pd.DataFrame, window: int = 5, k: int = 3
 ) -> pd.DataFrame:
     """
-    Build rolling defensive metrics per team and GW.
+    Erstellt Rolling-Defensivmetriken pro Team und Spielwoche.
 
-    Input columns expected:
-      - 'gw', 'date', 'team', 'opponent', 'home_away' in {'H','A'}, and either 'xGA' or 'goals_against'.
+    Erwartete Eingangsspalten:
+      - 'gw', 'date', 'team', 'opponent', 'home_away' in {'H','A'} sowie 'xGA' oder 'goals_against'.
 
-    Steps implemented:
-      1) For each team, compute rolling mean of xGA (or GA) over last `window` matches,
-         split by home/away and overall; no leakage (shift by 1 before rolling).
-      2) Compute league mean mu per GW and context by averaging the team's rolling
-         values for that GW (these rolling values are already shifted so they don't
-         include the current match). Apply shrinkage: alpha = n / (n + k);
-         adj = alpha * rolling + (1-alpha) * mu; if n == 0 fallback to mu.
-      3) Provide columns: team_xga_l5_home_adj, team_xga_l5_away_adj, team_xga_l5_all_adj.
-      4) Return a tidy frame keyed by ['team','gw'] with these columns.
+    Implementierte Schritte:
+      1) Fuer jedes Team Rolling-Mittel von xGA (oder GA) ueber die letzten `window` Spiele,
+         getrennt nach Heim/Auswaerts und gesamt; kein Leakage (shift(1) vor Rolling).
+      2) Liga-Mittel mu pro GW und Kontext berechnen (Mittel der Team-Rollingwerte; diese sind
+         bereits verschoben und enthalten das aktuelle Spiel nicht). Shrinkage anwenden:
+         alpha = n / (n + k); adj = alpha * rolling + (1-alpha) * mu; bei n == 0 auf mu zurueckfallen.
+      3) Spalten ausgeben: team_xga_l5_home_adj, team_xga_l5_away_adj, team_xga_l5_all_adj.
+      4) Einen aufgeraumten Frame nach ['team','gw'] mit diesen Spalten zurueckgeben.
 
     Returns
     -------
     pd.DataFrame
-        Columns: ['team', 'gw', 'team_xga_l{window}_home_adj', 'team_xga_l{window}_away_adj', 'team_xga_l{window}_all_adj']
+        Spalten: ['team', 'gw', 'team_xga_l{window}_home_adj', 'team_xga_l{window}_away_adj', 'team_xga_l{window}_all_adj']
     """
 
     if results_df is None or results_df.empty:
@@ -58,7 +57,7 @@ def compute_team_def_metrics(
 
     df = results_df.copy()
 
-    # pick xga column
+    # xGA-Spalte bestimmen
     if "xGA" in df.columns:
         xga_col = "xGA"
     elif "goals_against" in df.columns:
@@ -66,12 +65,12 @@ def compute_team_def_metrics(
     else:
         raise ValueError("Input must contain either 'xGA' or 'goals_against' column")
 
-    # ensure necessary columns
+    # Noetige Spalten sicherstellen
     for col in ("gw", "team", "home_away"):
         if col not in df.columns:
             raise ValueError(f"Input must contain column '{col}'")
 
-    # normalize types
+    # Typen normalisieren
     df = df.copy()
     # Use gw and date for ordering; if date missing, fallback to gw order
     if "date" in df.columns:
@@ -83,7 +82,7 @@ def compute_team_def_metrics(
     else:
         df["_order"] = pd.to_timedelta(df["gw"].astype(int), unit="d")
 
-    # helper to compute shifted rolling mean and count per group
+    # Helfer zum Berechnen von verschobenem Rolling-Mittel und Anzahl je Gruppe
     def _rolling_stats(group: pd.DataFrame, by_cols: Optional[tuple] = None):
         s = group.sort_values("_order")[xga_col]
         shifted = s.shift(1)
@@ -91,7 +90,7 @@ def compute_team_def_metrics(
         roll_count = shifted.rolling(window=window, min_periods=0).count()
         return roll_mean, roll_count
 
-    # overall rolling per team
+    # Gesamt-Rolling pro Team
     overall_roll_mean = []
     for name, grp in df.groupby("team"):
         mean_series, n_series = _rolling_stats(grp)
@@ -106,7 +105,7 @@ def compute_team_def_metrics(
         )
     overall_roll = pd.concat(overall_roll_mean).set_index("_idx").sort_index()
 
-    # home/away rolling per team
+    # Heim-/Auswaerts-Rolling pro Team
     ha_roll_mean = []
     for (team, ha), grp in df.groupby(["team", "home_away"]):
         mean_series, n_series = _rolling_stats(grp)
@@ -125,10 +124,10 @@ def compute_team_def_metrics(
 
     ha_roll = pd.concat(ha_roll_mean).set_index("_idx").sort_index()
 
-    # merge rolling back into df
+    # Rolling zurueck in den df mergen
     df = df.join(overall_roll, how="left").join(ha_roll, how="left")
 
-    # fill missing n with 0
+    # Fehlende n mit 0 fuellen
     df["team_xga_n_all"] = df["team_xga_n_all"].fillna(0).astype(float)
     if "team_xga_n_H" in df.columns:
         df["team_xga_n_H"] = df["team_xga_n_H"].fillna(0).astype(float)
@@ -139,8 +138,8 @@ def compute_team_def_metrics(
     else:
         df["team_xga_n_A"] = 0.0
 
-    # rolling means may be NaN where no prior matches; keep as NaN
-    # compute league-level mu per gw and context by averaging team rolling values for that gw
+    # Rolling-Mittel koennen NaN sein, wenn es keine vorherigen Spiele gibt; als NaN belassen
+    # Liga-Mittel mu pro GW und Kontext berechnen, indem Team-Rollingwerte pro GW gemittelt werden
     def _league_mu(col_name: str):
         mu = df.groupby("gw")[col_name].mean()
         return mu
@@ -149,18 +148,18 @@ def compute_team_def_metrics(
     mu_H = _league_mu("team_xga_roll_H")
     mu_A = _league_mu("team_xga_roll_A")
 
-    # map mus to rows
+    # mus auf Zeilen abbilden
     df["mu_all"] = df["gw"].map(mu_all).astype(float)
     df["mu_H"] = df["gw"].map(mu_H).astype(float)
     df["mu_A"] = df["gw"].map(mu_A).astype(float)
 
-    # fallback: if mu is nan (e.g., early GWs), use global mean of xga (shifted: mean of past observed xga)
+    # Fallback: wenn mu NaN ist (z.B. fruehe GWs), globalen Mittelwert von xga verwenden
     global_prior = df[xga_col].mean()
     df["mu_all"] = df["mu_all"].fillna(global_prior)
     df["mu_H"] = df["mu_H"].fillna(global_prior)
     df["mu_A"] = df["mu_A"].fillna(global_prior)
 
-    # compute shrinkage-adjusted estimates
+    # Shrinkage-adjustierte Schaetzwerte berechnen
     def _shrink(roll_col: str, n_col: str, mu_col: str, out_name: str):
         n = df[n_col].astype(float)
         alpha = n / (n + float(k))
@@ -171,7 +170,7 @@ def compute_team_def_metrics(
         adj = adj.where(n > 0, mu)
         df[out_name] = adj
 
-    # ensure roll cols exist (may be missing for some ha)
+    # Sicherstellen, dass Roll-Spalten existieren (koennen fuer manche HA fehlen)
     for col in ["team_xga_roll_all", "team_xga_roll_H", "team_xga_roll_A"]:
         if col not in df.columns:
             df[col] = np.nan

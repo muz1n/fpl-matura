@@ -1,8 +1,9 @@
-"""CLI to compute and save team defensive metrics.
+"""CLI zum Berechnen und Speichern defensiver Team-Kennzahlen.
 
-Loads player gameweek data for a season, computes team defensive metrics and
-optionally attaches opponent-strength features back to player rows and saves
-the outputs. Uses file-based module loading to avoid package import issues.
+Ladet Spieler-GW-Daten fuer eine Saison, berechnet defensive Team-Metriken und
+haengt optional Gegnerstaerke-Features wieder an die Spielerzeilen an und
+speichert die Resultate. Verwendet dateibasierte Modul-Ladung, um
+Import-Probleme mit Packages zu vermeiden.
 """
 
 import argparse
@@ -42,7 +43,7 @@ def main(argv: Optional[list] = None):
             f"Warning: no player GW data found for season {args.season}; outputs may be empty"
         )
 
-    # compute and save team defensive metrics
+    # Defensivmetriken fuer Teams berechnen und speichern
     team_metrics = dm.compute_team_def_metrics(
         player_gw, window=args.opp_window, k=args.opp_k
     )

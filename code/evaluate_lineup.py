@@ -1,7 +1,8 @@
-"""Evaluate lineup decisions against actual FPL points.
+"""Beurteilung von Aufstellungen im Vergleich zu tatsaechlichen FPL-Punkten.
 
-This script loads lineup JSON files, computes actual team points, and compares
-against hindsight-optimal lineups to measure decision quality.
+Dieses Skript liest Aufstellungs-JSONs, berechnet die tatsaechlichen Teampunkte
+und vergleicht sie mit rueckblickend optimalen Aufstellungen, um die
+Entscheidungsqualitaet zu messen.
 """
 
 import argparse
@@ -16,7 +17,7 @@ import numpy as np
 import pandas as pd
 
 
-# FPL formation constraints
+# FPL-Formationsregeln
 ALLOWED_FORMATIONS = [
     "3-4-3",
     "3-5-2",
@@ -39,17 +40,17 @@ POS_SLOTS = {
 
 
 def load_lineups(pattern: str) -> List[Dict]:
-    """Load all lineup JSON files matching the pattern.
+    """Ladet alle Aufstellungs-JSONs, die zum Muster passen.
 
     Args:
-        pattern: Glob pattern for lineup files (e.g., 'out/lineup_gw*.json')
+        pattern: Glob-Muster fuer Aufstellungsdateien (z.B. 'out/lineup_gw*.json')
 
     Returns:
-        List of lineup dictionaries with gw, xi_ids, bench_gk_id, bench_out_ids
+        Liste von Dictionarys mit gw, xi_ids, bench_gk_id, bench_out_ids
 
     Raises:
-        FileNotFoundError: If no lineup files are found
-        ValueError: If JSON files have unexpected structure
+        FileNotFoundError: Wenn keine Dateien gefunden werden
+        ValueError: Bei unerwarteter JSON-Struktur
     """
     lineup_files = glob.glob(pattern)
 
@@ -65,7 +66,7 @@ def load_lineups(pattern: str) -> List[Dict]:
             with open(lineup_file, "r") as f:
                 data = json.load(f)
 
-            # Validate required fields
+            # Pflichtfelder pruefen
             required_fields = {"gw", "xi_ids", "bench_gk_id", "bench_out_ids"}
             missing_fields = required_fields - set(data.keys())
             if missing_fields:
@@ -95,16 +96,16 @@ def load_lineups(pattern: str) -> List[Dict]:
 
 
 def load_actuals(data_paths: List[str]) -> pd.DataFrame:
-    """Load actual points from merged gameweek CSV files.
+    """Ladet die tatsaechlichen Punkte aus zusammengefuehrten GW-CSV-Dateien.
 
     Args:
-        data_paths: List of paths to merged_gw CSV files
+        data_paths: Liste von Pfaden zu merged_gw-CSV-Dateien
 
     Returns:
-        DataFrame with columns: player_id, gw, total_points, position
+        DataFrame mit Spalten: player_id, gw, total_points, position
 
     Raises:
-        FileNotFoundError: If no data files exist
+        FileNotFoundError: Falls keine Dateien existieren
     """
     all_actuals = []
 
@@ -117,7 +118,7 @@ def load_actuals(data_paths: List[str]) -> pd.DataFrame:
         try:
             df = pd.read_csv(data_path)
 
-            # Check for required columns
+            # Pruefe Pflichtspalten
             required_cols = ["element", "GW", "total_points", "position"]
             missing_cols = set(required_cols) - set(df.columns)
             if missing_cols:
@@ -127,7 +128,7 @@ def load_actuals(data_paths: List[str]) -> pd.DataFrame:
                 )
                 continue
 
-            # Rename to standard names
+            # Spalten auf Standardnamen abbilden
             actuals = df[required_cols].copy()
             actuals.columns = ["player_id", "gw", "total_points", "position"]
 
@@ -151,17 +152,17 @@ def load_actuals(data_paths: List[str]) -> pd.DataFrame:
 
 
 def load_squad_file(squad_path: str, gw: int) -> pd.DataFrame:
-    """Load the 15-man squad file for a specific gameweek.
+    """Ladet die 15-Spieler-Kaderdatei fuer eine bestimmte Spielwoche.
 
     Args:
-        squad_path: Path to squad CSV file
-        gw: Gameweek number
+        squad_path: Pfad zur Squad-CSV
+        gw: Spielwochen-Nummer
 
     Returns:
-        DataFrame with player_id, position, and other squad info
+        DataFrame mit player_id, position und weiteren Kaderinfos
 
     Raises:
-        FileNotFoundError: If squad file doesn't exist
+        FileNotFoundError: Falls die Datei nicht existiert
     """
     path = Path(squad_path)
     if not path.exists():
@@ -172,7 +173,7 @@ def load_squad_file(squad_path: str, gw: int) -> pd.DataFrame:
 
     df = pd.read_csv(squad_path)
 
-    # Check for required columns
+    # Pflichtspalten pruefen
     if "player_id" not in df.columns:
         # Try 'element' as alternative
         if "element" in df.columns:
@@ -215,10 +216,10 @@ def validate_lineup(
     if not validation["exactly_11_xi"]:
         return validation
 
-    # Create position lookup
+    # Positions-Nachschlagetabelle erstellen
     pos_lookup = dict(zip(squad_df["player_id"], squad_df["position"]))
 
-    # Count positions in XI
+    # Positionen in der Startelf zaehlen
     xi_positions = [pos_lookup.get(pid, "UNKNOWN") for pid in xi_ids]
     pos_counts = {
         "GK": xi_positions.count("GK"),
@@ -229,7 +230,7 @@ def validate_lineup(
 
     validation["has_1_gk_in_xi"] = pos_counts["GK"] == 1
 
-    # Check if formation is valid
+    # Pruefen, ob die Formation gueltig ist
     for formation in ALLOWED_FORMATIONS:
         if POS_SLOTS[formation] == pos_counts:
             validation["valid_formation"] = True
@@ -239,15 +240,15 @@ def validate_lineup(
 
 
 def compute_team_points(player_ids: List[int], actuals: pd.DataFrame, gw: int) -> float:
-    """Compute total actual points for a list of players in a gameweek.
+    """Berechnet die Summe tatsaechlicher Punkte einer Spielerliste in einer Spielwoche.
 
     Args:
-        player_ids: List of player IDs
-        actuals: DataFrame with player_id, gw, total_points
-        gw: Gameweek number
+        player_ids: Liste von Spieler-IDs
+        actuals: DataFrame mit player_id, gw, total_points
+        gw: Spielwochen-Nummer
 
     Returns:
-        Sum of actual points for the players
+        Summe der echten Punkte fuer diese Spieler
     """
     gw_actuals = actuals[actuals["gw"] == gw]
     points = gw_actuals[gw_actuals["player_id"].isin(player_ids)]["total_points"].sum()
@@ -257,31 +258,31 @@ def compute_team_points(player_ids: List[int], actuals: pd.DataFrame, gw: int) -
 def find_best_xi_for_formation(
     squad_df: pd.DataFrame, actuals: pd.DataFrame, gw: int, formation: str
 ) -> Tuple[List[int], float]:
-    """Find the best XI for a specific formation using actual points.
+    """Findet die beste Startelf fuer eine Formation anhand echter Punkte.
 
     Args:
-        squad_df: DataFrame with player_id and position
-        actuals: DataFrame with player_id, gw, total_points
-        gw: Gameweek number
-        formation: Formation string (e.g., '4-4-2')
+        squad_df: DataFrame mit player_id und position
+        actuals: DataFrame mit player_id, gw, total_points
+        gw: Spielwochen-Nummer
+        formation: Formation (z.B. '4-4-2')
 
     Returns:
-        Tuple of (best_xi_ids, total_points)
+        Tupel (beste_xi_ids, gesamtpunkte)
     """
     if formation not in POS_SLOTS:
         return [], 0.0
 
-    # Merge squad with actuals for this GW
+    # Kader mit den echten Punkten dieser Spielwoche verbinden
     gw_actuals = actuals[actuals["gw"] == gw][["player_id", "total_points"]]
     squad_with_points = squad_df.merge(gw_actuals, on="player_id", how="left")
     squad_with_points["total_points"] = squad_with_points["total_points"].fillna(0.0)
 
-    # Group by position
+    # Nach Position gruppieren
     by_position = {}
     for pos in ["GK", "DEF", "MID", "FWD"]:
         by_position[pos] = squad_with_points[squad_with_points["position"] == pos]
 
-    # Check if we have enough players for this formation
+    # Pruefen, ob genug Spieler fuer diese Formation vorhanden sind
     slots = POS_SLOTS[formation]
     for pos, needed in slots.items():
         if len(by_position[pos]) < needed:
@@ -290,8 +291,8 @@ def find_best_xi_for_formation(
     best_xi = []
     best_points = -1.0
 
-    # Generate all valid combinations for this formation
-    # Sort each position by points descending for early pruning
+    # Alle gueltigen Kombinationen fuer diese Formation erzeugen
+    # Pro Position nach Punkten absteigend sortieren, um frueh zu kuerzen
     pos_candidates = {}
     for pos in ["GK", "DEF", "MID", "FWD"]:
         sorted_pos = by_position[pos].sort_values("total_points", ascending=False)
@@ -330,15 +331,15 @@ def find_best_xi_for_formation(
 def compute_hindsight_best_xi(
     squad_df: pd.DataFrame, actuals: pd.DataFrame, gw: int
 ) -> Tuple[List[int], float, Optional[str]]:
-    """Find the best possible XI from the squad using hindsight (actual points).
+    """Findet rueckblickend die bestmoegliche Startelf anhand echter Punkte.
 
     Args:
-        squad_df: DataFrame with player_id and position
-        actuals: DataFrame with player_id, gw, total_points
-        gw: Gameweek number
+        squad_df: DataFrame mit player_id und position
+        actuals: DataFrame mit player_id, gw, total_points
+        gw: Spielwochen-Nummer
 
     Returns:
-        Tuple of (best_xi_ids, best_points, best_formation)
+        Tupel (beste_xi_ids, beste_punkte, beste_formation)
     """
     best_xi = []
     best_points = -1.0
@@ -361,19 +362,19 @@ def compute_bench_loss(
     actuals: pd.DataFrame,
     gw: int,
 ) -> float:
-    """Compute points lost by benching players who would have improved the XI.
+    """Berechnet Punkteverlust durch Bank, wenn Spieler die Startelf verbessert haetten.
 
     Args:
-        xi_ids: Starting XI player IDs
-        bench_out_ids: Benched outfield player IDs
-        squad_df: DataFrame with player_id and position
-        actuals: DataFrame with player_id, gw, total_points
-        gw: Gameweek number
+        xi_ids: IDs der Startelf
+        bench_out_ids: IDs der Feldspieler auf der Bank
+        squad_df: DataFrame mit player_id und position
+        actuals: DataFrame mit player_id, gw, total_points
+        gw: Spielwochen-Nummer
 
     Returns:
-        Total points that could have been gained by optimal bench decisions
+        Gesamtpunkte, die durch optimale Bank-Entscheide erreichbar waeren
     """
-    # Get actual points for XI and bench
+    # Echte Punkte fuer Startelf und Bank holen
     gw_actuals = actuals[actuals["gw"] == gw][["player_id", "total_points"]]
 
     xi_points = gw_actuals[gw_actuals["player_id"].isin(xi_ids)]
@@ -382,16 +383,16 @@ def compute_bench_loss(
     if xi_points.empty or bench_points.empty:
         return 0.0
 
-    # Find minimum points in XI
+    # Minimum-Punkte in der Startelf ermitteln
     min_xi_points = xi_points["total_points"].min()
 
-    # Sum of bench points that exceed minimum XI points
+    # Summe der Bankpunkte, die das Minimum der Startelf uebersteigen
     bench_better = bench_points[bench_points["total_points"] > min_xi_points][
         "total_points"
     ].sum()
 
-    # Simplified bench loss: potential points left on bench
-    # A more sophisticated version would consider formation constraints
+    # Vereinfachter Bankverlust: potentielle Punkte auf der Bank
+    # Eine detailliertere Variante wuerde Formationsregeln beruecksichtigen
     loss = max(0.0, bench_better - min_xi_points * len(bench_out_ids))
 
     return float(loss)
@@ -400,36 +401,36 @@ def compute_bench_loss(
 def evaluate_lineup(
     lineup: Dict, actuals: pd.DataFrame, squad_df: pd.DataFrame
 ) -> Dict:
-    """Evaluate a single lineup against actuals.
+    """Bewertet eine Aufstellung im Vergleich zu echten Punkten.
 
     Args:
-        lineup: Dictionary with gw, xi_ids, bench_gk_id, bench_out_ids
-        actuals: DataFrame with actual points
-        squad_df: DataFrame with squad information
+        lineup: Dictionary mit gw, xi_ids, bench_gk_id, bench_out_ids
+        actuals: DataFrame mit echten Punkten
+        squad_df: DataFrame mit Kaderinformationen
 
     Returns:
-        Dictionary with evaluation metrics
+        Dictionary mit Auswertungskennzahlen
     """
     gw = lineup["gw"]
     xi_ids = lineup["xi_ids"]
     bench_gk_id = lineup["bench_gk_id"]
     bench_out_ids = lineup["bench_out_ids"]
 
-    # Validate lineup
+    # Aufstellung validieren
     validation = validate_lineup(xi_ids, bench_gk_id, bench_out_ids, squad_df)
 
-    # Compute actual team points
+    # Tatsaechliche Teampunkte berechnen
     team_points_xi = compute_team_points(xi_ids, actuals, gw)
 
-    # Compute hindsight best XI
+    # Rueckblickend beste Startelf bestimmen
     hindsight_xi_ids, hindsight_points, hindsight_formation = compute_hindsight_best_xi(
         squad_df, actuals, gw
     )
 
-    # Compute XI gap
+    # Luecke zur optimalen Startelf
     xi_gap = hindsight_points - team_points_xi
 
-    # Compute bench loss
+    # Punkteverlust durch Bank berechnen
     bench_loss = compute_bench_loss(xi_ids, bench_out_ids, squad_df, actuals, gw)
 
     return {
@@ -445,13 +446,13 @@ def evaluate_lineup(
 
 
 def aggregate_metrics(evaluations: List[Dict]) -> Dict:
-    """Aggregate metrics across all evaluations.
+    """Fasst Kennzahlen ueber alle Auswertungen zusammen.
 
     Args:
-        evaluations: List of evaluation dictionaries
+        evaluations: Liste von Auswertungs-Dictionaries
 
     Returns:
-        Dictionary with aggregated metrics
+        Dictionary mit aggregierten Kennzahlen
     """
     if not evaluations:
         return {}
@@ -460,14 +461,14 @@ def aggregate_metrics(evaluations: List[Dict]) -> Dict:
     bench_losses = [e["bench_loss"] for e in evaluations]
     valid_count = sum(1 for e in evaluations if e["is_valid"])
 
-    # Collect validation failures
+    # Validierungsfehler sammeln
     validation_summary = {
         "total_lineups": len(evaluations),
         "valid_lineups": valid_count,
         "validity_rate": valid_count / len(evaluations) if evaluations else 0.0,
     }
 
-    # Count specific validation issues
+    # Spezifische Validierungsprobleme zaehlen
     for key in ["exactly_11_xi", "has_1_gk_in_xi", "valid_formation", "no_duplicates"]:
         failures = sum(1 for e in evaluations if not e["validation"][key])
         validation_summary[f"{key}_failures"] = failures
@@ -488,11 +489,11 @@ def aggregate_metrics(evaluations: List[Dict]) -> Dict:
 
 
 def print_summary(aggregated: Dict, evaluations: List[Dict]) -> None:
-    """Print a compact summary of evaluation results.
+    """Gibt eine kompakte Zusammenfassung der Ergebnisse aus.
 
     Args:
-        aggregated: Dictionary of aggregated metrics
-        evaluations: List of individual evaluation results
+        aggregated: Dictionary mit aggregierten Kennzahlen
+        evaluations: Liste der Einzelauswertungen
     """
     print("\n" + "=" * 70)
     print("LINEUP EVALUATION SUMMARY")
@@ -541,12 +542,12 @@ def print_summary(aggregated: Dict, evaluations: List[Dict]) -> None:
 def save_results(
     aggregated: Dict, evaluations: List[Dict], output_dir: str = "out"
 ) -> None:
-    """Save evaluation results to files.
+    """Speichert Auswertungsergebnisse in Dateien.
 
     Args:
-        aggregated: Dictionary of aggregated metrics
-        evaluations: List of evaluation dictionaries
-        output_dir: Directory to save results
+        aggregated: Dictionary mit aggregierten Kennzahlen
+        evaluations: Liste der Auswertungs-Dictionaries
+        output_dir: Zielverzeichnis fuer Resultate
     """
     output_path = Path(output_dir)
     output_path.mkdir(parents=True, exist_ok=True)
@@ -565,7 +566,7 @@ def save_results(
 
 
 def main():
-    """Main entry point for the lineup evaluation script."""
+    """Haupteinstiegspunkt fuer das Aufstellungs-Evaluationsskript."""
     parser = argparse.ArgumentParser(
         description="Evaluate FPL lineup decisions against actual points",
         formatter_class=argparse.RawDescriptionHelpFormatter,
