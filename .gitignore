@@ -199,6 +199,12 @@ out/*
 docs/plots/*
 !out/.gitkeep
 !docs/plots/.gitkeep
+
+# Project specific
+archive/
+*.bak
+*.tmp
+
 # Node.js / Next.js
 node_modules/
 .next/
