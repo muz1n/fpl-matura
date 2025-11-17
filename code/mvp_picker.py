@@ -9,13 +9,13 @@ from collections import defaultdict, Counter
 # ----------------- Konfiguration -----------------
 CSV_PATH_DEFAULT = "data/cleaned_players_2025-26.csv"
 BUDGET = 100.0
-FORMATION = {"GK": 1, "DEF": 3, "MID": 5, "FWD": 2}  # Experten-Trend für GW1
+FORMATION = {"GK": 1, "DEF": 3, "MID": 5, "FWD": 2}  # Experten-Trend fuer GW1
 BENCH = {"GK": 1, "DEF": 1, "MID": 1, "FWD": 1}
 MAX_PER_CLUB = 3
 
-# feste Mindestpreise + Puffer -> garantiert Budget für die Bank
+# Feste Mindestpreise + Puffer -> garantiert Budget fuer die Bank
 BENCH_MIN = {"GK": 4.0, "DEF": 4.0, "MID": 4.5, "FWD": 4.5}
-BENCH_CUSHION = 1.0  # kleine Reserve, damit Total i.d.R. < 100 bleibt
+BENCH_CUSHION = 1.0  # Kleine Reserve, damit Total i.d.R. < 100 bleibt
 
 
 # ----------------- Utils -----------------

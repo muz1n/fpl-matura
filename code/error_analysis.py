@@ -1,23 +1,23 @@
 #!/usr/bin/env python3
 """
-Error-/Ranking-Analyse (Residuals, Ausreißer, per Position)
+Fehler-/Ranking-Analyse (Residuen, Ausreisser, pro Position)
 
-Usage (from repo root):
+Verwendung (vom Repo-Root):
   python code\\error_analysis.py
 
-Inputs
-- Picks latest CSV: out/detailed_results_*.csv
-  Expected columns (robust to variations):
+Eingaben
+- Laedt neustes CSV: out/detailed_results_*.csv
+  Erwartete Spalten (robust gegen Variationen):
     method, gw, player_id, name, pos, team, predicted_points,
-    true_points (or total_points), residual (computed if missing)
+    true_points (oder total_points), residual (berechnet falls fehlend)
 
-Outputs (written to out/):
+Ausgaben (geschrieben nach out/):
 - error_top20_<stamp>.csv
 - metrics_by_position_<stamp>.csv
 - residuals_plot_<stamp>.png
 - calibration_plot_<stamp>.png
 
-Self-contained: stdlib + pandas + numpy + matplotlib (+ scipy if available)
+Eigenstaendig: stdlib + pandas + numpy + matplotlib (+ scipy falls verfuegbar)
 """
 
 from __future__ import annotations
@@ -31,7 +31,7 @@ from typing import Optional, List
 import numpy as np
 import pandas as pd
 
-# Use a non-interactive backend to avoid display issues
+# Nicht-interaktives Backend verwenden um Anzeigefehler zu vermeiden
 import matplotlib
 
 matplotlib.use("Agg")
@@ -39,7 +39,7 @@ import matplotlib.pyplot as plt
 
 try:
     from scipy import stats as sp_stats  # optional
-except Exception:  # pragma: no cover - optional dependency
+except Exception:  # pragma: no cover - optionale Abhaengigkeit
     sp_stats = None
 
 
@@ -48,7 +48,7 @@ def log(msg: str) -> None:
 
 
 def repo_root() -> str:
-    # Assume this file lives in <repo>/code/error_analysis.py
+    # Annahme: Diese Datei liegt in <repo>/code/error_analysis.py
     here = os.path.abspath(os.path.dirname(__file__))
     return os.path.abspath(os.path.join(here, os.pardir))
 
@@ -69,17 +69,17 @@ def find_latest_results_file() -> Optional[str]:
 
 
 def pick_true_col(df: pd.DataFrame) -> str:
-    # Infer the true points column name
+    # Spaltenname fuer tatsaechliche Punkte ermitteln
     lower_map = {c.lower(): c for c in df.columns}
     for key in ("true_points", "total_points"):
         if key in lower_map:
             return lower_map[key]
-    # Fallback: try a best-effort guess
+    # Fallback: best-effort Vermutung
     for key in ("actual_points", "points", "y_true", "actual", "truth"):
         if key in lower_map:
             return lower_map[key]
     raise KeyError(
-        "Could not infer true points column (looked for 'true_points' or 'total_points')."
+        "Konnte Spalte fuer tatsaechliche Punkte nicht ermitteln (gesucht: 'true_points' oder 'total_points')."
     )
 
 
@@ -90,7 +90,7 @@ def ensure_numeric(df: pd.DataFrame, cols: List[str]) -> None:
 
 
 def compute_residuals(df: pd.DataFrame, pred_col: str, true_col: str) -> pd.DataFrame:
-    # Standardize column name for downstream use
+    # Spaltennamen standardisieren fuer nachgelagerte Nutzung
     if "true_points" not in df.columns:
         df["true_points"] = df[true_col]
     ensure_numeric(df, [pred_col, "true_points"])
@@ -129,7 +129,7 @@ def top20_outliers_by_method(df: pd.DataFrame, pred_col: str) -> pd.DataFrame:
 
 
 def group_spearman(x: pd.Series, y: pd.Series) -> float:
-    # Drop NA pairs
+    # NA-Paare entfernen
     xy = pd.concat([x, y], axis=1).dropna()
     if len(xy) < 2:
         return float("nan")
@@ -138,12 +138,12 @@ def group_spearman(x: pd.Series, y: pd.Series) -> float:
             r = sp_stats.spearmanr(
                 xy.iloc[:, 0].values, xy.iloc[:, 1].values, nan_policy="omit"
             )
-            # scipy returns correlation and pvalue; guard against scalar vs object
+            # scipy liefert Korrelation und p-Wert; gegen Skalar vs. Objekt absichern
             corr = getattr(r, "correlation", None)
             return float(corr) if corr is not None else float("nan")
         except Exception:
             pass
-    # Fallback to pandas
+    # Fallback auf pandas
     try:
         return float(xy.iloc[:, 0].corr(xy.iloc[:, 1], method="spearman"))
     except Exception:
@@ -185,7 +185,7 @@ def plot_residuals(
     df: pd.DataFrame, pred_col: str, methods: List[str], out_path: str
 ) -> None:
     if not methods:
-        log("No methods to plot for residuals.")
+        log("Keine Methoden zum Plotten der Residuen.")
         return
     ncols = len(methods)
     fig, axes = plt.subplots(1, ncols, figsize=(5 * ncols, 4), squeeze=False)
@@ -194,14 +194,14 @@ def plot_residuals(
         g = df[df["method"].astype(str) == method]
         g = g[[pred_col, "residual"]].dropna()
         if len(g) > 5000:
-            # subsample to keep the figure lightweight
+            # Subsample um Plot leichtgewichtig zu halten
             g = g.sample(5000, random_state=42)
         ax.scatter(g[pred_col], g["residual"], s=10, alpha=0.35)
         ax.axhline(0.0, color="black", lw=1, ls="--")
         ax.set_title(f"Residuals: {method} (n={len(g)})")
         ax.set_xlabel("predicted_points")
         ax.set_ylabel("residual (true - pred)")
-        # Helpful range guards
+        # Hilfreiche Bereichsgrenzen
         try:
             x_min, x_max = np.nanpercentile(g[pred_col], [1, 99])
             y_min, y_max = np.nanpercentile(g["residual"], [1, 99])
@@ -218,7 +218,7 @@ def plot_calibration(
     df: pd.DataFrame, pred_col: str, methods: List[str], out_path: str
 ) -> None:
     if not methods:
-        log("No methods to plot for calibration.")
+        log("Keine Methoden zum Plotten der Kalibrierung.")
         return
     fig, ax = plt.subplots(1, 1, figsize=(6, 5))
     for method in methods:
@@ -226,7 +226,7 @@ def plot_calibration(
         if len(g) < 2:
             continue
         try:
-            # Bin by predicted into deciles within each method
+            # Nach Prognose in Dezile innerhalb jeder Methode gruppieren
             g = g.copy()
             g["bin"] = pd.qcut(g[pred_col], q=10, labels=False, duplicates="drop")
             agg = (
@@ -246,9 +246,9 @@ def plot_calibration(
                 label=f"{method} (n={agg['count'].sum()})",
             )
         except Exception:
-            # If qcut fails due to not enough unique values
+            # Falls qcut wegen zu wenigen eindeutigen Werten fehlschlaegt
             continue
-    # Perfect calibration guide
+    # Perfekte Kalibrierung als Leitlinie
     all_vals = df[[pred_col, "true_points"]].dropna()
     if len(all_vals) > 0:
         vmin = float(
@@ -275,13 +275,13 @@ def main(argv: List[str]) -> int:
 
     csv_path = find_latest_results_file()
     if not csv_path or not os.path.exists(csv_path):
-        log("No input found: expected out/detailed_results_*.csv. Aborting.")
+        log("Keine Eingabe gefunden: erwarte out/detailed_results_*.csv. Abbruch.")
         return 1
     log(f"Using input: {csv_path}")
 
     df = pd.read_csv(csv_path)
-    # Erweiterung: Residualanalyse für Maturaarbeit
-    # Ziel: Residuen pro Position, Preisband, Top-Ausreißer, MAE pro Gruppe
+    # Erweiterung: Residualanalyse fuer Maturaarbeit
+    # Ziel: Residuen pro Position, Preisband, Top-Ausreisser, MAE pro Gruppe
     # Ergebnisse: Tabellen in out/error_analysis/
     error_out_dir = os.path.join(out_dir, "error_analysis")
     os.makedirs(error_out_dir, exist_ok=True)
@@ -333,9 +333,9 @@ def main(argv: List[str]) -> int:
         os.path.join(error_out_dir, "residuals_priceband.csv"), index=False
     )
 
-    # --- 3. Top 10 Ausreißer (absolute Residuen) ---
+    # --- 3. Top 10 Ausreisser (absolute Residuen) ---
     df["abs_residual"] = df["residual"].abs()
-    # Dynamische Spaltenauswahl je nach Verfügbarkeit
+    # Dynamische Spaltenauswahl je nach Verfuegbarkeit
     outlier_cols = [
         c
         for c in [
@@ -353,28 +353,28 @@ def main(argv: List[str]) -> int:
     ]
     outliers = df.sort_values("abs_residual", ascending=False).head(10)[outlier_cols]
     outliers.to_csv(os.path.join(error_out_dir, "residuals_outliers.csv"), index=False)
-    # Basic required columns check
+    # Basispruefung fuer erforderliche Spalten
     required = ["method", "predicted_points"]
     for col in required:
         if col not in df.columns:
-            raise KeyError(f"Missing required column '{col}' in {csv_path}")
+            raise KeyError(f"Fehlende erforderliche Spalte '{col}' in {csv_path}")
 
-    # Robustly pick true column and compute residual if needed
+    # Robust Spalte fuer tatsaechliche Punkte ermitteln und Residuum berechnen falls noetig
     true_col = pick_true_col(df)
     df = compute_residuals(df, pred_col="predicted_points", true_col=true_col)
 
-    # Log basic counts
+    # Basis-Zaehlung loggen
     n_rows = len(df)
     n_methods = df["method"].nunique(dropna=False)
     log(f"Rows: {n_rows:,} | Methods: {n_methods}")
 
-    # 1) Top-20 outliers per method
+    # 1) Top-20 Ausreisser pro Methode
     top20_df = top20_outliers_by_method(df, pred_col="predicted_points")
     top20_path = os.path.join(out_dir, f"error_top20_{stamp}.csv")
     top20_df.to_csv(top20_path, index=False)
     log(f"Wrote top-20 outliers per method: {top20_path} (rows={len(top20_df)})")
 
-    # 2) Per-position metrics (MAE, RMSE, Spearman)
+    # 2) Pro-Position-Metriken (MAE, RMSE, Spearman)
     if "pos" not in df.columns:
         log("Column 'pos' missing; synthesizing single 'ALL' position.")
         df["pos"] = "ALL"
@@ -383,18 +383,18 @@ def main(argv: List[str]) -> int:
     metrics_df.to_csv(metrics_path, index=False)
     log(f"Wrote per-position metrics: {metrics_path} (rows={len(metrics_df)})")
 
-    # Choose up to 3 methods for plotting to keep figures readable
+    # Bis zu 3 Methoden zum Plotten auswaehlen um Plots lesbar zu halten
     sel_methods = select_methods_for_plots(df, max_methods=3)
     log(f"Plotting methods: {sel_methods}")
 
-    # 3) Residuals plot
+    # 3) Residuen-Plot
     resid_plot_path = os.path.join(out_dir, f"residuals_plot_{stamp}.png")
     plot_residuals(
         df, pred_col="predicted_points", methods=sel_methods, out_path=resid_plot_path
     )
     log(f"Wrote residuals plot: {resid_plot_path}")
 
-    # 4) Calibration plot (deciles)
+    # 4) Kalibrierungs-Plot (Dezile)
     calib_plot_path = os.path.join(out_dir, f"calibration_plot_{stamp}.png")
     plot_calibration(
         df, pred_col="predicted_points", methods=sel_methods, out_path=calib_plot_path

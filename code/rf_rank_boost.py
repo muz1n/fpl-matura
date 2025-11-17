@@ -1,15 +1,15 @@
 # rf_rank_boost.py
 """
-Time-aware Random Forest regressor for FPL ranking prediction.
+Zeitbewusster Random Forest Regressor fuer FPL-Ranking-Prognose.
 
-Usage:
+Verwendung:
     python code/rf_rank_boost.py --season 2022-23 --start_gw 30 --end_gw 38
 
-Outputs:
+Ausgaben:
     1) out/rf_rank_boost_summary_<season>_gw<start>-<end>.csv
     2) out/rf_rank_boost_bypos_<season>_gw<start>-<end>.csv
     3) out/rf_rank_boost_preds_<season>_gw<start>-<end>.csv
-    4) For each gw: out/predictions_gw{gw}_rf_rank.json
+    4) Fuer jede GW: out/predictions_gw{gw}_rf_rank.json
 """
 import argparse
 import os
@@ -24,7 +24,7 @@ import numbers
 from typing import Any, cast
 
 
-# --- Utility Functions ---
+# --- Hilfsfunktionen ---
 def safe_rolling(df, col, window, groupby, shift=1):
     return df.groupby(groupby)[col].transform(
         lambda x: x.shift(shift).rolling(window, min_periods=1).mean()
@@ -56,15 +56,15 @@ def main():
     out_dir = "out"
     ensure_dir(out_dir)
 
-    # Load data
+    # Daten laden
     df = pd.read_csv(f"data/merged_gw_{season}.csv")
     df = df[df["season"] == season] if "season" in df.columns else df
-    # Basic columns
-    # Optional columns
+    # Basisspalten
+    # Optionale Spalten
     home_col = "home" if "home" in df.columns else None
     opp_col = "opponent_strength" if "opponent_strength" in df.columns else None
 
-    # Rolling features
+    # Gleitende Merkmale
     for stat in [
         "minutes",
         "total_points",
@@ -74,14 +74,14 @@ def main():
         "threat",
     ]:
         df[f"{stat}_ma3"] = safe_rolling(df, stat, 3, "element")
-    # Home/opponent
+    # Heimspiel/Gegnerstaerke
     if home_col:
         df["home"] = df["home"].astype(int)
     if opp_col:
         df["opponent_strength"] = df["opponent_strength"].astype(float)
     df = one_hot_position(df)
 
-    # Feature list
+    # Merkmalsliste
     features = [
         "minutes_ma3",
         "total_points_ma3",
@@ -96,11 +96,11 @@ def main():
         features.append("opponent_strength")
     features += [f"pos_{p}" for p in ["GK", "DEF", "MID", "FWD"]]
 
-    # Prepare train/test splits
+    # Train/Test-Aufteilung vorbereiten
     train_df = df[df["GW"] < start_gw].copy()
     test_df = df[(df["GW"] >= start_gw) & (df["GW"] <= end_gw)].copy()
 
-    # Grid search
+    # Grid Search
     param_grid = {
         "n_estimators": [300, 600],
         "min_samples_leaf": [1, 2, 4],
@@ -108,7 +108,7 @@ def main():
     }
     grid = list(product(*param_grid.values()))
     best_score = -np.inf
-    # ensure best_params is always a mapping with string keys so it can be unpacked with **
+    # best_params ist immer ein Mapping mit String-Schlüsseln, damit es mit ** entpackt werden kann
     best_params = {}
     for n_est, min_leaf, max_d in grid:
         rf = RandomForestRegressor(
@@ -123,20 +123,20 @@ def main():
         rf.fit(X_train, y_train)
         preds = rf.predict(X_train)
         sr = spearmanr(y_train, preds)
-        # Extract correlation robustly: spearmanr may return an object with
-        # attribute 'correlation' (namedtuple), or a tuple-like (corr, pvalue),
-        # or a scalar. Normalize to a scalar before float conversion.
+        # Korrelation robust extrahieren: spearmanr kann ein Objekt mit
+        # Attribut 'correlation' (namedtuple), oder ein Tuple-like (corr, pvalue),
+        # oder Skalar zurückliefern. Zu Skalar normalisieren vor float-Konversion.
         rho_val = getattr(sr, "correlation", None)
         if rho_val is None:
-            # sr may be tuple-like (correlation, pvalue) or a scalar
+            # sr kann tuple-like (correlation, pvalue) oder Skalar sein
             try:
                 rho_val = sr[0]
             except Exception:
                 rho_val = sr
-        # If rho_val is iterable (e.g., tuple, list, ndarray), take first element.
+        # Falls rho_val iterierbar ist (z.B. tuple, list, ndarray), erstes Element nehmen.
         if isinstance(rho_val, (list, tuple, np.ndarray)):
             try:
-                # Prefer numpy conversion if possible
+                # numpy-Konversion bevorzugen falls moeglich
                 if isinstance(rho_val, np.ndarray):
                     if rho_val.size == 1:
                         rho_val = rho_val.item()
@@ -146,32 +146,32 @@ def main():
                     rho_val = rho_val[0]
             except Exception:
                 rho_val = None
-        # Finally, convert to float safely.
+        # Schliesslich sicher zu float konvertieren.
         try:
             if rho_val is None:
                 raise ValueError("rho_val is None")
-            # Only call float on scalar numeric/string types to satisfy static checkers
+            # Nur bei skalaren numerischen/String-Typen float aufrufen um static checker zu genuegen
             if isinstance(rho_val, (numbers.Real, str, np.floating)):
                 rho = float(cast(numbers.Real, rho_val))
             else:
                 item = getattr(rho_val, "item", None)
                 if callable(item):
-                    # call the item() method if available and safely convert result to float
+                    # item()-Methode aufrufen falls verfuegbar und Resultat sicher zu float konvertieren
                     try:
                         val = item()
                         if isinstance(val, (numbers.Real, str, np.floating)):
                             rho = float(val)
                         else:
-                            # use typing.cast to satisfy static type checkers before float conversion
+                            # typing.cast verwenden um static type checker vor float-Konversion zu genuegen
                             rho = float(cast(Any, val))
                     except Exception:
-                        # fallback: try direct float conversion of rho_val, otherwise set to -inf
+                        # Fallback: direkte float-Konversion von rho_val versuchen, sonst auf -inf setzen
                         try:
                             rho = float(cast(numbers.Real, rho_val))
                         except Exception:
                             rho = -np.inf
                 else:
-                    # fallback: try direct float conversion, otherwise set to -inf
+                    # Fallback: direkte float-Konversion versuchen, sonst auf -inf setzen
                     try:
                         rho = float(cast(numbers.Real, rho_val))
                     except Exception:
@@ -187,15 +187,15 @@ def main():
             best_params = dict(
                 n_estimators=n_est, min_samples_leaf=min_leaf, max_depth=max_d
             )
-    # Final model
+    # Finales Modell
     rf = RandomForestRegressor(**best_params, random_state=42, n_jobs=-1)
     rf.fit(train_df[features].fillna(0), train_df["total_points"])
 
-    # Step through test GWs
+    # Test-GWs schrittweise durchlaufen
     preds_list = []
     for gw in range(start_gw, end_gw + 1):
         gw_df = df[df["GW"] == gw].copy()
-        # Recompute rolling features for gw < t
+        # Gleitende Merkmale fuer gw < t neu berechnen
         for stat in [
             "minutes",
             "total_points",
@@ -215,7 +215,7 @@ def main():
         X_gw = gw_df[features].fillna(0)
         pred_points = rf.predict(X_gw)
         gw_df["predicted_points"] = pred_points
-        # Save per-gw predictions
+        # Pro-GW-Prognosen speichern
         pred_json = gw_df[
             ["GW", "element", "name", "position", "team", "predicted_points"]
         ].to_dict(orient="records")
@@ -224,26 +224,26 @@ def main():
         ) as f:
             json.dump(pred_json, f, ensure_ascii=False, indent=2)
         preds_list.append(gw_df)
-    # Concatenate all predictions
+    # Alle Prognosen zusammenfuehren
     all_preds = pd.concat(preds_list, ignore_index=True)
-    # Save all predictions
+    # Alle Prognosen speichern
     all_preds[["GW", "element", "name", "position", "team", "predicted_points"]].to_csv(
         f"{out_dir}/rf_rank_boost_preds_{season}_gw{start_gw}-{end_gw}.csv", index=False
     )
-    # Metrics
+    # Metriken
     test_points = test_df["total_points"]
     pred_points = all_preds["predicted_points"]
     mae = mean_absolute_error(test_points, pred_points)
     rmse = np.sqrt(mean_squared_error(test_points, pred_points))
     rho, _ = spearmanr(test_points, pred_points)
-    # By position
+    # Nach Position
     pos_metrics = []
     for pos in ["GK", "DEF", "MID", "FWD"]:
         test_pos = test_df[test_df["position"] == pos]
         preds_pos = all_preds[all_preds["position"] == pos]
         if len(test_pos) == 0 or len(preds_pos) == 0:
             continue
-        # Align indices by GW and element
+        # Indizes nach GW und element abgleichen
         merged = pd.merge(
             test_pos[["GW", "element", "total_points"]],
             preds_pos[["GW", "element", "predicted_points"]],
@@ -260,7 +260,7 @@ def main():
         pos_metrics.append(
             {"position": pos, "MAE": mae_pos, "RMSE": rmse_pos, "Spearman_rho": rho_pos}
         )
-    # Save summary
+    # Zusammenfassung speichern
     summary_dict = {
         "season": season,
         "start_gw": start_gw,
@@ -276,7 +276,7 @@ def main():
         f"{out_dir}/rf_rank_boost_summary_{season}_gw{start_gw}-{end_gw}.csv",
         index=False,
     )
-    # Save by position
+    # Nach Position speichern
     pd.DataFrame(pos_metrics).to_csv(
         f"{out_dir}/rf_rank_boost_bypos_{season}_gw{start_gw}-{end_gw}.csv", index=False
     )
