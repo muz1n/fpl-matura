@@ -1,16 +1,16 @@
-"""Tests for lineup selection rules and validation.
+"""Tests fuer Aufstellungsauswahl-Regeln und Validierung.
 
-This module tests that the pick_lineup function correctly enforces FPL rules:
-- XI must have exactly 11 unique players
-- XI must contain exactly 1 goalkeeper
-- XI must follow a valid formation from the allowed set
+Dieses Modul testet dass die pick_lineup-Funktion FPL-Regeln korrekt durchsetzt:
+- XI muss genau 11 eindeutige Spieler enthalten
+- XI muss genau 1 Torhüter enthalten
+- XI muss einer gültigen Formation aus dem erlaubten Set folgen
 """
 
 import pandas as pd
 import pytest
 
-# Dynamically load team_builder module from the repository path if available,
-# otherwise attempt to import it as a package using importlib.
+# team_builder-Modul dynamisch vom Repository-Pfad laden falls verfuegbar,
+# andernfalls als Package mit importlib importieren.
 import sys
 from pathlib import Path
 import importlib.util
@@ -30,7 +30,7 @@ if module_path.exists():
     ALLOWED_FORMATIONS = module.ALLOWED_FORMATIONS
     POS_SLOTS = module.POS_SLOTS
 else:
-    # Try importing as a package (if tests run in an installed package context)
+    # Als Package importieren versuchen (falls Tests in installiertem Package-Kontext laufen)
     try:
         module = importlib.import_module("code.utils.team_builder")
         pick_lineup_autoformation = module.pick_lineup_autoformation
@@ -43,20 +43,20 @@ else:
 
 
 def pick_lineup(squad: pd.DataFrame, gw: int = 1) -> dict:
-    """Wrapper function for pick_lineup_autoformation for testing.
+    """Wrapper-Funktion fuer pick_lineup_autoformation zum Testen.
 
     Args:
-        squad: DataFrame with player data (15 players expected)
-        gw: Gameweek number (not used in current implementation)
+        squad: DataFrame mit Spielerdaten (15 Spieler erwartet)
+        gw: Spielwochennummer (wird in aktueller Implementierung nicht verwendet)
 
     Returns:
-        Dictionary with lineup information including:
+        Dictionary mit Aufstellungsinformationen:
         - formation: str
-        - xi_ids: list of 11 player IDs in starting XI
-        - bench_gk_id: goalkeeper on bench
-        - bench_out_ids: list of 3 outfield players on bench
-        - captain_id: captain player ID
-        - vice_id: vice-captain player ID
+        - xi_ids: Liste von 11 Spieler-IDs in der Start-XI
+        - bench_gk_id: Torhüter auf der Bank
+        - bench_out_ids: Liste von 3 Feldspielern auf der Bank
+        - captain_id: Kapitän-Spieler-ID
+        - vice_id: Vize-Kapitän-Spieler-ID
     """
     result = pick_lineup_autoformation(squad)
     return result
@@ -67,7 +67,7 @@ def pick_lineup(squad: pd.DataFrame, gw: int = 1) -> dict:
 
 @pytest.fixture
 def valid_squad():
-    """Create a valid 15-player squad for testing."""
+    """Erstellt einen gueltigen 15-Spieler-Squad zum Testen."""
     players = [
         # 2 Goalkeepers
         {
@@ -199,7 +199,7 @@ def valid_squad():
 
 @pytest.fixture
 def squad_433_formation():
-    """Create a squad that should pick 4-3-3 formation."""
+    """Erstellt einen Squad der eine 4-3-3-Formation waehlen sollte."""
     players = [
         # 2 Goalkeepers
         {
@@ -216,7 +216,7 @@ def squad_433_formation():
             "pred_points": 3.0,
             "price": 4.5,
         },
-        # 5 Defenders - make top 4 very strong
+        # 5 Defenders - top 4 sehr stark machen
         {
             "player_id": 3,
             "name": "DEF1",
@@ -252,7 +252,7 @@ def squad_433_formation():
             "pred_points": 2.0,
             "price": 4.0,
         },
-        # 5 Midfielders - make only 3 good
+        # 5 Midfielders - nur 3 gut machen
         {
             "player_id": 8,
             "name": "MID1",
@@ -288,7 +288,7 @@ def squad_433_formation():
             "pred_points": 1.5,
             "price": 5.0,
         },
-        # 3 Forwards - all strong
+        # 3 Forwards - alle stark
         {
             "player_id": 13,
             "name": "FWD1",
@@ -318,40 +318,40 @@ def squad_433_formation():
 
 
 def test_valid_xi_count(valid_squad):
-    """Test that the starting XI contains exactly 11 unique players."""
+    """Testet dass die Startelf exakt 11 einzigartige Spieler enthaelt."""
     result = pick_lineup(valid_squad, gw=1)
 
     xi_ids = result["xi_ids"]
 
-    # Check exactly 11 players
+    # Genau 11 Spieler pruefen
     assert len(xi_ids) == 11, f"Expected 11 players in XI, got {len(xi_ids)}"
 
-    # Check all unique (no duplicates)
+    # Alle einzigartig pruefen (keine Duplikate)
     assert len(set(xi_ids)) == 11, f"XI contains duplicate players: {xi_ids}"
 
-    # Check all are valid player IDs from the squad
+    # Pruefen dass alle gueltige Spieler-IDs aus dem Squad sind
     squad_ids = set(valid_squad["player_id"].tolist())
     for pid in xi_ids:
         assert pid in squad_ids, f"Player ID {pid} not in original squad"
 
 
 def test_has_one_gk(valid_squad):
-    """Test that the starting XI contains exactly 1 goalkeeper."""
+    """Testet dass die Startelf genau 1 Torhhueter enthaelt."""
     result = pick_lineup(valid_squad, gw=1)
 
     xi_ids = result["xi_ids"]
 
-    # Get positions for XI players
+    # Positionen fuer XI-Spieler holen
     xi_positions = valid_squad[valid_squad["player_id"].isin(xi_ids)][
         "position"
     ].tolist()
 
-    # Count goalkeepers
+    # Torhueter zaehlen
     gk_count = xi_positions.count("GK")
 
     assert gk_count == 1, f"Expected exactly 1 GK in XI, got {gk_count}"
 
-    # Also verify the bench has exactly 1 GK
+    # Auch pruefen dass die Bank genau 1 GK hat
     bench_gk_id = result["bench_gk_id"]
     bench_gk_position = valid_squad[valid_squad["player_id"] == bench_gk_id][
         "position"
@@ -362,7 +362,7 @@ def test_has_one_gk(valid_squad):
 
 
 def test_valid_formation(valid_squad):
-    """Test that the XI formation is one of the allowed FPL formations."""
+    """Testet dass die XI-Formation eine der erlaubten FPL-Formationen ist."""
     result = pick_lineup(valid_squad, gw=1)
 
     formation = result["formation"]
@@ -382,14 +382,14 @@ def test_valid_formation(valid_squad):
         formation in expected_formations
     ), f"Formation '{formation}' not in allowed set: {expected_formations}"
 
-    # Verify formation matches actual position counts in XI
+    # Pruefen dass Formation mit tatsaechlichen Positionszahlen in XI uebereinstimmt
     xi_data = valid_squad[valid_squad["player_id"].isin(xi_ids)]
     position_counts = xi_data["position"].value_counts().to_dict()
 
-    # Get expected counts for this formation
+    # Erwartete Zahlen fuer diese Formation holen
     expected_counts = POS_SLOTS[formation]
 
-    # Verify counts match
+    # Zahlen pruefen
     for pos in ["GK", "DEF", "MID", "FWD"]:
         actual_count = position_counts.get(pos, 0)
         expected_count = expected_counts[pos]
@@ -399,40 +399,40 @@ def test_valid_formation(valid_squad):
 
 
 def test_specific_formation_433(squad_433_formation):
-    """Test that a squad optimized for 4-3-3 actually picks that formation."""
+    """Testet dass ein fuer 4-3-3 optimierter Squad diese Formation tatsaechlich waehlt."""
     result = pick_lineup(squad_433_formation, gw=1)
 
     formation = result["formation"]
 
-    # This squad is designed to favor 4-3-3
+    # Dieser Squad ist darauf ausgelegt 4-3-3 zu favorisieren
     assert (
         formation == "4-3-3"
     ), f"Expected 4-3-3 formation for this squad, got {formation}"
 
 
 def test_all_players_accounted_for(valid_squad):
-    """Test that all 15 players are either in XI or on bench."""
+    """Testet dass alle 15 Spieler entweder in der XI oder auf der Bank sind."""
     result = pick_lineup(valid_squad, gw=1)
 
     xi_ids = set(result["xi_ids"])
     bench_gk_id = result["bench_gk_id"]
     bench_out_ids = set(result["bench_out_ids"])
 
-    # Combine all selected players
+    # Alle ausgewaehlten Spieler kombinieren
     all_selected = xi_ids | {bench_gk_id} | bench_out_ids
 
-    # Should have exactly 15 players
+    # Sollte genau 15 Spieler haben
     assert (
         len(all_selected) == 15
     ), f"Expected 15 total players (11 XI + 4 bench), got {len(all_selected)}"
 
-    # Should match the squad exactly
+    # Sollte exakt mit dem Squad uebereinstimmen
     squad_ids = set(valid_squad["player_id"].tolist())
     assert all_selected == squad_ids, "Selected players don't match original squad"
 
 
 def test_no_overlap_xi_and_bench(valid_squad):
-    """Test that no player appears in both XI and bench."""
+    """Testet dass kein Spieler sowohl in XI als auch auf der Bank erscheint."""
     result = pick_lineup(valid_squad, gw=1)
 
     xi_ids = set(result["xi_ids"])
@@ -444,10 +444,10 @@ def test_no_overlap_xi_and_bench(valid_squad):
 
 
 def test_bench_has_correct_structure(valid_squad):
-    """Test that bench has 1 GK + 3 outfield players."""
+    """Testet dass die Bank 1 GK + 3 Feldspieler hat."""
     result = pick_lineup(valid_squad, gw=1)
 
-    # Check bench GK
+    # Bank-GK pruefen
     bench_gk_id = result["bench_gk_id"]
     assert bench_gk_id is not None, "Bench GK is missing"
 
@@ -455,7 +455,7 @@ def test_bench_has_correct_structure(valid_squad):
     assert len(bench_gk_data) == 1, f"Bench GK ID {bench_gk_id} not found in squad"
     assert bench_gk_data["position"].values[0] == "GK", "Bench GK is not a goalkeeper"
 
-    # Check bench outfield
+    # Bank-Feldspieler pruefen
     bench_out_ids = result["bench_out_ids"]
     assert (
         len(bench_out_ids) == 3
@@ -464,43 +464,43 @@ def test_bench_has_correct_structure(valid_squad):
     bench_out_data = valid_squad[valid_squad["player_id"].isin(bench_out_ids)]
     bench_out_positions = bench_out_data["position"].tolist()
 
-    # None should be goalkeepers
+    # Keiner sollte Torhueter sein
     assert "GK" not in bench_out_positions, "Outfield bench contains a goalkeeper"
 
 
 def test_captain_and_vice_selected(valid_squad):
-    """Test that captain and vice-captain are selected and are in the XI."""
+    """Testet dass Kapitaen und Vizekapitaen ausgewaehlt sind und in der XI sind."""
     result = pick_lineup(valid_squad, gw=1)
 
     captain_id = result["captain_id"]
     vice_id = result["vice_id"]
     xi_ids = result["xi_ids"]
 
-    # Both should be selected
+    # Beide sollten ausgewaehlt sein
     assert captain_id is not None, "Captain not selected"
     assert vice_id is not None, "Vice-captain not selected"
 
-    # Both should be in XI
+    # Beide sollten in XI sein
     assert captain_id in xi_ids, f"Captain {captain_id} not in XI"
     assert vice_id in xi_ids, f"Vice-captain {vice_id} not in XI"
 
-    # Should be different players
+    # Sollten verschiedene Spieler sein
     assert captain_id != vice_id, "Captain and vice-captain are the same player"
 
 
 def test_formation_in_allowed_list():
-    """Test that all formations we use are in the ALLOWED_FORMATIONS constant."""
+    """Testet dass alle verwendeten Formationen in der ALLOWED_FORMATIONS-Konstante sind."""
     expected = {"3-4-3", "3-5-2", "4-4-2", "4-3-3", "4-5-1", "5-4-1", "5-3-2"}
 
-    # Verify ALLOWED_FORMATIONS contains our expected set
+    # Pruefen dass ALLOWED_FORMATIONS unser erwartetes Set enthaelt
     actual = set(ALLOWED_FORMATIONS)
 
-    # The actual may have 5-4-1 as the last one (typo check)
+    # Die tatsaechliche kann 5-4-1 als letztes haben (Tippfehlercheck)
     assert (
         expected.issubset(actual) or actual == expected
     ), f"ALLOWED_FORMATIONS mismatch. Expected subset: {expected}, Actual: {actual}"
 
 
 if __name__ == "__main__":
-    # Allow running tests directly with: python tests/test_lineup_rules.py
+    # Erlaubt direkte Testausfuehrung mit: python tests/test_lineup_rules.py
     pytest.main([__file__, "-v"])

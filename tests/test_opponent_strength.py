@@ -1,7 +1,7 @@
-"""Tests for opponent strength computation.
+"""Tests fuer Gegnerstärke-Berechnung.
 
-This module tests the opponent_strength function which computes
-defensive strength metrics for opponent teams.
+Dieses Modul testet die opponent_strength-Funktion welche
+defensive Stärkemetriken fuer Gegnerteams berechnet.
 """
 
 import sys
@@ -11,41 +11,42 @@ import numpy as np
 import pandas as pd
 import pytest
 
-# Add project root to path
+# Projekt-Root zu Pfad hinzufuegen
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 
 def opponent_strength(team_id: int, gw: int, is_home: bool) -> float:
-    """Compute opponent defensive strength metric for a team at a gameweek.
+    """Berechnet Gegner-Defensivstaerke-Metrik fuer ein Team in einer Spielwoche.
 
-    This is a wrapper function that computes the defensive strength (xGA-based)
-    for a given team, which represents how difficult they are to score against.
+    Dies ist eine Wrapper-Funktion die die Defensivstaerke (xGA-basiert)
+    fuer ein gegebenes Team berechnet, welche repraesentiert wie schwierig
+    es ist gegen sie zu scoren.
 
     Args:
-        team_id: Team identifier (1-20 for typical FPL)
-        gw: Gameweek number (1-38)
-        is_home: True if the team is playing at home, False for away
+        team_id: Team-Identifikator (1-20 fuer typisches FPL)
+        gw: Spielwochennummer (1-38)
+        is_home: True falls das Team zu Hause spielt, False fuer Auswaerts
 
     Returns:
-        Float value representing defensive strength (higher = harder to score against)
-        Typical range: 0.5 to 1.5
+        Float-Wert der Defensivstaerke (hoeher = schwieriger zu scoren)
+        Typischer Bereich: 0.5 bis 1.5
     """
-    # Create synthetic team metrics for demonstration
-    # In production, this would load from actual data
+    # Synthetische Team-Metriken fuer Demonstration erstellen
+    # In Produktion wuerde dies aus echten Daten geladen
 
-    # Generate deterministic team metrics based on team_id and gw
-    # Using a simple formula to ensure determinism
+    # Deterministische Team-Metriken basierend auf team_id und gw generieren
+    # Einfache Formel verwenden um Determinismus sicherzustellen
     base_strength = 1.0
-    team_variation = (team_id % 10) * 0.05  # 0.0 to 0.45
-    gw_variation = (gw % 5) * 0.02  # 0.0 to 0.08
+    team_variation = (team_id % 10) * 0.05  # 0.0 bis 0.45
+    gw_variation = (gw % 5) * 0.02  # 0.0 bis 0.08
 
-    # Home/away adjustment
+    # Heim/Auswaerts-Anpassung
     home_adjustment = 0.1 if is_home else -0.1
 
     strength = base_strength + team_variation + gw_variation + home_adjustment
 
-    # Clamp to reasonable range
+    # Auf vernuenftigen Bereich begrenzen
     return max(0.5, min(1.5, strength))
 
 
@@ -54,7 +55,7 @@ def opponent_strength(team_id: int, gw: int, is_home: bool) -> float:
 
 @pytest.fixture
 def sample_team_metrics():
-    """Create sample team defensive metrics for testing."""
+    """Erstellt Beispiel-Team-Defensivmetriken zum Testen."""
     teams = ["Arsenal", "Liverpool", "Man City", "Chelsea", "Spurs"]
     gws = [1, 2, 3, 4, 5]
 
@@ -78,8 +79,8 @@ def sample_team_metrics():
 
 
 def test_deterministic():
-    """Test that same inputs produce the same output value."""
-    # Test multiple times with same inputs
+    """Testet dass dieselben Eingaben denselben Ausgabewert produzieren."""
+    # Mehrfach mit denselben Eingaben testen
     team_id = 5
     gw = 10
     is_home = True
@@ -88,47 +89,47 @@ def test_deterministic():
     result2 = opponent_strength(team_id, gw, is_home)
     result3 = opponent_strength(team_id, gw, is_home)
 
-    # All results should be identical
+    # Alle Ergebnisse sollten identisch sein
     assert result1 == result2, "Function is not deterministic (run 1 vs run 2)"
     assert result2 == result3, "Function is not deterministic (run 2 vs run 3)"
     assert result1 == result3, "Function is not deterministic (run 1 vs run 3)"
 
-    # Test with different inputs
+    # Mit verschiedenen Eingaben testen
     result_different = opponent_strength(team_id, gw, False)
 
-    # Different input should produce different output
+    # Verschiedene Eingaben sollten verschiedene Ausgaben produzieren
     assert (
         result1 != result_different
     ), "Different is_home should produce different results"
 
 
 def test_home_away_differs():
-    """Test that typical team returns different values for home vs away."""
+    """Testet dass typische Teams verschiedene Werte fuer Heim vs Auswaerts zurueckgeben."""
     team_id = 10
     gw = 15
 
     home_strength = opponent_strength(team_id, gw, is_home=True)
     away_strength = opponent_strength(team_id, gw, is_home=False)
 
-    # Home and away should differ
+    # Heim und Auswaerts sollten sich unterscheiden
     assert (
         home_strength != away_strength
     ), f"Home ({home_strength}) and away ({away_strength}) strength should differ"
 
-    # Typically, teams are stronger at home (harder to score against)
-    # So home strength should be higher than away
+    # Typischerweise sind Teams zu Hause staerker (schwieriger zu scoren)
+    # Daher sollte Heimstaerke hoeher sein als Auswaertsstaerke
     assert (
         home_strength > away_strength
     ), f"Home strength ({home_strength}) should be greater than away ({away_strength})"
 
-    # The difference should be meaningful (at least 0.1)
+    # Die Differenz sollte signifikant sein (mindestens 0.1)
     diff = abs(home_strength - away_strength)
     assert diff >= 0.1, f"Home/away difference ({diff:.3f}) should be at least 0.1"
 
 
 def test_value_range():
-    """Test that opponent strength values lie within documented range [0.5, 1.5]."""
-    # Test a variety of team IDs and gameweeks
+    """Testet dass Gegnerstaerke-Werte im dokumentierten Bereich [0.5, 1.5] liegen."""
+    # Verschiedene Team-IDs und Spielwochen testen
     test_cases = [
         (1, 1, True),
         (1, 1, False),
@@ -143,49 +144,49 @@ def test_value_range():
     for team_id, gw, is_home in test_cases:
         strength = opponent_strength(team_id, gw, is_home)
 
-        # Check within range
+        # Im Bereich pruefen
         assert 0.5 <= strength <= 1.5, (
             f"Strength {strength:.3f} for team={team_id}, gw={gw}, home={is_home} "
             f"is outside range [0.5, 1.5]"
         )
 
-        # Also check it's a valid float
+        # Auch pruefen ob es ein gueltiger Float ist
         assert isinstance(
             strength, float
         ), f"Strength should be float, got {type(strength)}"
 
-        # Check it's not NaN
+        # Pruefen ob es nicht NaN ist
         assert not np.isnan(
             strength
         ), f"Strength should not be NaN for team={team_id}, gw={gw}, home={is_home}"
 
 
 def test_different_teams_differ():
-    """Test that different teams have different strength values."""
+    """Testet dass verschiedene Teams verschiedene Staerkewerte haben."""
     gw = 10
     is_home = True
 
-    # Get strengths for different teams
+    # Staerken fuer verschiedene Teams holen
     team1_strength = opponent_strength(1, gw, is_home)
     team2_strength = opponent_strength(2, gw, is_home)
     team3_strength = opponent_strength(10, gw, is_home)
 
-    # At least some should differ
+    # Mindestens einige sollten sich unterscheiden
     all_same = team1_strength == team2_strength == team3_strength
     assert not all_same, "Different teams should have different strength values"
 
 
 def test_different_gameweeks_differ():
-    """Test that the same team has different strength across gameweeks."""
+    """Testet dass dasselbe Team verschiedene Staerke ueber Spielwochen hat."""
     team_id = 7
     is_home = True
 
-    # Get strengths for different gameweeks
+    # Staerken fuer verschiedene Spielwochen holen
     gw1_strength = opponent_strength(team_id, 1, is_home)
     gw10_strength = opponent_strength(team_id, 10, is_home)
     gw20_strength = opponent_strength(team_id, 20, is_home)
 
-    # At least some should differ (accounting for potential cycles)
+    # Mindestens einige sollten sich unterscheiden (Zyklen beruecksichtigen)
     strengths = [gw1_strength, gw10_strength, gw20_strength]
     unique_strengths = len(set(strengths))
 
@@ -195,22 +196,22 @@ def test_different_gameweeks_differ():
 
 
 def test_edge_cases():
-    """Test edge case inputs."""
-    # Minimum values
+    """Testet Grenzfaelle bei Eingaben."""
+    # Minimalwerte
     strength_min = opponent_strength(1, 1, True)
     assert 0.5 <= strength_min <= 1.5, "Minimum values should be in range"
 
-    # Maximum typical values
+    # Maximale typische Werte
     strength_max = opponent_strength(20, 38, False)
     assert 0.5 <= strength_max <= 1.5, "Maximum values should be in range"
 
-    # Mid-range values
+    # Mittelbereich-Werte
     strength_mid = opponent_strength(10, 19, True)
     assert 0.5 <= strength_mid <= 1.5, "Mid-range values should be in range"
 
 
 def test_consistency_across_calls():
-    """Test that multiple calls with same parameters are consistent."""
+    """Testet dass mehrere Aufrufe mit denselben Parametern konsistent sind."""
     params = [
         (3, 5, True),
         (7, 12, False),
@@ -220,30 +221,30 @@ def test_consistency_across_calls():
     for team_id, gw, is_home in params:
         results = [opponent_strength(team_id, gw, is_home) for _ in range(5)]
 
-        # All results should be identical
+        # Alle Ergebnisse sollten identisch sein
         assert (
             len(set(results)) == 1
         ), f"Inconsistent results for team={team_id}, gw={gw}, home={is_home}: {results}"
 
 
 def test_float_precision():
-    """Test that results have reasonable float precision."""
+    """Testet dass Ergebnisse vernuenftige Float-Praezision haben."""
     strength = opponent_strength(5, 10, True)
 
-    # Should be a valid float
+    # Sollte ein gueltiger Float sein
     assert isinstance(
         strength, (float, np.floating)
     ), f"Expected float type, got {type(strength)}"
 
-    # Should not be infinite
+    # Sollte nicht unendlich sein
     assert not np.isinf(strength), "Strength should not be infinite"
 
-    # Should have reasonable precision (not absurdly many decimals)
-    # Check that it can be represented with ~10 decimal places
+    # Sollte vernuenftige Praezision haben (nicht absurd viele Dezimalstellen)
+    # Pruefen dass es mit ~10 Dezimalstellen dargestellt werden kann
     rounded = round(strength, 10)
     assert abs(strength - rounded) < 1e-10, "Strength should have reasonable precision"
 
 
 if __name__ == "__main__":
-    # Allow running tests directly with: python tests/test_opponent_strength.py
+    # Erlaubt direkte Testausfuehrung mit: python tests/test_opponent_strength.py
     pytest.main([__file__, "-v"])

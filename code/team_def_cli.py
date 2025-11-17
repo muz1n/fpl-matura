@@ -1,7 +1,7 @@
-"""Alternate CLI to compute and save team defensive metrics.
+"""Alternatives CLI um Team-Defensivmetriken zu berechnen und zu speichern.
 
-This is a single-file CLI that avoids the previously-created duplicated file.
-Usage example:
+Dies ist ein Single-File CLI das die vorher erstellte duplizierte Datei vermeidet.
+Verwendungsbeispiel:
   python code/team_def_cli.py --season 2025-26 --opp_window 5 --opp_k 3 --with_opp_strength
 """
 
