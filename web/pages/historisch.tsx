@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Select } from '@/src/components/Select'
 import { LoadingState, ErrorState, EmptyState } from '@/src/components/States'
 import { TopPlayersBar } from '@/src/components/charts/TopPlayersBar'
+import { TrendLine } from '@/src/components/charts/TrendLine'
 import type { PredictionsPayload, PredictionPlayer } from '@/src/types/fpl.schema'
 
 interface HistoricalResponse {
@@ -95,6 +96,10 @@ export default function HistorischPage() {
             <div className="space-y-6">
                 {/* Backtests: Multi-Saison Übersicht */}
                 <BacktestsSection />
+
+                {/* Trend-Analyse über GWs (2022-23 Demo) */}
+                <TrendSection season={season} />
+
                 <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -177,6 +182,53 @@ export default function HistorischPage() {
                 </div>
             </div>
         </>
+    )
+}
+
+// Trend-Analyse: Zeigt Durchschnittsprognose über mehrere GWs für eine Saison
+function TrendSection({ season }: { season: string }) {
+    const [trendData, setTrendData] = useState<Array<{ gw: number; value: number }>>([])
+    const [trendState, setTrendState] = useState<LoadingStateType>('idle')
+
+    useEffect(() => {
+        if (season !== '2022-23') return // Nur für Demo-Saison aktiv
+        let cancelled = false
+        async function loadTrend() {
+            setTrendState('loading')
+            const gwRange = [30, 31, 32, 33, 34, 35, 36, 37, 38]
+            const data: Array<{ gw: number; value: number }> = []
+            try {
+                for (const gw of gwRange) {
+                    const res = await fetch(`/api/historical?season=${season}&gw=${gw}`)
+                    if (!res.ok) continue
+                    const payload: HistoricalResponse = await res.json()
+                    const avg = payload.data.players.reduce((sum, p) => sum + p.predicted_points, 0) / payload.data.players.length
+                    data.push({ gw, value: avg })
+                }
+                if (!cancelled) {
+                    setTrendData(data)
+                    setTrendState('success')
+                }
+            } catch (e) {
+                if (!cancelled) setTrendState('error')
+            }
+        }
+        loadTrend()
+        return () => { cancelled = true }
+    }, [season])
+
+    if (season !== '2022-23') return null
+
+    return (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Trend-Analyse (2022-23)</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Durchschnittliche Prognose über Spielwochen 30–38.</p>
+            {trendState === 'loading' && <LoadingState message="Lade Trend-Daten..." />}
+            {trendState === 'success' && trendData.length > 0 && (
+                <TrendLine data={trendData} yAxisName="Ø Prognose (Punkte)" height={300} lineColor="#3B82F6" />
+            )}
+            {trendState === 'error' && <div className="text-sm text-red-600 dark:text-red-400">Fehler beim Laden der Trend-Daten.</div>}
+        </div>
     )
 }
 
