@@ -17,3 +17,17 @@
 
 Dies ist ein FPL (Fantasy Premier League) Vorhersage-System für eine Maturaarbeit.
 Fokus auf Klarheit und Nachvollziehbarkeit für akademische Dokumentation.
+
+## Journal und Nachvollziehbarkeit
+
+- **Pflicht**: Jede in dieser Zusammenarbeit entstandene Aenderung (Code, Doku, Web, Datenpflege) wird am selben Tag im Ordner `journal/` dokumentiert.
+- **Format**: Eintrag mit folgenden Abschnitten (kurz und konkret):
+	- Arbeitsschritte (mit Verweisen auf Commits/Dateien, falls sinnvoll)
+	- Nächste Schritte
+	- Reflexion (kurz)
+	- Entscheidung
+	- Alternativen (kurz)
+	- Warum so?
+	- Fehler & Learnings
+- **Stil**: Deutsch (Schweizer Schreibweise), Fachbegriffe klar, keine Anglizismen wenn vermeidbar.
+- **Commit-Messages**: Einfaches Schweizerdeutsch, kurz und informativ.
