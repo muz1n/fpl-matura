@@ -88,5 +88,19 @@ Damit ist `rf_pos` ab jetzt:
 
 ### **Reflexion**
 
-Ich habe mich dagegen entschieden, jede Position zwanghaft zu tunen. Kein Modell soll nur wegen eines einzelnen guten Testlaufs geändert werden. Wichtiger ist eine stabile und nachvollziehbare Verbesserung. FWD und DEF profitieren klar, MID und GK nicht. Diese Auswahl ist methodisch sauber und stärkt die Gesamtqualität des Systems.
+
+---
+
+### 14.11.2025 – Erweiterung von evaluate.py (rf_pos und rf_rank)
+
+Die Datei evaluate.py wertet jetzt fuenf Modelle gemeinsam aus: rf, ma3, pos, rf_pos und rf_rank. Fuer alle Modelle werden die Metriken MAE, RMSE, Spearman und die Anzahl der Samples berechnet. Die Ergebnisse werden als Tabelle in der Konsole ausgegeben und zusaetzlich als model_comparison.csv sowie run_settings.json im passenden Ordner gespeichert.
+
+Das Modell rf_pos nutzt positionsspezifische Random Forest Modelle mit Tuning fuer FWD und DEF. Das Modell rf_rank ist als einfache Rangtransformation der Punktvorhersagen implementiert, um die Spearman Korrelation zu verbessern.
+
+Ein erster Testlauf (Saison 2023-24, Gameweeks 30–31) zeigt:
+- rf bleibt beim MAE weiterhin stark
+- ma3 und pos sind deutlich schwaecher
+- rf_pos und rf_rank sind interessante Varianten, liefern aber im kleinen Testfenster noch keine klar bessere Gesamtperformance
+
+Diese Erweiterung ist wichtig, weil sie den wissenschaftlichen Vergleich der Methoden ermoeglicht und direkt in die schriftliche Arbeit und die Praesentation einfliessen wird. Die Varianten rf_pos und rf_rank sind als methodische Experimente zu verstehen, die das Ranking-Problem adressieren sollen.
 
