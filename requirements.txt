@@ -3,4 +3,6 @@ pandas
 scikit-learn
 scipy
 matplotlib
+seaborn
+requests
 pytest

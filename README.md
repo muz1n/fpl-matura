@@ -1,6 +1,24 @@
 # fpl-matura
 Maturaprojekt zur Entwicklung einer KI-basierten FPL-Optimierungsapp
 
+## Quick Start
+
+```bash
+# 1. Python-Umgebung einrichten
+pip install -r requirements.txt
+
+# 2. Python-Tests laufen lassen
+pytest tests/
+
+# 3. Web-App starten (in web/ Ordner)
+cd web
+npm install
+npm run dev
+# App läuft auf http://localhost:3000
+```
+
+**Hinweis:** Weitere Details zur Reproduktion der Modelle und Evaluationen siehe Abschnitt "Wie reproduziere ich die Ergebnisse" weiter unten.
+
 ## Projektbeschreibung
 
 Dieses Projekt entwickelt ein Machine-Learning-System zur Vorhersage von Fantasy Premier League (FPL) Punktzahlen. Das Ziel ist es, fuer jeden Spieler in der naechsten Gameweek eine Prognose zu erstellen und daraus eine optimale Aufstellung abzuleiten.
@@ -222,6 +240,21 @@ start-dev.bat
 **3. Predictions-Dateien bereitstellen**
 
 Die Web-App liest die Vorhersagen aus JSON-Dateien im Ordner `out/`. Diese muessen vorher mit `make_predictions.py` erzeugt werden (siehe Python Teil oben).
+
+**Verfügbare Seiten:**
+
+- **Prognosen** (`/predictions`): Aktuelle GW-Prognosen, Top-15 Chart, automatische Aufstellung
+- **Historisch** (`/historisch`): Demo-Modus mit GW 30-38 (Saison 2022-23), Trend-Analyse, Backtests
+- **Team** (`/team`): Team-Input (experimentell)
+- **Glossar** (`/glossary`): FPL-Begriffe erklärt
+- **Hilfe** (`/help`): Anleitungen zur Nutzung
+
+**Features:**
+
+- 📊 **Charts**: Balken-Diagramm (Top-15 Spieler), Linien-Diagramm (Trend über GWs)
+- 🌓 **Dark Mode**: Automatisches Theme-Switching (Hell/Dunkel)
+- 🎯 **Auto-Formation**: Automatische Aufstellungsoptimierung mit gültigen FPL-Formationen
+- 📈 **Backtests**: Multi-Saison Übersicht mit PNG-Vorschau und CSV-Downloads
 
 Beispiel-Workflow:
 
