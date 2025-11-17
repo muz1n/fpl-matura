@@ -13,11 +13,16 @@ interface HistoricalResponse {
     data: PredictionsPayload
 }
 
-// Demo: Wir verwenden die vorhandenen lokalen Daten (2022-23, GW 30-38)
-const seasonOptions = [
-    { value: '2022-23', label: 'Saison 2022-23 (Demo)' },
-]
+interface BacktestsAvailableResponse {
+    seasons: Array<{ season: string; artifacts: Array<{ filename: string; label: string; href: string; type: 'png' | 'csv'; gw_from: number; gw_to: number }> }>
+}
 
+interface BacktestsBySeasonResponse {
+    season: string
+    artifacts: Array<{ filename: string; label: string; href: string; type: 'png' | 'csv'; gw_from: number; gw_to: number }>
+}
+
+// Default-GW Optionen für die 2022-23 Demo (wird dynamisch erweitert, wenn nötig)
 const gwOptions = Array.from({ length: 9 }, (_, i) => ({ value: 30 + i, label: `GW ${30 + i}` }))
 
 type LoadingStateType = 'idle' | 'loading' | 'success' | 'error'
@@ -87,6 +92,8 @@ export default function HistorischPage() {
         <>
             <Head><title>Historischer Demo-Modus — FPL Assistent</title></Head>
             <div className="space-y-6">
+                {/* Backtests: Multi-Saison Übersicht */}
+                <BacktestsSection />
                 <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -99,10 +106,10 @@ export default function HistorischPage() {
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Select
-                            label="Saison"
+                            label="Saison (Predictions Demo)"
                             value={season}
                             onChange={(val) => setSeason(val as string)}
-                            options={seasonOptions}
+                            options={[{ value: '2022-23', label: 'Saison 2022-23 (Demo)' }]}
                         />
                         <Select
                             label="Spielwoche"
@@ -160,5 +167,135 @@ export default function HistorischPage() {
                 </div>
             </div>
         </>
+    )
+}
+
+// Backtests-Abschnitt: Multi-Saison Artefakte anzeigen
+function BacktestsSection() {
+    const [btSeasons, setBtSeasons] = useState<string[]>([])
+    const [btSelectedSeason, setBtSelectedSeason] = useState<string>('')
+    const [btArtifacts, setBtArtifacts] = useState<BacktestsBySeasonResponse['artifacts']>([])
+    const [btState, setBtState] = useState<LoadingStateType>('idle')
+    const [btError, setBtError] = useState<string>('')
+
+    // Verfuegbare Saisons laden
+    useEffect(() => {
+        let cancelled = false
+        async function loadAvailable() {
+            try {
+                const res = await fetch('/api/backtests/available')
+                if (!res.ok) throw new Error('Fehler beim Laden der Backtests-Übersicht')
+                const data: BacktestsAvailableResponse = await res.json()
+                const seasons = data.seasons.map(s => s.season)
+                if (!cancelled) {
+                    setBtSeasons(seasons)
+                    // Bevorzuge 2022-23 falls vorhanden, sonst erste Saison
+                    const preferred = seasons.includes('2022-23') ? '2022-23' : seasons[0] || ''
+                    setBtSelectedSeason(preferred)
+                }
+            } catch (e: any) {
+                if (!cancelled) setBtError(e?.message || 'Fehler beim Laden der Backtests-Übersicht')
+            }
+        }
+        loadAvailable()
+        return () => { cancelled = true }
+    }, [])
+
+    // Artefakte für gewählte Saison laden
+    useEffect(() => {
+        if (!btSelectedSeason) return
+        let cancelled = false
+        async function loadSeason() {
+            setBtState('loading')
+            setBtError('')
+            try {
+                const res = await fetch(`/api/backtests/${encodeURIComponent(btSelectedSeason)}`)
+                if (!res.ok) throw new Error('Fehler beim Laden der Backtests')
+                const data: BacktestsBySeasonResponse = await res.json()
+                if (!cancelled) {
+                    setBtArtifacts(data.artifacts)
+                    setBtState('success')
+                }
+            } catch (e: any) {
+                if (!cancelled) {
+                    setBtError(e?.message || 'Fehler beim Laden der Backtests')
+                    setBtArtifacts([])
+                    setBtState('error')
+                }
+            }
+        }
+        loadSeason()
+        return () => { cancelled = true }
+    }, [btSelectedSeason])
+
+    if (btSeasons.length === 0 && !btError) {
+        return (
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Backtest-Ergebnisse</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Keine Backtest-Dateien gefunden. Führen Sie zuerst Backtests aus.</p>
+            </div>
+        )
+    }
+
+    return (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">Backtest-Ergebnisse</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Mehrere Saisons werden automatisch aus lokalen Dateien erkannt.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <Select
+                    label="Saison (Backtests)"
+                    value={btSelectedSeason || ''}
+                    onChange={(val) => setBtSelectedSeason(String(val))}
+                    options={btSeasons.map(s => ({ value: s, label: `Saison ${s}` }))}
+                />
+            </div>
+
+            {btState === 'loading' && (
+                <LoadingState message="Lade Backtests..." />
+            )}
+            {btState === 'error' && (
+                <ErrorState message={btError} onRetry={() => btSelectedSeason && setBtSelectedSeason(btSelectedSeason)} />
+            )}
+
+            {btState === 'success' && btArtifacts.length === 0 && (
+                <div className="text-sm text-gray-600 dark:text-gray-400">Keine Backtest-Artefakte für diese Saison gefunden.</div>
+            )}
+
+            {btArtifacts.length > 0 && (
+                <div className="space-y-4">
+                    {/* Vorschau: Erstes PNG falls vorhanden */}
+                    {(() => {
+                        const firstPng = btArtifacts.find(a => a.type === 'png')
+                        if (!firstPng) return null
+                        return (
+                            <div className="rounded border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                <div className="p-3 text-sm text-gray-700 dark:text-gray-300">
+                                    {firstPng.label}
+                                </div>
+                                <a href={firstPng.href} target="_blank" rel="noopener noreferrer">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={firstPng.href} alt={firstPng.label} className="w-full h-auto" />
+                                </a>
+                            </div>
+                        )
+                    })()}
+
+                    {/* CSV-Links */}
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">CSV-Übersichten</h3>
+                        <ul className="list-disc ml-6 space-y-1">
+                            {btArtifacts.filter(a => a.type === 'csv').map(a => (
+                                <li key={a.filename}>
+                                    <a href={a.href} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline text-sm">
+                                        {a.label}
+                                    </a>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+            )}
+        </div>
     )
 }
