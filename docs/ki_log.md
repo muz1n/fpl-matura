@@ -91,7 +91,7 @@ Damit ist `rf_pos` ab jetzt:
 
 ---
 
-### 14.11.2025 – Erweiterung von evaluate.py (rf_pos und rf_rank)
+### 17.11.2025 – Erweiterung von evaluate.py (rf_pos und rf_rank)
 
 Die Datei evaluate.py wertet jetzt fuenf Modelle gemeinsam aus: rf, ma3, pos, rf_pos und rf_rank. Fuer alle Modelle werden die Metriken MAE, RMSE, Spearman und die Anzahl der Samples berechnet. Die Ergebnisse werden als Tabelle in der Konsole ausgegeben und zusaetzlich als model_comparison.csv sowie run_settings.json im passenden Ordner gespeichert.
 
