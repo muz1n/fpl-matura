@@ -1,8 +1,8 @@
 """
-Demonstration of bench_policy feature for pick_lineup_autoformation.
+Demonstration der bench_policy-Funktion fuer pick_lineup_autoformation.
 
-Shows how the penalize_doubtful parameter affects bench ordering when
-certain players have injury doubts or fitness concerns.
+Zeigt wie der penalize_doubtful-Parameter die Bankreihenfolge beeinflusst
+wenn bestimmte Spieler Verletzungsbedenken oder Fitness-Probleme haben.
 """
 
 import pandas as pd
@@ -10,7 +10,7 @@ from utils.team_builder import pick_lineup_autoformation
 
 
 def print_bench_comparison():
-    """Compare bench ordering with and without doubtful penalty."""
+    """Vergleicht Bankreihenfolge mit und ohne doubtful-Strafe."""
 
     # Create squad with some doubtful players
     squad_data = [

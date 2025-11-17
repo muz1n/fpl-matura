@@ -2,16 +2,16 @@
 """
 rf_pos_tuning_fwd.py
 
-Lightweight hyperparameter tuning for FWD position RandomForestRegressor.
-Reduces grid size to speed up experimentation.
+Leichtgewichtiges Hyperparameter-Tuning fuer FWD-Position RandomForestRegressor.
+Reduziert Grid-Groesse um Experimente zu beschleunigen.
 
-Usage:
+Verwendung:
     python code/rf_pos_tuning_fwd.py --season 2022-23 --start_gw 30 --end_gw 38
 
-Notes:
-- Reuses feature engineering from rf_pos_models.py (compute_rolling_features, build_features).
-- Focuses ONLY on FWD players.
-- Does NOT write any trained model to disk; outputs metrics to console only.
+Hinweise:
+- Nutzt Feature-Engineering von rf_pos_models.py wieder (compute_rolling_features, build_features).
+- Fokussiert NUR auf FWD-Spieler.
+- Schreibt KEIN trainiertes Modell auf Festplatte; gibt Metriken nur an Konsole aus.
 """
 
 import argparse
@@ -25,14 +25,14 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from scipy.stats import spearmanr
 
-# Reuse helpers for identical feature logic
+# Hilfsfunktionen fuer identische Feature-Logik wiederverwenden
 from rf_pos_models import compute_rolling_features, build_features
 
 warnings.filterwarnings("ignore")
 
 
 # -------------------------------------------------------------------------
-# Metrics
+# Metriken
 # -------------------------------------------------------------------------
 def evaluate_predictions(y_true, y_pred):
     y_true = np.array(y_true)
@@ -96,7 +96,7 @@ def train_fwd_model(
 
 
 # -------------------------------------------------------------------------
-# Prediction
+# Prognose
 # -------------------------------------------------------------------------
 def predict_fwd(model, test_df):
     fwd_data = test_df[test_df["position"] == "FWD"].copy()
@@ -113,7 +113,7 @@ def predict_fwd(model, test_df):
 
 
 # -------------------------------------------------------------------------
-# Grid search
+# Grid Search
 # -------------------------------------------------------------------------
 def run_grid_search(train_df, test_df, param_grid):
     param_names = list(param_grid.keys())

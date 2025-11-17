@@ -1,13 +1,13 @@
-"""Demo of format_lineup_table with full workflow."""
+"""Demo von format_lineup_table mit vollstaendigem Workflow."""
 
 import pandas as pd
 from utils.team_builder import pick_lineup_autoformation, format_lineup_table
 
 
 def demo_full_workflow():
-    """Demonstrate complete workflow from squad to formatted table."""
+    """Demonstriert vollstaendigen Workflow von Squad zu formatierter Tabelle."""
 
-    # Simulate a squad with various scenarios
+    # Simuliert einen Squad mit verschiedenen Szenarien
     squad = pd.DataFrame(
         [
             # GK - one starter, one backup
