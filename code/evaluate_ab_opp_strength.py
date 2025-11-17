@@ -157,10 +157,10 @@ def main():
         if train.empty or test.empty:
             continue
 
-    # Gegner-Merkmale fuer Lauf B an Train und Test anhaengen (Train lernt Zuordnung)
+        # Gegner-Merkmale fuer Lauf B an Train und Test anhaengen (Train lernt Zuordnung)
         train_b = def_metrics.attach_opponent_features(train, team_metrics)
         test_b = def_metrics.attach_opponent_features(test, team_metrics)
-    # Lauf A (ohne Gegner-Merkmale)
+        # Lauf A (ohne Gegner-Merkmale)
         Xa, feats_a = _features_for(train, with_opp=False)
         Xtest_a, _ = _features_for(test, with_opp=False)
         ya = train["points"].to_numpy(dtype=float)
@@ -172,7 +172,7 @@ def main():
         y_true_all_a.append(truth)
         y_pred_all_a.append(pred_a)
 
-    # Lauf B (mit Gegner-Merkmalen)
+        # Lauf B (mit Gegner-Merkmalen)
         Xb, feats_b = _features_for(train_b, with_opp=True)
         Xtest_b, _ = _features_for(test_b, with_opp=True)
         yb = train_b["points"].to_numpy(dtype=float)

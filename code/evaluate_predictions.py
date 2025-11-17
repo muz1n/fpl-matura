@@ -423,7 +423,7 @@ def build_rolling_mean_baseline(actuals: pd.DataFrame, window: int = 3) -> pd.Da
         player_data = actuals_sorted[actuals_sorted["player_id"] == player_id].copy()
         player_data = player_data.sort_values("gw")
 
-    # Rolling-Mean vorheriger Punkte (um 1 verschieben, um Lookahead zu vermeiden)
+        # Rolling-Mean vorheriger Punkte (um 1 verschieben, um Lookahead zu vermeiden)
         player_data["baseline_rolling"] = (
             player_data["total_points"]
             .shift(1)

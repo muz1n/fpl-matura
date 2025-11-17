@@ -53,7 +53,7 @@ def compute_rolling_features(df, group_cols=None, window=3):
     df_sorted = df.sort_values(group_cols + ["GW"]).copy()
 
     for col in available:
-    # Um 1 verschieben, um Leakage zu vermeiden; dann Gleitmittelwert
+        # Um 1 verschieben, um Leakage zu vermeiden; dann Gleitmittelwert
         shifted = df_sorted.groupby(group_cols)[col].shift(1)
         rolled = shifted.rolling(window=window, min_periods=1).mean()
         df_sorted[f"{col}_ma{window}"] = rolled
@@ -121,7 +121,7 @@ def train_position_models(
             models[pos] = None
             continue
 
-    # Feature-Matrix erstellen
+        # Feature-Matrix erstellen
         X_list = []
         y_list = []
 
@@ -133,7 +133,7 @@ def train_position_models(
         X = np.array(X_list)
         y = np.array(y_list)
 
-    # Abgestimmte Hyperparameter nur fuer FWD und DEF verwenden
+        # Abgestimmte Hyperparameter nur fuer FWD und DEF verwenden
         if pos in ["FWD", "DEF"]:
             model = RandomForestRegressor(
                 n_estimators=100,

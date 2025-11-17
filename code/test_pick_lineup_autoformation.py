@@ -145,22 +145,22 @@ class TestPickLineupAutoformation:
         squad_df = pd.DataFrame(squad_data)
         result = pick_lineup_autoformation(squad_df, prefer_minutes=False, p_floor=0.6)
 
-        # Assert formation is 3-5-2 (3 DEF, 5 MID, 2 FWD)
+        # Formation ist 3-5-2 pruefen (3 DEF, 5 MID, 2 FWD)
         assert (
             result["formation"] == "3-5-2"
         ), f"Expected 3-5-2, got {result['formation']}"
 
-        # Assert exactly 11 starters
+        # Genau 11 Starter pruefen
         assert (
             len(result["xi_ids"]) == 11
         ), f"Expected 11 starters, got {len(result['xi_ids'])}"
 
-        # Assert exactly 3 bench outfielders
+        # Genau 3 Bank-Feldspieler pruefen
         assert (
             len(result["bench_out_ids"]) == 3
         ), f"Expected 3 bench outfielders, got {len(result['bench_out_ids'])}"
 
-        # Assert captain is a midfielder (IDs 8-12)
+        # Kapitaen ist ein Mittelfeldspieler pruefen (IDs 8-12)
         assert result["captain_id"] in [
             8,
             9,
@@ -169,15 +169,15 @@ class TestPickLineupAutoformation:
             12,
         ], f"Captain should be a MID, got ID {result['captain_id']}"
 
-        # Assert vice is also high scorer
+        # Vize ist ebenfalls ein High-Scorer pruefen
         assert result["vice_id"] in result["xi_ids"], "Vice captain must be in XI"
 
-        # Assert all IDs are unique
+        # Alle IDs sind einzigartig pruefen
         all_ids = result["xi_ids"] + [result["bench_gk_id"]] + result["bench_out_ids"]
         assert len(all_ids) == len(set(all_ids)), "All player IDs must be unique"
         assert len(all_ids) == 15, "Total 15 players (11 XI + 1 bench GK + 3 bench out)"
 
-        # Assert captain has highest score (MID_A with 9.5)
+        # Kapitaen hat hoechsten Score (MID_A mit 9.5)
         assert (
             result["captain_id"] == 8
         ), f"Captain should be MID_A (ID 8), got {result['captain_id']}"
@@ -314,42 +314,42 @@ class TestPickLineupAutoformation:
         squad_df = pd.DataFrame(squad_data)
         result = pick_lineup_autoformation(squad_df, prefer_minutes=False, p_floor=0.6)
 
-        # Assert formation is 3-4-3 (3 DEF, 4 MID, 3 FWD)
+        # Formation ist 3-4-3 pruefen (3 DEF, 4 MID, 3 FWD)
         assert (
             result["formation"] == "3-4-3"
         ), f"Expected 3-4-3, got {result['formation']}"
 
-        # Assert exactly 11 starters
+        # Genau 11 Starter pruefen
         assert (
             len(result["xi_ids"]) == 11
         ), f"Expected 11 starters, got {len(result['xi_ids'])}"
 
-        # Assert exactly 3 bench outfielders
+        # Genau 3 Bank-Feldspieler pruefen
         assert (
             len(result["bench_out_ids"]) == 3
         ), f"Expected 3 bench outfielders, got {len(result['bench_out_ids'])}"
 
-        # Assert captain is a forward (IDs 13-15)
+        # Kapitaen ist ein Stuermer pruefen (IDs 13-15)
         assert result["captain_id"] in [
             13,
             14,
             15,
         ], f"Captain should be a FWD, got ID {result['captain_id']}"
 
-        # Assert vice captain is in XI
+        # Vizekapitaen ist in XI pruefen
         assert result["vice_id"] in result["xi_ids"], "Vice captain must be in XI"
 
-        # Assert all IDs unique and total 15
+        # Alle IDs einzigartig und total 15 pruefen
         all_ids = result["xi_ids"] + [result["bench_gk_id"]] + result["bench_out_ids"]
         assert len(all_ids) == len(set(all_ids)), "All player IDs must be unique"
         assert len(all_ids) == 15, "Total 15 players"
 
-        # Assert captain is FWD_A (highest scorer)
+        # Kapitaen ist FWD_A (hoechster Scorer)
         assert (
             result["captain_id"] == 13
         ), f"Captain should be FWD_A (ID 13), got {result['captain_id']}"
 
-        # Assert all 3 forwards are in XI
+        # Alle 3 Stuermer sind in XI
         assert 13 in result["xi_ids"], "FWD_A should be in XI"
         assert 14 in result["xi_ids"], "FWD_B should be in XI"
         assert 15 in result["xi_ids"], "FWD_C should be in XI"

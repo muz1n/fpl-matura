@@ -188,9 +188,13 @@ def test_captain_policy_prefer_minutes():
         )
 
     if result_policy["captain_id"] == 4:  # DEF2
-        print("✓ Policy-Verhalten: Hoehere p_start (DEF2) ist Kapitaen wenn innerhalb epsilon")
+        print(
+            "✓ Policy-Verhalten: Hoehere p_start (DEF2) ist Kapitaen wenn innerhalb epsilon"
+        )
     else:
-        print(f"✗ Policy-Verhalten unerwartet: Captain ID {result_policy['captain_id']}")
+        print(
+            f"✗ Policy-Verhalten unerwartet: Captain ID {result_policy['captain_id']}"
+        )
 
     print()
     print("=" * 80)

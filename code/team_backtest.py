@@ -130,7 +130,7 @@ def load_truth(season: str) -> pd.DataFrame | None:
     try:
         df = pd.read_csv(truth_file)
 
-    # Verschiedene Spaltenkonventionen handhaben
+        # Verschiedene Spaltenkonventionen handhaben
         rename_map = {}
         if "element" in df.columns and "player_id" not in df.columns:
             rename_map["element"] = "player_id"
@@ -144,7 +144,7 @@ def load_truth(season: str) -> pd.DataFrame | None:
         if rename_map:
             df = df.rename(columns=rename_map)
 
-    # Pflichtspalten sicherstellen
+        # Pflichtspalten sicherstellen
         if "gw" not in df.columns:
             logger.error(
                 f"No 'gw' column in {truth_file.name}. Available: {list(df.columns[:10])}"
@@ -157,7 +157,7 @@ def load_truth(season: str) -> pd.DataFrame | None:
             logger.error(f"No 'points' column in {truth_file.name}")
             return None
 
-    # Daten bereinigen
+        # Daten bereinigen
         df = df.copy()  # Ensure we have a proper DataFrame
         df["player_id"] = pd.to_numeric(df["player_id"], errors="coerce")
         df["gw"] = pd.to_numeric(df["gw"], errors="coerce")
@@ -216,25 +216,25 @@ def build_candidate_pool(
         club = player["team"]
         price = player["price"]
 
-    # Positionslimit pruefen
+        # Positionslimit pruefen
         if position_counts.get(pos, 0) >= pool_limits.get(pos, 0):
             continue
 
-    # Klubgrenze pruefen
+        # Klubgrenze pruefen
         if club_counts.get(club, 0) >= max_per_club:
             continue
 
-    # Budgetgrenze pruefen
+        # Budgetgrenze pruefen
         if current_budget + price > max_budget:
             continue
 
-    # Spieler dem Pool hinzufuegen
+        # Spieler dem Pool hinzufuegen
         selected_players.append(player)
         current_budget += price
         club_counts[club] = club_counts.get(club, 0) + 1
         position_counts[pos] = position_counts.get(pos, 0) + 1
 
-    # Stoppen, sobald 15 Spieler erreicht
+        # Stoppen, sobald 15 Spieler erreicht
         if len(selected_players) == 15:
             break
 
@@ -289,15 +289,15 @@ def pick_xi_for_formation(
         player_id = int(player["player_id"])
         price = player["price"]
 
-    # Pruefen, ob diese Position noch benoetigt ist
+        # Pruefen, ob diese Position noch benoetigt ist
         if slots.get(pos, 0) <= 0:
             continue
 
-    # Klubgrenze pruefen
+        # Klubgrenze pruefen
         if club_counts.get(club, 0) >= max_per_club:
             continue
 
-    # Budgetgrenze pruefen
+        # Budgetgrenze pruefen
         if current_budget + price > max_budget:
             logger.debug(
                 f"  Budget limit: Skipping {player['name']} ({pos}, {price:.1f}) "
@@ -305,13 +305,13 @@ def pick_xi_for_formation(
             )
             continue
 
-    # Zur Startelf hinzufuegen
+        # Zur Startelf hinzufuegen
         xi.append(player_id)
         slots[pos] -= 1
         club_counts[club] = club_counts.get(club, 0) + 1
         current_budget += price
 
-    # Pruefen, ob die Startelf komplett ist
+        # Pruefen, ob die Startelf komplett ist
         if len(xi) == 11:
             break
 
@@ -410,7 +410,7 @@ def select_best_team_for_gw(
 
         xi_ids, budget_used = result
 
-    # Prognostizierte Gesamtsumme fuer diese Startelf berechnen
+        # Prognostizierte Gesamtsumme fuer diese Startelf berechnen
         xi_pred = candidates[candidates["player_id"].isin(xi_ids)]
         predicted_total = xi_pred["predicted_points"].sum()
 
@@ -466,7 +466,7 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
         logger.info(f"GW{gw}")
         logger.info(f"{'='*70}")
 
-    # Echte Daten fuer diese GW holen
+        # Echte Daten fuer diese GW holen
         truth_gw = truth_df[truth_df["gw"] == gw].copy()
 
         if truth_gw.empty:
@@ -478,13 +478,13 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
         for method in methods:
             logger.info(f"\n  Method: {method.upper()}")
 
-        # Prognosen laden
+            # Prognosen laden
             pred_df = load_predictions(gw, method)
             if pred_df is None:
                 logger.warning(f"  GW{gw} ({method}): No predictions, skipping")
                 continue
 
-        # Team auswaehlen
+            # Team auswaehlen
             team_result = select_best_team_for_gw(pred_df, truth_gw)
 
             if team_result is None:
