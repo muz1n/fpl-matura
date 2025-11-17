@@ -201,7 +201,6 @@ docs/plots/*
 !docs/plots/.gitkeep
 
 # Project specific
-archive/
 *.bak
 *.tmp
 
