@@ -280,6 +280,65 @@ def main(argv: List[str]) -> int:
     log(f"Using input: {csv_path}")
 
     df = pd.read_csv(csv_path)
+        # Erweiterung: Residualanalyse für Maturaarbeit
+        # Ziel: Residuen pro Position, Preisband, Top-Ausreißer, MAE pro Gruppe
+    # Ergebnisse: Tabellen in out/error_analysis/
+    error_out_dir = os.path.join(out_dir, "error_analysis")
+    os.makedirs(error_out_dir, exist_ok=True)
+
+    # Residuum: predicted_points - true_points
+    df["residual"] = df["predicted_points"] - df[pick_true_col(df)]
+
+    # --- 1. MAE pro Position ---
+    if "pos" in df.columns:
+        pos_mae = (
+            df.groupby("pos").agg(
+                MAE=("residual", lambda x: np.mean(np.abs(x))),
+                n=("residual", "size")
+            ).reset_index()
+        )
+    else:
+        df["pos"] = "ALL"
+        pos_mae = (
+            df.groupby("pos").agg(
+                MAE=("residual", lambda x: np.mean(np.abs(x))),
+                n=("residual", "size")
+            ).reset_index()
+        )
+    pos_mae.to_csv(os.path.join(error_out_dir, "residuals_position.csv"), index=False)
+
+    # --- 2. MAE pro Preisband ---
+    def price_band(price):
+        if price < 5.0:
+            return "low"
+        elif price <= 8.0:
+            return "mid"
+        else:
+            return "high"
+    price_col = None
+    for c in df.columns:
+        if "price" in c.lower():
+            price_col = c
+            break
+    if price_col:
+        df["price_band"] = df[price_col].apply(price_band)
+    else:
+        df["price_band"] = "unknown"
+
+    price_mae = (
+        df.groupby("price_band").agg(
+            MAE=("residual", lambda x: np.mean(np.abs(x))),
+            n=("residual", "size")
+        ).reset_index()
+    )
+    price_mae.to_csv(os.path.join(error_out_dir, "residuals_priceband.csv"), index=False)
+
+    # --- 3. Top 10 Ausreißer (absolute Residuen) ---
+    df["abs_residual"] = df["residual"].abs()
+    # Dynamische Spaltenauswahl je nach Verfügbarkeit
+    outlier_cols = [c for c in ["player_id", "name", "gw", "pos", "predicted_points", "true_points", "actual_points", "residual", "abs_residual"] if c in df.columns]
+    outliers = df.sort_values("abs_residual", ascending=False).head(10)[outlier_cols]
+    outliers.to_csv(os.path.join(error_out_dir, "residuals_outliers.csv"), index=False)
     # Basic required columns check
     required = ["method", "predicted_points"]
     for col in required:
