@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Evaluate and compare different prediction methods.
+"""Bewertung und Vergleich verschiedener Prognosemethoden.
 
-Compares RF, MA3, and POS prediction methods against actual FPL points.
-Generates comparison table and visualization.
+Vergleicht die Vorhersagemethoden RF, MA3 und POS mit den tatsaechlichen FPL-Punkten.
+Erzeugt eine Vergleichstabelle sowie eine Visualisierung.
 
-Usage:
+Verwendung:
     python evaluate_methods.py --season 2023-24 --gw_start 30 --gw_end 38 \\
         --compare rf ma3 pos --metrics mae,rmse,spearman
 """
@@ -12,7 +12,7 @@ Usage:
 import argparse
 import json
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, cast
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -22,11 +22,11 @@ from scipy.stats import spearmanr
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Import make_predictions functions
+# make_predictions-Modul importieren
 import sys
 
 sys.path.insert(0, str(Path(__file__).parent))
-from make_predictions import load_and_prepare_data, train_model, generate_predictions
+import make_predictions as mp
 
 ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
@@ -35,16 +35,16 @@ OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def load_actual_points(season: str, gw: int) -> pd.DataFrame:
-    """Load actual points for a specific gameweek.
+    """Ladet die tatsaechlichen Punkte fuer eine bestimmte Spielwoche.
 
     Args:
-        season: Season identifier
-        gw: Gameweek number
+        season: Saisonbezeichner
+        gw: Spielwochen-Nummer
 
     Returns:
-        DataFrame with player_id, gw, actual_points
+        DataFrame mit player_id, gw, actual_points
     """
-    # Lade tatsächliche GW-Daten
+    # Lade tatsaechliche GW-Daten
     possible_files = [
         DATA_DIR / f"merged_gw_{season}.csv",
         DATA_DIR / "merged_gw_2022-23.csv",
@@ -86,19 +86,19 @@ def load_actual_points(season: str, gw: int) -> pd.DataFrame:
 
 
 def calculate_metrics(predictions: ArrayLike, actuals: ArrayLike) -> Dict[str, float]:
-    """Calculate evaluation metrics.
+    """Berechnet Auswertungsmetriken.
 
     Args:
-        predictions: Predicted values (array-like)
-        actuals: Actual values (array-like)
+        predictions: Prognosewerte (array-like)
+        actuals: Echte Werte (array-like)
 
     Returns:
-        Dictionary with metric names and values
+        Dictionary mit Metriknamen und -werten
     """
     predictions = np.asarray(predictions, dtype=float)
     actuals = np.asarray(actuals, dtype=float)
 
-    # Filter out NaN values
+    # NaN-Werte herausfiltern
     mask = ~(np.isnan(predictions) | np.isnan(actuals))
     predictions = predictions[mask]
     actuals = actuals[mask]
@@ -109,20 +109,20 @@ def calculate_metrics(predictions: ArrayLike, actuals: ArrayLike) -> Dict[str, f
     mae = mean_absolute_error(actuals, predictions)
     rmse = np.sqrt(mean_squared_error(actuals, predictions))
 
-    # Spearman correlation
+    # Spearman-Korrelation
     if predictions.size > 1:
         res = spearmanr(predictions, actuals)
-        # scipy.stats.spearmanr may return (corr, pvalue) or an object with .correlation
+        # scipy.stats.spearmanr kann (corr, pvalue) oder ein Objekt mit .correlation zurueckgeben
         if isinstance(res, tuple):
             spearman_corr = res[0]
         else:
             spearman_corr = getattr(res, "correlation", np.nan)
-        # Ensure spearman_corr is a scalar numeric value before converting to float
+        # Sicherstellen, dass spearman_corr ein skalarer numerischer Wert ist
         if isinstance(spearman_corr, (int, float, np.floating)):
             spearman_value = float(spearman_corr)
         else:
             try:
-                # Try to extract numeric value from array-like or other types (e.g., 0-d numpy)
+                # Numerischen Wert aus array-aehnlichen Typen extrahieren (z.B. 0-d numpy)
                 spearman_value = float(np.asarray(spearman_corr).item())
             except Exception:
                 spearman_value = np.nan
@@ -137,24 +137,24 @@ def calculate_metrics(predictions: ArrayLike, actuals: ArrayLike) -> Dict[str, f
 
 
 def apply_ma3_method(predictions_data: Dict[str, Any]) -> Dict[str, Any]:
-    """Apply MA3 method to predictions.
+    """Wendet die MA3-Methode auf die Prognosen an.
 
-    Currently just returns the same data as we don't have historical
-    data for MA3 in the current setup. In a real scenario, this would
-    calculate 3-game moving average.
+    Liefert derzeit dieselben Daten zurueck, da keine historischen Daten
+    fuer MA3 im aktuellen Setup vorliegen. In der Praxis wuerde hier der
+    3-Spiele-Gleitmittelwert berechnet.
     """
-    # For now, just use RF predictions as baseline
-    # In reality, you'd calculate MA3 from historical data
+    # Fuer jetzt, einfach RF-Prognosen als Basis verwenden
+    # In Wirklichkeit wuerde man MA3 aus historischen Daten berechnen
     result = predictions_data.copy()
     result["model_version"] = result["model_version"] + "+ma3"
     return result
 
-    # Für jetzt, einfach RF-Prognosen als Basis verwenden
+
 def apply_pos_method(predictions_data: Dict[str, Any]) -> Dict[str, Any]:
-    """Apply position-based average method."""
+    """Wendet die positionsbasierte Durchschnittsmethode an."""
     result = predictions_data.copy()
 
-    # Calculate average by position
+    # Durchschnitt pro Position berechnen
     players = result["players"]
     by_pos = {}
     for player in players:
@@ -163,10 +163,10 @@ def apply_pos_method(predictions_data: Dict[str, Any]) -> Dict[str, Any]:
             by_pos[pos] = []
         by_pos[pos].append(player["predicted_points"])
 
-    # Calculate averages
+    # Durchschnitte berechnen
     pos_avg = {pos: np.mean(points) for pos, points in by_pos.items()}
 
-    # Replace predictions with position averages
+    # Prognosen durch Positionsdurchschnitte ersetzen
     for player in players:
         player["predicted_points"] = pos_avg[player["pos"]]
 
@@ -177,17 +177,17 @@ def apply_pos_method(predictions_data: Dict[str, Any]) -> Dict[str, Any]:
 def evaluate_method(
     method: str, season: str, gw_start: int, gw_end: int, skip_generation: bool = False
 ) -> pd.DataFrame:
-    """Evaluate a single method across gameweeks.
+    """Bewertet eine einzelne Methode ueber mehrere Spielwochen.
 
     Args:
-        method: Method name (rf, ma3, pos)
-        season: Season identifier
-        gw_start: First gameweek
-        gw_end: Last gameweek
-        skip_generation: If True, load existing predictions instead of generating
+        method: Methodenname (rf, ma3, pos)
+        season: Saisonbezeichner
+        gw_start: Erste Spielwoche
+        gw_end: Letzte Spielwoche
+        skip_generation: Wenn True, bestehende Prognosen laden statt generieren
 
     Returns:
-        DataFrame with player_id, gw, predicted_points, actual_points
+        DataFrame mit player_id, gw, predicted_points, actual_points
     """
     all_results = []
 
@@ -195,18 +195,95 @@ def evaluate_method(
     print(f"Evaluating method: {method.upper()}")
     print(f"{'='*60}")
 
-    # Load and prepare training data once
-    df, features = load_and_prepare_data(season)
+    # Trainingsdaten einmal laden und aufbereiten
+    # Probiere eine Liste bekannter Lade-Funktionsnamen in make_predictions
+    df = None
+    features = None
+    loader_candidates = [
+        "load_and_prepare_data",
+        "load_and_prepare",
+        "load_and_prepare_data_v2",
+    ]
+    for name in loader_candidates:
+        func = getattr(mp, name, None)
+        if callable(func):
+            # Rufe den Loader auf und akzeptiere entweder (df, features) oder nur df
+            try:
+                res = func(season)
+            except TypeError:
+                # Fallback falls die Funktion kein season-Argument akzeptiert
+                res = func()
+            if isinstance(res, (tuple, list)) and len(res) == 2:
+                df, features = res
+            else:
+                df = res
+                features = None
+            break
+
+    # Fallback auf separate load/prepare-Funktionen falls verfuegbar
+    if df is None or features is None:
+        load_func = getattr(mp, "load_data", None)
+        prep_func = getattr(mp, "prepare_features", None)
+        if callable(load_func) and callable(prep_func):
+            df = load_func(season)
+            features = prep_func(df)
+        else:
+            available = ", ".join(sorted([a for a in dir(mp) if not a.startswith("_")]))
+            raise AttributeError(
+                "make_predictions stellt kein bekanntes load/prepare-Interface bereit; "
+                f"erwartet wurde eine von {', '.join(loader_candidates)} oder 'load_data' + 'prepare_features'; "
+                f"verfuegbare Attribute: {available}"
+            )
+
+    # Type-Checker und Laufzeit behandeln df als pandas DataFrame
+    df = cast(pd.DataFrame, df)
+
     max_gw = int(df["gw"].max())
     test_gw_start = max(df["gw"].min(), max_gw - 7)
 
-    # Train model once
-    model = train_model(df, features, test_gw_start)
+    # Modell einmal trainieren (unterstuetze mehrere moegliche Trainingsfunktionsnamen)
+    train_candidates = [
+        "train_model",
+        "train",
+        "train_rf",
+        "fit_model",
+        "build_model",
+        "train_model_v2",
+    ]
+    train_func = None
+    train_func_name = None
+    for name in train_candidates:
+        func = getattr(mp, name, None)
+        if callable(func):
+            train_func = func
+            train_func_name = name
+            break
+
+    if train_func is None:
+        available = ", ".join(sorted([a for a in dir(mp) if not a.startswith("_")]))
+        raise AttributeError(
+            "make_predictions stellt keine bekannte Trainingsfunktion bereit; "
+            f"erwartet wurde eine von {', '.join(train_candidates)}; verfuegbare Attribute: {available}"
+        )
+
+    # Rufe die gefundene Trainingsfunktion mit verschiedenen moeglichen Signaturen auf
+    try:
+        model = train_func(df, features, test_gw_start)
+    except TypeError:
+        try:
+            model = train_func(df, features)
+        except TypeError:
+            try:
+                model = train_func(df)
+            except TypeError as e:
+                raise TypeError(
+                    f"Konnte Trainingsfunktion '{train_func_name}' nicht aufrufen: {e}"
+                )
 
     for gw in range(gw_start, gw_end + 1):
         print(f"\nProcessing GW {gw}...")
 
-        # Check if predictions already exist
+        # Pruefen, ob Prognosen bereits vorhanden sind
         pred_file = OUT_DIR / f"predictions_gw{gw}.json"
 
         if skip_generation and pred_file.exists():
@@ -214,29 +291,94 @@ def evaluate_method(
             with open(pred_file, "r") as f:
                 predictions_data = json.load(f)
         else:
-            # Generate predictions
+            # Prognosen generieren
             print("  Generating predictions...")
-            predictions_data = generate_predictions(model, features, season, gw, "rf")
 
-            # Save for later use
+            # Prognosefunktion in make_predictions ermitteln (unterstuetzt mehrere moegliche Namen)
+            pred_candidates = [
+                "generate_predictions",
+                "generate_preds",
+                "generate",
+                "predict",
+                "predict_points",
+                "predict_players",
+                "make_predictions",
+                "create_predictions",
+            ]
+            pred_func = None
+            pred_func_name = None
+            for name in pred_candidates:
+                func = getattr(mp, name, None)
+                if callable(func):
+                    pred_func = func
+                    pred_func_name = name
+                    break
+
+            if pred_func is None:
+                available = ", ".join(
+                    sorted([a for a in dir(mp) if not a.startswith("_")])
+                )
+                raise AttributeError(
+                    "make_predictions stellt keine bekannte Prognosefunktion bereit; "
+                    f"erwartet wurde eine von {', '.join(pred_candidates)}; verfuegbare Attribute: {available}"
+                )
+
+            # Mehrere moegliche Signaturen fuer die ermittelte Prognosefunktion versuchen
+            predictions_data = None
+            call_attempts = [
+                (model, features, season, gw, "rf"),
+                (model, features, season, gw),
+                (model, features, gw, "rf"),
+                (model, season, gw, "rf"),
+                (model, features, gw),
+                (model, season, gw),
+                (model, features),
+                (model, gw),
+                (model,),
+            ]
+            for args_call in call_attempts:
+                try:
+                    predictions_data = pred_func(*args_call)
+                    break
+                except TypeError:
+                    # Naechste Signatur versuchen
+                    continue
+
+            if predictions_data is None:
+                raise TypeError(
+                    f"Konnte Prognosefunktion '{pred_func_name}' nicht mit bekannten Signaturen aufrufen"
+                )
+
+            # Falls das Rueckgabeobjekt in dict konvertiert werden kann, versuchen
+            to_dict = getattr(predictions_data, "to_dict", None)
+            if callable(to_dict):
+                try:
+                    predictions_data = to_dict()
+                except Exception:
+                    pass
+
+            # Fuer spaetere Nutzung speichern
             with open(pred_file, "w") as f:
                 json.dump(predictions_data, f, indent=4)
 
-        # Apply method transformation
+        # Methodentransformation anwenden
+        # Type-Checker informieren, dass predictions_data dict-like ist
+        predictions_data = cast(Dict[str, Any], predictions_data)
+
         if method == "ma3":
             predictions_data = apply_ma3_method(predictions_data)
         elif method == "pos":
             predictions_data = apply_pos_method(predictions_data)
-        # rf stays as is
+        # rf bleibt unveraendert
 
-        # Load actual points
+        # Tatsaechliche Punkte laden
         try:
             actuals = load_actual_points(season, gw)
         except Exception as e:
             print(f"  Warning: Could not load actuals for GW {gw}: {e}")
             continue
 
-        # Merge predictions with actuals
+        # Prognosen mit tatsaechlichen Punkten zusammenfuehren
         pred_df = pd.DataFrame(predictions_data["players"])
         merged = pred_df.merge(actuals, on="player_id", how="inner")
 
@@ -262,14 +404,14 @@ def evaluate_method(
 def create_comparison_table(
     results_df: pd.DataFrame, metrics: List[str]
 ) -> pd.DataFrame:
-    """Create comparison table across methods.
+    """Erstellt eine Vergleichstabelle ueber alle Methoden.
 
     Args:
-        results_df: DataFrame with all results
-        metrics: List of metric names to calculate
+        results_df: DataFrame mit allen Resultaten
+        metrics: Liste der zu berechnenden Metriken
 
     Returns:
-        DataFrame with methods as rows and metrics as columns
+        DataFrame mit Methoden als Zeilen und Metriken als Spalten
     """
     comparison = []
 
@@ -287,7 +429,7 @@ def create_comparison_table(
 
     comparison_df = pd.DataFrame(comparison)
 
-    # Reorder columns
+    # Spalten neu anordnen
     cols = ["method", "n_predictions"] + [
         m for m in metrics if m in comparison_df.columns
     ]
@@ -297,16 +439,16 @@ def create_comparison_table(
 
 
 def plot_comparison(comparison_df: pd.DataFrame, output_path: Path):
-    """Create visualization of method comparison.
+    """Erstellt eine Visualisierung des Methodenvergleichs.
 
     Args:
-        comparison_df: Comparison table
-        output_path: Path to save plot
+        comparison_df: Vergleichstabelle
+        output_path: Pfad zum Speichern des Plots
     """
-    # Set style
+    # Stil setzen
     sns.set_style("whitegrid")
 
-    # Create figure with subplots
+    # Figur mit Subplots erstellen
     fig, axes = plt.subplots(1, 3, figsize=(15, 5))
 
     methods = comparison_df["method"].values
@@ -376,7 +518,7 @@ def main():
     print(f"Metrics: {', '.join(metrics)}")
     print(f"{'='*70}")
 
-    # Evaluate each method
+    # Jede Methode bewerten
     all_results = []
     for method in args.compare:
         method_results = evaluate_method(
@@ -389,27 +531,27 @@ def main():
         print("\n❌ No results to compare")
         return
 
-    # Combine all results
+    # Alle Resultate zusammenfuehren
     results_df = pd.concat(all_results, ignore_index=True)
 
-    # Create comparison table
+    # Vergleichstabelle erstellen
     comparison_df = create_comparison_table(results_df, metrics)
 
-    # Print results
+    # Resultate ausgeben
     print(f"\n{'='*70}")
     print("COMPARISON RESULTS")
     print(f"{'='*70}\n")
     print(comparison_df.to_string(index=False))
     print(f"\n{'='*70}")
 
-    # Check hypothesis
+    # Hypothese pruefen
     min_mae = comparison_df["mae"].min()
     if min_mae < 2.0:
         print(f"\n✅ HYPOTHESIS TEIL 1: MAE < 2 erfüllt! (Best MAE: {min_mae:.3f})")
     else:
         print(f"\n❌ HYPOTHESIS TEIL 1: MAE >= 2 (Best MAE: {min_mae:.3f})")
 
-    # Save results
+    # Resultate speichern
     csv_path = (
         OUT_DIR
         / f"method_comparison_{args.season.replace('-', '_')}_gw{args.gw_start}-{args.gw_end}.csv"
@@ -417,14 +559,14 @@ def main():
     comparison_df.to_csv(csv_path, index=False)
     print(f"\n✓ Results saved to: {csv_path}")
 
-    # Create visualization
+    # Visualisierung erstellen
     png_path = (
         OUT_DIR
         / f"method_comparison_{args.season.replace('-', '_')}_gw{args.gw_start}-{args.gw_end}.png"
     )
     plot_comparison(comparison_df, png_path)
 
-    # Save detailed results
+    # Detaillierte Resultate speichern
     detailed_path = (
         OUT_DIR
         / f"detailed_results_{args.season.replace('-', '_')}_gw{args.gw_start}-{args.gw_end}.csv"
