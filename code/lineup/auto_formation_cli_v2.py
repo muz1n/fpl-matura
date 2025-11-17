@@ -1,17 +1,17 @@
-"""One-GW auto-formation lineup picker CLI.
+"""Ein-GW Auto-Formation Lineup-Picker CLI.
 
-Usage:
+Verwendung:
   python code/lineup/auto_formation_cli_v2.py --season 2023-24 --gw 30 --window 5 --k 3 --squad_csv data/current/squad_2023-24.csv
 
-Behavior:
-  - Prefer loading enriched features file: out/player_features/player_with_opp_strength_{season}_l{window}_k{k}.csv
-  - If not found and --squad_csv is provided, load the squad CSV (must contain
-    player_id,name,position,pred_points[,p_start]).
-  - Filter to --gw when a 'gw' column exists; if --gw missing, use max gw found.
-  - Reduce to 15-man squad via in_squad==True if present; else when using --squad_csv
-    take those 15 rows; otherwise error.
-  - Call pick_lineup_autoformation(...) and print a tiny summary table and save JSON/CSV
-    to out/lineup/xi_{season}_gw{gw}.json and .csv
+Verhalten:
+  - Bevorzugt Laden der angereicherten Feature-Datei: out/player_features/player_with_opp_strength_{season}_l{window}_k{k}.csv
+  - Falls nicht vorhanden und --squad_csv angegeben, lade die Squad-CSV (muss
+    player_id,name,position,pred_points[,p_start] enthalten).
+  - Auf --gw filtern, wenn eine 'gw'-Spalte existiert; wenn --gw fehlt, die maximale gefundene gw verwenden.
+  - Auf 15-Mann-Kader reduzieren via in_squad==True, falls vorhanden; ansonsten bei --squad_csv
+    diese 15 Zeilen verwenden; sonst Fehler.
+  - pick_lineup_autoformation(...) aufrufen, eine kleine Zusammenfassung ausgeben und JSON/CSV speichern
+    nach out/lineup/xi_{season}_gw{gw}.json und .csv
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from typing import Dict, List, Optional
 
 import pandas as pd
 
-# Robust local import to avoid stdlib 'code' module name clash
+# Robuster lokaler Import, um Namenskonflikte mit dem stdlib-Modul 'code' zu vermeiden
 REPO_ROOT = Path(__file__).resolve().parents[2]
 UTILS_PATH = REPO_ROOT / "code" / "utils" / "team_builder.py"
 
@@ -56,7 +56,7 @@ def _build_features_path(season: str, window: int, k: int) -> Path:
 
 
 def _maybe_alias_columns(df: pd.DataFrame) -> pd.DataFrame:
-    # Light aliasing for common names
+    # Leichte Alias-Bildung fuer gaengige Spaltennamen
     if "player_id" not in df.columns and "element" in df.columns:
         df = df.rename(columns={"element": "player_id"})
     if "name" not in df.columns:
@@ -82,7 +82,7 @@ def _filter_gw(
     if "gw" not in df.columns:
         return df, gw  # no GW in data, nothing to filter
     if gw is None:
-        # pick max gw present
+        # Maximale vorhandene gw waehlen
         try:
             gw = int(pd.to_numeric(df["gw"], errors="coerce").max())
         except Exception:
@@ -98,13 +98,13 @@ def _filter_gw(
 def _reduce_to_squad(
     df: pd.DataFrame, used_source: str, squad_csv_given: bool
 ) -> pd.DataFrame:
-    # Prefer explicit in_squad if present
+    # Explizites in_squad bevorzugen, falls vorhanden
     if "in_squad" in df.columns:
         squad = df[df["in_squad"] == True].copy()  # noqa: E712
         if squad.empty:
             raise ValueError("Column 'in_squad' present but no True rows found")
         return squad
-    # If we loaded from squad_csv, assume the file already contains the 15-man squad
+    # Wenn aus squad_csv geladen, enthaelt die Datei bereits den 15er-Kader
     if squad_csv_given:
         return df
     raise ValueError(
