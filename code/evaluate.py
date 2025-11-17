@@ -66,19 +66,19 @@ def safe_spearman(y_true: np.ndarray, y_pred: np.ndarray) -> float:
         return float("nan")
     try:
         res = spearmanr(y_true, y_pred)
-        # spearmanr may return a tuple/list/ndarray or an object with .correlation
-        # use getattr to avoid static-analysis complaints about unknown attributes
+        # spearmanr kann tuple/list/ndarray oder Objekt mit .correlation zurueckliefern
+        # getattr verwenden um static-analysis-Beschwerden ueber unbekannte Attribute zu vermeiden
         corr = getattr(res, "correlation", None)
         if corr is not None:
             rho = corr
         else:
-            # works for tuples/lists/ndarrays and plain scalars
+            # Funktioniert fuer tuples/lists/ndarrays und einfache Skalare
             try:
                 rho = res[0]
             except Exception:
                 rho = res
 
-        # Convert to numpy array to handle array-like results, then extract scalar
+        # Zu numpy array konvertieren um array-aehnliche Resultate zu behandeln, dann Skalar extrahieren
         rho_arr = np.asarray(rho)
         if rho_arr.size == 1:
             val = float(rho_arr.item())
