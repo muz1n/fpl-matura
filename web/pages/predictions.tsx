@@ -7,6 +7,8 @@ import { glossary } from '../src/data/glossary'
 import { Select } from '../src/components/Select'
 import { LoadingState, ErrorState, EmptyState } from '../src/components/States'
 import { saveSquad, loadSquad } from '../src/lib/squad-storage'
+import { HistoricalEvaluation } from '../src/components/HistoricalEvaluation'
+import { isSeasonUsable } from '../lib/seasonQuality'
 
 type LoadingStateType = 'idle' | 'loading' | 'success' | 'error'
 type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank' | 'rf_pos'
@@ -48,6 +50,7 @@ export default function PredictionsPage() {
     // Auswahl-States
     const [selectedGW, setSelectedGW] = useState<number | null>(null)
     const [selectedMethod, setSelectedMethod] = useState<string | null>('rf')
+    const [selectedSeason, setSelectedSeason] = useState<string>('2022-23')
 
     // Dein Team (LocalStorage) + Transfer-Hilfe
     const [teamInput, setTeamInput] = useState<string>("")
@@ -489,7 +492,20 @@ export default function PredictionsPage() {
                     transition={{ duration: 0.4 }}
                     className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700"
                 >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Select
+                            label="Season"
+                            value={selectedSeason}
+                            onChange={(val) => setSelectedSeason(val as string)}
+                            options={[
+                                { value: '2020-21', label: 'Season 2020-21' },
+                                { value: '2021-22', label: 'Season 2021-22' },
+                                { value: '2022-23', label: 'Season 2022-23' },
+                                { value: '2023-24', label: 'Season 2023-24' },
+                            ]}
+                            tooltip={<HelpIcon text="Nur Seasons 2020-24 haben vollständige Datenqualität" />}
+                        />
+
                         <Select
                             label="Spielwoche"
                             value={selectedGW ?? 1}
@@ -908,6 +924,15 @@ export default function PredictionsPage() {
                         </table>
                     </div>
                 </div>
+
+                {/* Historische Evaluation (nur für Season 2020-24) */}
+                {selectedGW && selectedMethod && selectedSeason && (
+                    <HistoricalEvaluation
+                        season={selectedSeason}
+                        gw={selectedGW}
+                        methode={selectedMethod}
+                    />
+                )}
 
                 {/* Hinweis: Downloads-Panel entfernt. Downloads werden zukünftig als 'Materialien'-Sektion dargestellt. */}
             </div>

@@ -1,0 +1,158 @@
+{
+    "_comment": "FPL Rules by Season - Deep Merge with Inheritance from _base",
+    "_base": {
+        "scoring": {
+            "gk_goal": 6,
+            "def_goal": 6,
+            "mid_goal": 5,
+            "fwd_goal": 4,
+            "assist": 3,
+            "gk_clean_sheet": 4,
+            "def_clean_sheet": 4,
+            "mid_clean_sheet": 1,
+            "fwd_clean_sheet": 0,
+            "saves_per_point": 3,
+            "penalty_save": 5,
+            "conceded_per_minus": 2,
+            "yellow_card": -1,
+            "red_card": -3,
+            "own_goal": -2,
+            "minutes_60_plus": 2,
+            "minutes_under_60": 1,
+            "defensive_contributions": false
+        },
+        "squad": {
+            "budget": 100.0,
+            "total": 15,
+            "gk": 2,
+            "def": 5,
+            "mid": 5,
+            "fwd": 3,
+            "max_from_club": 3
+        },
+        "transfers": {
+            "ft_per_gw": 1,
+            "max_rollover_ft": 1,
+            "rollover_preserved_after_wildcard": false,
+            "rollover_preserved_after_freehit": false,
+            "hit_cost": -4
+        },
+        "chips": {
+            "wildcard": 2,
+            "freehit": 1,
+            "benchboost": 1,
+            "triplecaptain": 1,
+            "assistant_manager": false,
+            "chip_sets": 1
+        },
+        "meta": {
+            "era": 1,
+            "notes": ""
+        }
+    },
+    "2016-17": {
+        "chips": {
+            "freehit": 0,
+            "all_out_attack": 1
+        },
+        "meta": {
+            "era": 1,
+            "notes": "All Out Attack verfügbar, kein Free Hit"
+        }
+    },
+    "2017-18": {
+        "chips": {
+            "freehit": 1,
+            "all_out_attack": 0
+        },
+        "meta": {
+            "era": 1,
+            "notes": "Free Hit eingeführt, All Out Attack entfernt"
+        }
+    },
+    "2018-19": {
+        "meta": {
+            "era": 1,
+            "notes": "Keine Regeländerungen"
+        }
+    },
+    "2019-20": {
+        "meta": {
+            "era": 1,
+            "notes": "COVID Restart GW30+ mit unlimited transfers"
+        }
+    },
+    "2020-21": {
+        "meta": {
+            "era": 1,
+            "notes": "Keine Regeländerungen"
+        }
+    },
+    "2021-22": {
+        "chips": {
+            "freehit": 2
+        },
+        "meta": {
+            "era": 1,
+            "notes": "Extra Free Hit wegen COVID"
+        }
+    },
+    "2022-23": {
+        "chips": {
+            "freehit": 1
+        },
+        "meta": {
+            "era": 1,
+            "notes": "WM-Pause mit unlimited transfers GW16-17"
+        }
+    },
+    "2023-24": {
+        "meta": {
+            "era": 1,
+            "notes": "FPL Challenge eingeführt (separates Game)"
+        }
+    },
+    "2024-25": {
+        "scoring": {
+            "gk_goal": 10
+        },
+        "transfers": {
+            "max_rollover_ft": 4,
+            "rollover_preserved_after_wildcard": true,
+            "rollover_preserved_after_freehit": true
+        },
+        "chips": {
+            "assistant_manager": true
+        },
+        "meta": {
+            "era": 2,
+            "notes": "GK Goal = 10, max 5 FT speicherbar, Assistant Manager Chip"
+        }
+    },
+    "2025-26": {
+        "scoring": {
+            "gk_goal": 10,
+            "defensive_contributions": true,
+            "dc_def_threshold": 10,
+            "dc_mid_fwd_threshold": 12,
+            "dc_points": 2
+        },
+        "transfers": {
+            "max_rollover_ft": 4,
+            "rollover_preserved_after_wildcard": true,
+            "rollover_preserved_after_freehit": true
+        },
+        "chips": {
+            "wildcard": 2,
+            "freehit": 2,
+            "benchboost": 2,
+            "triplecaptain": 2,
+            "assistant_manager": false,
+            "chip_sets": 2
+        },
+        "meta": {
+            "era": 3,
+            "notes": "DC-Punkte, 2 Chip-Sets, kein Assistant Manager mehr"
+        }
+    }
+}

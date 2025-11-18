@@ -17,6 +17,7 @@ Verwendung:
 import argparse
 import json
 import logging
+import sys
 from pathlib import Path
 from typing import Dict, List
 
@@ -28,6 +29,18 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = ROOT / "data"
 OUT_DIR = ROOT / "out"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+# Season-Rules PATH Setup (muss vor Import sein)
+CODE_DIR = ROOT / "code"
+if str(CODE_DIR) not in sys.path:
+    sys.path.insert(0, str(CODE_DIR))
+
+# Lokale Imports nach sys.path Setup
+from utils.season_rules import load_rules  # noqa: E402
+from utils.data_quality import (  # noqa: E402
+    validate_season_for_training,
+    validate_gameweek_for_prediction,
+)
 
 # Logging konfigurieren
 logging.basicConfig(
@@ -80,6 +93,10 @@ def load_predictions(gw: int, method: str) -> pd.DataFrame | None:
 
         df = pd.DataFrame(players)
 
+        # Standardize column names (position -> pos)
+        if "position" in df.columns and "pos" not in df.columns:
+            df["pos"] = df["position"]
+
         # Ensure required columns exist
         required = ["player_id", "predicted_points", "pos", "team", "price"]
         missing = [c for c in required if c not in df.columns]
@@ -102,25 +119,34 @@ def load_predictions(gw: int, method: str) -> pd.DataFrame | None:
 def load_truth(season: str) -> pd.DataFrame | None:
     """Ladet echte Punktedaten fuer eine Saison.
 
+    Bevorzugt bereinigte Dateien (cleaned_merged_gw_*.csv) um Duplikate zu vermeiden.
+
     Args:
         season: Saisonstring (z.B. "2023-24", "2022-23")
 
     Returns:
         DataFrame mit Spalten [gw, player_id, points] oder None, falls nicht gefunden
     """
-    # Try to find the right file for this season
+    # Bevorzuge bereinigte Datei, dann Original
     possible_files = [
-        DATA_DIR / f"merged_gw_{season}.csv",
-        DATA_DIR / f"{season}_player_gw.csv",
+        DATA_DIR / f"cleaned_merged_gw_{season}.csv",  # Bevorzugt: bereinigt
+        DATA_DIR / f"merged_gw_{season}.csv",  # Fallback: Original
+        DATA_DIR / f"{season}_player_gw.csv",  # Alt
+        DATA_DIR / "cleaned_merged_gw_2022-23.csv",  # Fallback
         DATA_DIR / "merged_gw_2022-23.csv",  # Fallback
-        DATA_DIR / "merged_gw_2024-25.csv",  # Another fallback
     ]
 
     truth_file = None
     for f in possible_files:
         if f.exists():
             truth_file = f
-            logger.info(f"Using truth file: {f.name}")
+            is_cleaned = "cleaned_" in f.name
+            status = (
+                "✓ bereinigte Daten"
+                if is_cleaned
+                else "⚠ Original-Daten (mit Duplikaten)"
+            )
+            logger.info(f"Using truth file: {f.name} [{status}]")
             break
 
     if truth_file is None:
@@ -203,6 +229,14 @@ def build_candidate_pool(
     """
     pool_limits = {"GK": 2, "DEF": 5, "MID": 5, "FWD": 3}
 
+    # Debug: Check input data
+    logger.debug(f"build_candidate_pool: {len(df_pred)} predictions")
+    if len(df_pred) > 0:
+        logger.debug(f"  Positions: {df_pred['pos'].value_counts().to_dict()}")
+        logger.debug(
+            f"  Price range: {df_pred['price'].min():.1f} - {df_pred['price'].max():.1f}"
+        )
+
     # Alle Kandidaten nach prognostizierten Punkten absteigend sortieren
     df_sorted = df_pred.sort_values("predicted_points", ascending=False).copy()
 
@@ -238,18 +272,24 @@ def build_candidate_pool(
         if len(selected_players) == 15:
             break
 
-    pool = pd.DataFrame(selected_players)
+    # DataFrame aus Liste von Series erstellen (reset index)
+    if not selected_players:
+        return pd.DataFrame()
 
-    logger.debug(
-        f"Candidate pool: {len(pool)} players - "
-        + ", ".join(
-            [
-                f"{pos}={len(pool[pool['pos']==pos])}"
-                for pos in ["GK", "DEF", "MID", "FWD"]
-            ]
+    pool = pd.DataFrame(selected_players).reset_index(drop=True)
+
+    # Debug-Logging nur wenn pool nicht leer
+    if len(pool) > 0:
+        pos_counts = {
+            pos: len(pool[pool["pos"] == pos])
+            for pos in ["GK", "DEF", "MID", "FWD"]
+            if pos in pool["pos"].values
+        }
+        logger.debug(
+            f"Candidate pool: {len(pool)} players - "
+            + ", ".join([f"{pos}={count}" for pos, count in pos_counts.items()])
+            + f" - Budget: {current_budget:.1f}/{max_budget:.1f}"
         )
-        + f" - Budget: {current_budget:.1f}/{max_budget:.1f}"
-    )
 
     return pool
 
@@ -366,7 +406,10 @@ def evaluate_xi(
 
 
 def select_best_team_for_gw(
-    pred_df: pd.DataFrame, truth_gw_df: pd.DataFrame, max_budget: float = 100.0
+    pred_df: pd.DataFrame,
+    truth_gw_df: pd.DataFrame,
+    max_budget: float = 100.0,
+    max_per_club: int = 3,
 ) -> Dict | None:
     """Waehlt das beste Team (Startelf + Formation) fuer eine Spielwoche.
 
@@ -374,21 +417,24 @@ def select_best_team_for_gw(
         pred_df: Prognosen fuer alle Spieler dieser GW
         truth_gw_df: Echte Punkte dieser GW
         max_budget: Max. Budget fuer das Team (Standard 100.0)
+        max_per_club: Max. Spieler pro Club (Standard 3)
 
     Returns:
         Dict mit Teamdetails oder None bei Fehlschlag
     """
     # Kandidatenpool (15 Spieler) unter Budgetgrenze bilden
-    candidates = build_candidate_pool(pred_df, max_budget=max_budget)
+    candidates = build_candidate_pool(
+        pred_df, max_budget=max_budget, max_per_club=max_per_club
+    )
 
     if len(candidates) < 11:
         logger.warning(f"Insufficient candidates: {len(candidates)}")
         return None
 
     # Mit echten Daten mergen, um nur Spieler mit Resultaten zu behalten
-    candidates = candidates.merge(
-        truth_gw_df[["player_id"]], on="player_id", how="inner"
-    )
+    # WICHTIG: Behalte alle Spalten von candidates (pos, team, price, predicted_points)
+    truth_player_ids = truth_gw_df[["player_id"]].copy()
+    candidates = candidates.merge(truth_player_ids, on="player_id", how="inner")
 
     if len(candidates) < 11:
         logger.warning(f"Insufficient candidates with truth data: {len(candidates)}")
@@ -448,9 +494,21 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
         gw_end: Letzte Spielwoche (inklusive)
         methods: Liste der Methoden (z.B. ["rf", "ma3", "pos"])
     """
+    # Season-Rules laden
+    try:
+        rules = load_rules(season)
+        max_budget = rules.squad.budget
+        max_per_club = rules.squad.max_from_club
+        logger.info(f"Season {season} - Budget: {max_budget}, Max/Club: {max_per_club}")
+    except Exception as e:
+        logger.warning(f"Could not load rules for {season}, using defaults: {e}")
+        max_budget = 100.0
+        max_per_club = 3
+
     logger.info("=" * 70)
     logger.info(f"Team Backtest: {season}, GW{gw_start}-{gw_end}")
     logger.info(f"Methods: {', '.join(methods)}")
+    logger.info(f"Rules: Budget={max_budget}, Max/Club={max_per_club}")
     logger.info("=" * 70)
 
     # Echte Daten einmal laden
@@ -484,8 +542,10 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
                 logger.warning(f"  GW{gw} ({method}): No predictions, skipping")
                 continue
 
-            # Team auswaehlen
-            team_result = select_best_team_for_gw(pred_df, truth_gw)
+            # Team auswaehlen (mit Season-Rules)
+            team_result = select_best_team_for_gw(
+                pred_df, truth_gw, max_budget=max_budget, max_per_club=max_per_club
+            )
 
             if team_result is None:
                 logger.warning(f"  GW{gw} ({method}): Team selection failed")
@@ -671,6 +731,20 @@ def main():
     )
 
     args = parser.parse_args()
+
+    # Validiere Season
+    print(f"\nBacktest: Season {args.season}, GW {args.gw_start}-{args.gw_end}")
+    if not validate_season_for_training(args.season, verbose=True):
+        raise SystemExit(
+            f"\n❌ Season {args.season} kann nicht für Backtesting verwendet werden.\n"
+            "   Siehe data_quality_config.json für Details."
+        )
+    
+    # Prüfe GWs auf Warnungen
+    print("\nPrüfe Gameweeks auf bekannte Datenprobleme:")
+    for gw in range(args.gw_start, args.gw_end + 1):
+        validate_gameweek_for_prediction(args.season, gw, verbose=True)
+    print()
 
     run_backtest(
         season=args.season,

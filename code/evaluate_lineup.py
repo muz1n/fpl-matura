@@ -16,6 +16,15 @@ from typing import Dict, List, Optional, Tuple
 import numpy as np
 import pandas as pd
 
+# Füge Root zum Path für Imports hinzu
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+# Imports aus eigenem Projekt (nach PATH-Setup)
+from code.utils.season_rules import load_rules  # noqa: E402
+from code.lineup.auto_formation_cli_v2 import pick_lineup_autoformation  # noqa: E402
+
 
 # FPL-Formationsregeln
 ALLOWED_FORMATIONS = [
@@ -685,6 +694,194 @@ Example usage:
 
         traceback.print_exc()
         sys.exit(1)
+
+
+# ============================================================================
+# Web-App Evaluation API
+# ============================================================================
+
+
+def evaluate_single_lineup_for_webapp(
+    season: str, gw: int, methode: str = "rf"
+) -> Dict:
+    """Evaluiert ein einzelnes Lineup für die Web-App.
+
+    Vergleicht das generierte Modell-Lineup mit dem optimal möglichen Lineup
+    (basierend auf tatsächlichen Punkten) für eine historische GW.
+
+    Args:
+        season: Season im Format "2021-22"
+        gw: Gameweek-Nummer
+        methode: Prediction-Methode (rf, ma3, pos)
+
+    Returns:
+        Dict mit:
+        - evaluation_possible: bool
+        - error_message: str | None
+        - model_lineup: {...}
+        - model_actual_points: float
+        - optimal_lineup: {...}
+        - optimal_points: float
+        - delta: float (negativ = Modell schlechter)
+        - efficiency_percent: float
+
+    Verwendung in Maturaarbeit:
+    - Zeigt wie nah das Modell am theoretischen Optimum ist
+    - Validiert ob ML-Vorhersagen besser sind als Zufall
+    - Ermöglicht Vergleich verschiedener Methoden (rf vs ma3 vs pos)
+    """
+    ROOT = Path(__file__).resolve().parents[1]
+    DATA_DIR = ROOT / "data"
+    OUT_DIR = ROOT / "out"
+
+    # Qualitätsprüfung: Nur 2020-24 erlaubt
+    quality_path = DATA_DIR / "season_quality.json"
+    if quality_path.exists():
+        with open(quality_path, "r", encoding="utf-8") as f:
+            quality_data = json.load(f)
+            season_info = quality_data["seasons"].get(season)
+
+            if not season_info or not season_info["usable"]:
+                return {
+                    "evaluation_possible": False,
+                    "error_message": f"Season {season} hat unzureichende Datenqualität. Nur 2020-21 bis 2023-24 unterstützt.",
+                    "model_lineup": {},
+                    "model_actual_points": 0.0,
+                    "optimal_lineup": {},
+                    "optimal_points": 0.0,
+                    "delta": 0.0,
+                    "efficiency_percent": 0.0,
+                }
+
+    try:
+        # 1. Lade tatsächliche Resultate für diese GW
+        cleaned_path = DATA_DIR / f"cleaned_merged_gw_{season}.csv"
+        original_path = DATA_DIR / f"merged_gw_{season}.csv"
+        csv_path = cleaned_path if cleaned_path.exists() else original_path
+
+        if not csv_path.exists():
+            raise FileNotFoundError(f"Keine Daten für Season {season} gefunden")
+
+        df_full = pd.read_csv(csv_path)
+
+        # Standardisiere Spaltennamen
+        rename_map = {
+            "element": "player_id",
+            "round": "gw",
+            "total_points": "points",
+            "value": "price",
+            "position": "pos",
+        }
+        df_full = df_full.rename(
+            columns={k: v for k, v in rename_map.items() if k in df_full.columns}
+        )
+
+        actual_results = df_full[df_full["gw"] == gw].copy()
+
+        if actual_results.empty:
+            raise ValueError(f"Keine Daten für GW{gw} in Season {season} gefunden")
+
+        # 2. Lade Modell-Lineup
+        lineup_path = OUT_DIR / f"lineup_gw{gw}_{methode}.json"
+
+        if not lineup_path.exists():
+            raise FileNotFoundError(
+                f"Kein Lineup gefunden. Generiere zuerst Predictions und Lineup für {season} GW{gw} mit Methode {methode}."
+            )
+
+        with open(lineup_path, "r", encoding="utf-8") as f:
+            model_lineup = json.load(f)
+
+        # 3. Berechne tatsächliche Punkte des Modell-Lineups
+        xi_ids = model_lineup.get("xi_ids", [])
+        captain_id = model_lineup.get("captain_id")
+
+        model_players = actual_results[actual_results["player_id"].isin(xi_ids)]
+        model_actual_points = model_players["points"].sum()
+
+        # Captain bekommt doppelte Punkte
+        if captain_id:
+            captain_pts = actual_results[actual_results["player_id"] == captain_id][
+                "points"
+            ].values
+            if len(captain_pts) > 0:
+                model_actual_points += captain_pts[0]  # +1x extra für Captain
+
+        # 4. Finde optimales Lineup (Hindsight mit echten Punkten)
+        # Nutze pick_lineup_autoformation mit echten Punkten statt Predictions
+        rules = load_rules(season)
+        budget = rules["squad"]["budget"]
+        max_per_club = rules["squad"]["max_from_club"]
+
+        # Bereite Daten für Optimierung vor (nutze echte Punkte als "predictions")
+        pool_df = actual_results[
+            ["player_id", "name", "pos", "team", "price", "points"]
+        ].copy()
+        pool_df = pool_df.rename(columns={"points": "predicted_points"})
+
+        # Rufe Lineup-Optimizer mit echten Punkten auf
+        optimal_result = pick_lineup_autoformation(
+            predictions=pool_df,
+            budget=budget,
+            max_per_club=max_per_club,
+            constraints=None,
+        )
+
+        optimal_lineup = {
+            "xi_ids": optimal_result.get("xi_ids", []),
+            "formation": optimal_result.get("formation", ""),
+            "captain_id": optimal_result.get("captain_id"),
+            "total_cost": optimal_result.get("total_cost", 0.0),
+        }
+
+        optimal_xi_ids = optimal_lineup["xi_ids"]
+        optimal_captain_id = optimal_lineup["captain_id"]
+
+        # 5. Berechne optimale Punkte
+        optimal_players = actual_results[
+            actual_results["player_id"].isin(optimal_xi_ids)
+        ]
+        optimal_points = optimal_players["points"].sum()
+
+        # Captain-Bonus
+        if optimal_captain_id:
+            capt_pts = actual_results[
+                actual_results["player_id"] == optimal_captain_id
+            ]["points"].values
+            if len(capt_pts) > 0:
+                optimal_points += capt_pts[0]
+
+        # 6. Delta und Effizienz
+        delta = model_actual_points - optimal_points
+        efficiency = (
+            (model_actual_points / optimal_points * 100) if optimal_points > 0 else 0
+        )
+
+        return {
+            "evaluation_possible": True,
+            "error_message": None,
+            "season": season,
+            "gw": gw,
+            "methode": methode,
+            "model_lineup": model_lineup,
+            "model_actual_points": float(model_actual_points),
+            "optimal_lineup": optimal_lineup,
+            "optimal_points": float(optimal_points),
+            "delta": float(delta),
+            "efficiency_percent": float(efficiency),
+        }
+
+    except Exception as e:
+        return {
+            "evaluation_possible": False,
+            "error_message": f"Fehler bei Evaluation: {str(e)}",
+            "model_lineup": {},
+            "model_actual_points": 0.0,
+            "optimal_lineup": {},
+            "optimal_points": 0.0,
+            "delta": 0.0,
+            "efficiency_percent": 0.0,
+        }
 
 
 if __name__ == "__main__":

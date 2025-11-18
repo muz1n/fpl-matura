@@ -65,17 +65,46 @@ def _to_float(val: Any) -> float:
 def load_season_data(season: str) -> pd.DataFrame:
     """Lädt die Saison-Datei ausschliesslich für die angegebene Saison.
 
-    Erwartete Datei: data/merged_gw_<season>.csv
-    Gibt bei fehlender Datei eine klare Fehlermeldung aus.
+    Bevorzugt bereinigte Dateien (cleaned_merged_gw_*.csv) um Duplikate zu vermeiden.
+    Falls nicht vorhanden, nutzt Original-Datei mit Warnung.
+
+    Prüft Datenqualität: Seasons vor 2020-21 werden abgelehnt wegen fehlender Position-Daten.
     """
-    csv_path = DATA_DIR / f"merged_gw_{season}.csv"
-    if not csv_path.exists():
+    # Qualitätsprüfung: Season muss >= 2020-21 sein
+    quality_path = DATA_DIR / "season_quality.json"
+    if quality_path.exists():
+        with open(quality_path, "r", encoding="utf-8") as f:
+            quality_data = json.load(f)
+            season_info = quality_data["seasons"].get(season)
+            if season_info and not season_info["usable"]:
+                raise SystemExit(
+                    f"❌ FEHLER: Season {season} kann nicht verwendet werden.\n"
+                    f"   Grund: {season_info['reason']}\n"
+                    f"   Empfehlung: Verwende Seasons ab 2020-21 (vollständige Daten)."
+                )
+
+    # Bevorzuge bereinigte Datei
+    cleaned_path = DATA_DIR / f"cleaned_merged_gw_{season}.csv"
+    original_path = DATA_DIR / f"merged_gw_{season}.csv"
+
+    if cleaned_path.exists():
+        csv_path = cleaned_path
+        print(f"Lade bereinigte Daten von: {csv_path}")
+    elif original_path.exists():
+        csv_path = original_path
+        print(f"⚠ Lade Original-Daten (mit möglichen Duplikaten): {csv_path}")
+        print(
+            "  Hinweis: Führe 'python tools/cleanup_season_data.py' aus um bereinigte Daten zu erstellen"
+        )
+    else:
         raise SystemExit(
-            f"FEHLER: Saison-Datei '{csv_path.name}' wurde nicht gefunden.\n"
-            f"Bitte stelle sicher, dass die Datei unter {DATA_DIR} existiert und versuche es erneut."
+            f"FEHLER: Saison-Datei für '{season}' wurde nicht gefunden.\n"
+            f"Erwartete Dateien:\n"
+            f"  - {cleaned_path.name} (bevorzugt)\n"
+            f"  - {original_path.name}\n"
+            f"Bitte stelle sicher, dass die Datei unter {DATA_DIR} existiert."
         )
 
-    print(f"Lade Daten von: {csv_path}")
     df = pd.read_csv(csv_path)
 
     # Standardisiere wichtige Spalten
@@ -166,30 +195,55 @@ def load_season_data(season: str) -> pd.DataFrame:
 
 
 def get_pool_for_gw(df: pd.DataFrame, gw: int) -> list[int]:
-    """Spieler, die vor der angegebenen Spielwoche in dieser Saison schon existierten."""
+    """Spieler, die vor der angegebenen Spielwoche in dieser Saison schon existierten.
+
+    Warnt wenn weniger als 600 Spieler vorhanden (abgesagte/verschobene Spiele).
+    """
     if "player_id" not in df.columns or "gw" not in df.columns:
         return []
+
+    pool = df[df["gw"] == gw]["player_id"].dropna().unique().tolist()
+
+    # Warne bei niedriger Spielerzahl (wahrscheinlich abgesagte Spiele)
+    if len(pool) < 600:
+        print(f"⚠️ WARNUNG: Nur {len(pool)} Spieler für GW{gw} verfügbar (< 600)")
+        print(
+            "   Möglicher Grund: Abgesagte oder verschobene Spiele in dieser Spielwoche"
+        )
+        print("   Die Vorhersagequalität kann beeinträchtigt sein.")
+
+    return pool
     pool = df.loc[df["gw"] < gw, "player_id"].dropna().astype(int).unique().tolist()
     return pool
 
 
 def build_rolling_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Fügt r3-gleitende Merkmale hinzu, um 1 verschoben (keine Informationsleckage)."""
+    """Fügt r3-gleitende Merkmale hinzu, um 1 verschoben (keine Informationsleckage).
+
+    WICHTIG: Behält Metadaten-Spalten (pos, name, team, price) im DataFrame.
+    """
     roll_cols = [
         c
         for c in ["points", "minutes", "ict_index", "influence", "creativity", "threat"]
         if c in df.columns
     ]
     df = df.copy()
+
+    # Rolling features berechnen
     for col in roll_cols:
         df[f"{col}_r3"] = (
             df.groupby("player_id")[col].shift(1).rolling(3, min_periods=1).mean()
         )
+
+    # Points per 90 berechnen
     if set(["points_r3", "minutes_r3"]).issubset(df.columns):
         with np.errstate(divide="ignore", invalid="ignore"):
             df["points_per90_r3"] = (
                 df["points_r3"] / df["minutes_r3"].replace(0, np.nan)
             ) * 90
+
+    # Stelle sicher, dass Metadaten-Spalten vorhanden sind
+    # (pos, name, team, price sollten bereits von load_season_data() vorhanden sein)
     return df
 
 
@@ -289,7 +343,20 @@ def predict_positional(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFra
     for pid in pool:
         if pid in last_meta.index:
             s = last_meta.loc[pid]
-            pos = str(s.get("pos", "MID"))
+            # Position sicher extrahieren: falls Series/ndarray, nehme erstes Element
+            pos_val = s.get("pos", "MID")
+            if isinstance(pos_val, (pd.Series, np.ndarray)):
+                try:
+                    il = getattr(pos_val, "iloc", None)
+                    pos_val = il[0] if il is not None else pos_val[0]
+                except Exception:
+                    pos_val = "MID"
+            if pd.isna(pos_val) or (
+                isinstance(pos_val, str) and pos_val.strip() in ("", "nan", "")
+            ):
+                pos = "MID"
+            else:
+                pos = str(pos_val)
             price_val = s.get("price", np.nan)
             price = _to_float(price_val)
             name = str(s.get("name", f"Player {pid}"))
@@ -334,6 +401,7 @@ def predict_ma3(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFrame:
             pred_val = _to_float(val)
             if not np.isnan(pred_val):
                 pred = pred_val
+
         if pred == 0.0:
             # Fallback: Mittelwert der verfügbaren Historie vor gw
             hist_points = g.loc[
@@ -343,13 +411,19 @@ def predict_ma3(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFrame:
 
         if pid in last_meta.index:
             s = last_meta.loc[pid]
-            pos = str(s.get("pos", "MID"))
+            # Position sicher extrahieren
+            pos_val = s.get("pos", "MID")
+            if pd.isna(pos_val) or str(pos_val).strip() in ("", "nan"):  # type: ignore
+                pos = "MID"
+            else:
+                pos = str(pos_val)
             price_val = s.get("price", np.nan)
             price = _to_float(price_val)
             name = str(s.get("name", f"Player {pid}"))
             team = str(s.get("team", "UNK"))
         else:
             pos, price, name, team = "MID", np.nan, f"Player {pid}", "UNK"
+
         rows.append(
             {
                 "player_id": pid,
@@ -388,7 +462,14 @@ def predict_rf(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFrame:
                 v = _to_float(row[col]) if col in row else np.nan
                 vals.append(0.0 if np.isnan(v) else v)
             X.append(vals)
-            pos = str(row.get("pos", "MID"))
+
+            # Position aus row holen, aber NaN/None sicher behandeln
+            pos_val = row.get("pos", "MID")
+            if pd.isna(pos_val) or str(pos_val).strip() in ("", "nan"):  # type: ignore
+                pos = "MID"
+            else:
+                pos = str(pos_val)
+
             price_val = row.get("price", np.nan)
             price = _to_float(price_val)
             name = str(row.get("name", f"Player {pid}"))
@@ -396,6 +477,7 @@ def predict_rf(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFrame:
         else:
             X.append([0.0] * len(features))
             pos, price, name, team = "MID", np.nan, f"Player {pid}", "UNK"
+
         meta.append(
             {"player_id": pid, "name": name, "team": team, "pos": pos, "price": price}
         )
@@ -442,11 +524,20 @@ def build_output(
 
     players = []
     for _, row in df.sort_values("predicted_points", ascending=False).iterrows():
+        # Position sicher extrahieren (NaN → "MID")
+        pos_val = row.get("pos", "MID")
+        if pd.isna(pos_val) or (
+            isinstance(pos_val, str) and pos_val.strip() in ("", "nan")
+        ):
+            pos = "MID"
+        else:
+            pos = str(pos_val)
+
         players.append(
             {
                 "player_id": int(row["player_id"]),
                 "name": str(row.get("name", "Unknown")),
-                "pos": str(row.get("pos", "MID")),
+                "pos": pos,
                 "team": str(row.get("team", "UNK")),
                 "predicted_points": round(float(row["predicted_points"]), 3),
                 "price": (

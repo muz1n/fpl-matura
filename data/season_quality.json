@@ -1,0 +1,345 @@
+{
+    "_meta": {
+        "description": "Datenqualität und Nutzbarkeit pro FPL-Season",
+        "last_updated": "2025-11-18",
+        "data_source": "vaastav/Fantasy-Premier-League (GitHub)"
+    },
+    "seasons": {
+        "2016-17": {
+            "usable": false,
+            "reason": "Fehlende Position-Daten (pos-Spalte ist NaN für ~23,000 Zeilen)",
+            "details": {
+                "total_rows": 23106,
+                "missing_position_data": 23106,
+                "duplicate_rows_removed": 573,
+                "low_player_count_gws": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    26,
+                    28
+                ],
+                "data_completeness": "unvollständig"
+            }
+        },
+        "2017-18": {
+            "usable": false,
+            "reason": "Fehlende Position-Daten (pos-Spalte ist NaN für ~21,800 Zeilen)",
+            "details": {
+                "total_rows": 21797,
+                "missing_position_data": 21797,
+                "duplicate_rows_removed": 670,
+                "low_player_count_gws": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18,
+                    19,
+                    20,
+                    21,
+                    22,
+                    23,
+                    31,
+                    35
+                ],
+                "data_completeness": "unvollständig"
+            }
+        },
+        "2018-19": {
+            "usable": false,
+            "reason": "Fehlende Position-Daten (pos-Spalte ist NaN für ~21,100 Zeilen)",
+            "details": {
+                "total_rows": 21134,
+                "missing_position_data": 21134,
+                "duplicate_rows_removed": 656,
+                "low_player_count_gws": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18,
+                    19,
+                    20,
+                    21,
+                    22,
+                    23,
+                    24,
+                    25,
+                    27,
+                    31,
+                    33
+                ],
+                "data_completeness": "unvollständig"
+            }
+        },
+        "2019-20": {
+            "usable": false,
+            "reason": "Fehlende Position-Daten (pos-Spalte ist NaN für ~22,300 Zeilen)",
+            "details": {
+                "total_rows": 22313,
+                "missing_position_data": 22313,
+                "duplicate_rows_removed": 247,
+                "low_player_count_gws": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18,
+                    19,
+                    20,
+                    21,
+                    22,
+                    28
+                ],
+                "data_completeness": "unvollständig",
+                "notes": "Season abgebrochen wegen COVID-19 (GW30+)"
+            }
+        },
+        "2020-21": {
+            "usable": true,
+            "reason": "Vollständige Daten verfügbar",
+            "details": {
+                "total_rows": 24857,
+                "missing_position_data": 0,
+                "duplicate_rows_removed": 1476,
+                "problematic_gws": {
+                    "1": {
+                        "player_count": 425,
+                        "reason": "Season-Start, reduzierte Daten"
+                    },
+                    "2": {
+                        "player_count": 539,
+                        "reason": "Frühe Season-Phase"
+                    },
+                    "3": {
+                        "player_count": 554,
+                        "reason": "Frühe Season-Phase"
+                    },
+                    "4": {
+                        "player_count": 562,
+                        "reason": "Frühe Season-Phase"
+                    },
+                    "5": {
+                        "player_count": 583,
+                        "reason": "Frühe Season-Phase"
+                    },
+                    "6": {
+                        "player_count": 590,
+                        "reason": "Frühe Season-Phase"
+                    },
+                    "7": {
+                        "player_count": 597,
+                        "reason": "Frühe Season-Phase"
+                    },
+                    "11": {
+                        "player_count": 541,
+                        "reason": "COVID-bedingte Spielverschiebungen"
+                    },
+                    "16": {
+                        "player_count": 491,
+                        "reason": "COVID-bedingte Spielverschiebungen"
+                    },
+                    "17": {
+                        "player_count": 560,
+                        "reason": "COVID-bedingte Spielverschiebungen"
+                    },
+                    "18": {
+                        "player_count": 395,
+                        "reason": "COVID-bedingte Spielverschiebungen"
+                    },
+                    "29": {
+                        "player_count": 277,
+                        "reason": "Spielverschiebungen"
+                    },
+                    "33": {
+                        "player_count": 555,
+                        "reason": "Späte Season-Phase"
+                    },
+                    "36": {
+                        "player_count": 567,
+                        "reason": "Späte Season-Phase"
+                    }
+                },
+                "data_completeness": "vollständig"
+            }
+        },
+        "2021-22": {
+            "usable": true,
+            "reason": "Vollständige Daten verfügbar",
+            "details": {
+                "total_rows": 26089,
+                "missing_position_data": 0,
+                "duplicate_rows_removed": 2217,
+                "problematic_gws": {
+                    "1": {
+                        "player_count": 554,
+                        "reason": "Season-Start"
+                    },
+                    "2": {
+                        "player_count": 566,
+                        "reason": "Frühe Season-Phase"
+                    },
+                    "3": {
+                        "player_count": 577,
+                        "reason": "Frühe Season-Phase"
+                    },
+                    "4": {
+                        "player_count": 599,
+                        "reason": "Frühe Season-Phase"
+                    },
+                    "13": {
+                        "player_count": 574,
+                        "reason": "COVID-bedingte Spielverschiebungen"
+                    },
+                    "16": {
+                        "player_count": 583,
+                        "reason": "COVID-bedingte Spielverschiebungen"
+                    },
+                    "17": {
+                        "player_count": 460,
+                        "reason": "COVID-bedingte Spielverschiebungen"
+                    },
+                    "18": {
+                        "player_count": 262,
+                        "reason": "COVID-bedingte Spielverschiebungen (Weihnachten)"
+                    },
+                    "19": {
+                        "player_count": 450,
+                        "reason": "COVID-bedingte Spielverschiebungen"
+                    },
+                    "20": {
+                        "player_count": 461,
+                        "reason": "COVID-bedingte Spielverschiebungen"
+                    },
+                    "30": {
+                        "player_count": 292,
+                        "reason": "Spielverschiebungen"
+                    }
+                },
+                "data_completeness": "vollständig"
+            }
+        },
+        "2022-23": {
+            "usable": true,
+            "reason": "Vollständige Daten verfügbar",
+            "details": {
+                "total_rows": 22681,
+                "missing_position_data": 0,
+                "duplicate_rows_removed": 1548,
+                "problematic_gws": {
+                    "1": {
+                        "player_count": 573,
+                        "reason": "Season-Start"
+                    },
+                    "2": {
+                        "player_count": 581,
+                        "reason": "Frühe Season-Phase"
+                    },
+                    "3": {
+                        "player_count": 592,
+                        "reason": "Frühe Season-Phase"
+                    },
+                    "8": {
+                        "player_count": 440,
+                        "reason": "Nach Queen Elizabeth Tod - Spielabsagen"
+                    },
+                    "12": {
+                        "player_count": 585,
+                        "reason": "Vor WM-Pause"
+                    },
+                    "28": {
+                        "player_count": 539,
+                        "reason": "Spielverschiebungen"
+                    }
+                },
+                "data_completeness": "vollständig"
+            }
+        },
+        "2023-24": {
+            "usable": true,
+            "reason": "Vollständige Daten verfügbar",
+            "details": {
+                "total_rows": 24374,
+                "missing_position_data": 0,
+                "duplicate_rows_removed": 983,
+                "problematic_gws": {
+                    "2": {
+                        "player_count": 595,
+                        "reason": "Frühe Season-Phase"
+                    },
+                    "29": {
+                        "player_count": 344,
+                        "reason": "Spielverschiebungen"
+                    }
+                },
+                "data_completeness": "vollständig"
+            }
+        }
+    },
+    "usage_guidelines": {
+        "training": {
+            "recommended_seasons": [
+                "2020-21",
+                "2021-22",
+                "2022-23",
+                "2023-24"
+            ],
+            "min_season": "2020-21",
+            "reason": "Nur ab 2020-21 sind Position-Daten vollständig verfügbar"
+        },
+        "problematic_gws": {
+            "threshold_player_count": 600,
+            "action": "warning",
+            "allow_usage": true,
+            "message": "Diese Spielwoche hatte abgesagte/verschobene Spiele. Die Vorhersagequalität kann beeinträchtigt sein."
+        }
+    }
+}

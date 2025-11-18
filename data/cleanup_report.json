@@ -1,0 +1,232 @@
+{
+  "summary": {
+    "total_seasons_processed": 8,
+    "total_original_rows": 196538,
+    "total_cleaned_rows": 188168,
+    "total_rows_removed": 8370,
+    "total_duplicates_removed": 8370
+  },
+  "duplicates_by_season": [
+    {
+      "season": "2016-17",
+      "duplicates_removed": 573,
+      "duplicate_pairs": 573
+    },
+    {
+      "season": "2017-18",
+      "duplicates_removed": 670,
+      "duplicate_pairs": 670
+    },
+    {
+      "season": "2018-19",
+      "duplicates_removed": 656,
+      "duplicate_pairs": 656
+    },
+    {
+      "season": "2019-20",
+      "duplicates_removed": 247,
+      "duplicate_pairs": 247
+    },
+    {
+      "season": "2020-21",
+      "duplicates_removed": 1476,
+      "duplicate_pairs": 1456
+    },
+    {
+      "season": "2021-22",
+      "duplicates_removed": 2217,
+      "duplicate_pairs": 2217
+    },
+    {
+      "season": "2022-23",
+      "duplicates_removed": 1548,
+      "duplicate_pairs": 1548
+    },
+    {
+      "season": "2023-24",
+      "duplicates_removed": 983,
+      "duplicate_pairs": 983
+    }
+  ],
+  "missing_positions_by_season": [
+    {
+      "season": "2016-17",
+      "missing_positions": 23106
+    },
+    {
+      "season": "2017-18",
+      "missing_positions": 21797
+    },
+    {
+      "season": "2018-19",
+      "missing_positions": 21134
+    },
+    {
+      "season": "2019-20",
+      "missing_positions": 22313
+    }
+  ],
+  "data_quality_issues": {
+    "description": "Duplikate stammen aus vaastav/Fantasy-Premier-League Original-Daten",
+    "likely_cause": "Daten-Updates/Korrekturen während der Season (z.B. nachträgliche Preis-/Statistik-Anpassungen)",
+    "cleanup_strategy": "Behalte letzten Eintrag (keep='last') um aktuellste Daten zu verwenden"
+  },
+  "detailed_results": [
+    {
+      "season": "2016-17",
+      "original_file": "merged_gw_2016-17.csv",
+      "status": "ok",
+      "changes": [
+        {
+          "type": "duplicates_removed",
+          "count": 573,
+          "duplicate_pairs": 573,
+          "strategy": "keep='last' (aktuellste Daten)"
+        },
+        {
+          "type": "missing_positions",
+          "count": 23106,
+          "action": "Keine Änderung (wird in make_predictions.py auf MID gefüllt)"
+        }
+      ],
+      "original_rows": 23679,
+      "cleaned_rows": 23106,
+      "rows_removed": 573,
+      "output_file": "cleaned_merged_gw_2016-17.csv"
+    },
+    {
+      "season": "2017-18",
+      "original_file": "merged_gw_2017-18.csv",
+      "status": "ok",
+      "changes": [
+        {
+          "type": "duplicates_removed",
+          "count": 670,
+          "duplicate_pairs": 670,
+          "strategy": "keep='last' (aktuellste Daten)"
+        },
+        {
+          "type": "missing_positions",
+          "count": 21797,
+          "action": "Keine Änderung (wird in make_predictions.py auf MID gefüllt)"
+        }
+      ],
+      "original_rows": 22467,
+      "cleaned_rows": 21797,
+      "rows_removed": 670,
+      "output_file": "cleaned_merged_gw_2017-18.csv"
+    },
+    {
+      "season": "2018-19",
+      "original_file": "merged_gw_2018-19.csv",
+      "status": "ok",
+      "changes": [
+        {
+          "type": "duplicates_removed",
+          "count": 656,
+          "duplicate_pairs": 656,
+          "strategy": "keep='last' (aktuellste Daten)"
+        },
+        {
+          "type": "missing_positions",
+          "count": 21134,
+          "action": "Keine Änderung (wird in make_predictions.py auf MID gefüllt)"
+        }
+      ],
+      "original_rows": 21790,
+      "cleaned_rows": 21134,
+      "rows_removed": 656,
+      "output_file": "cleaned_merged_gw_2018-19.csv"
+    },
+    {
+      "season": "2019-20",
+      "original_file": "merged_gw_2019-20.csv",
+      "status": "ok",
+      "changes": [
+        {
+          "type": "duplicates_removed",
+          "count": 247,
+          "duplicate_pairs": 247,
+          "strategy": "keep='last' (aktuellste Daten)"
+        },
+        {
+          "type": "missing_positions",
+          "count": 22313,
+          "action": "Keine Änderung (wird in make_predictions.py auf MID gefüllt)"
+        }
+      ],
+      "original_rows": 22560,
+      "cleaned_rows": 22313,
+      "rows_removed": 247,
+      "output_file": "cleaned_merged_gw_2019-20.csv"
+    },
+    {
+      "season": "2020-21",
+      "original_file": "merged_gw_2020-21.csv",
+      "status": "ok",
+      "changes": [
+        {
+          "type": "duplicates_removed",
+          "count": 1476,
+          "duplicate_pairs": 1456,
+          "strategy": "keep='last' (aktuellste Daten)"
+        }
+      ],
+      "original_rows": 24365,
+      "cleaned_rows": 22889,
+      "rows_removed": 1476,
+      "output_file": "cleaned_merged_gw_2020-21.csv"
+    },
+    {
+      "season": "2021-22",
+      "original_file": "merged_gw_2021-22.csv",
+      "status": "ok",
+      "changes": [
+        {
+          "type": "duplicates_removed",
+          "count": 2217,
+          "duplicate_pairs": 2217,
+          "strategy": "keep='last' (aktuellste Daten)"
+        }
+      ],
+      "original_rows": 25447,
+      "cleaned_rows": 23230,
+      "rows_removed": 2217,
+      "output_file": "cleaned_merged_gw_2021-22.csv"
+    },
+    {
+      "season": "2022-23",
+      "original_file": "merged_gw_2022-23.csv",
+      "status": "ok",
+      "changes": [
+        {
+          "type": "duplicates_removed",
+          "count": 1548,
+          "duplicate_pairs": 1548,
+          "strategy": "keep='last' (aktuellste Daten)"
+        }
+      ],
+      "original_rows": 26505,
+      "cleaned_rows": 24957,
+      "rows_removed": 1548,
+      "output_file": "cleaned_merged_gw_2022-23.csv"
+    },
+    {
+      "season": "2023-24",
+      "original_file": "merged_gw_2023-24.csv",
+      "status": "ok",
+      "changes": [
+        {
+          "type": "duplicates_removed",
+          "count": 983,
+          "duplicate_pairs": 983,
+          "strategy": "keep='last' (aktuellste Daten)"
+        }
+      ],
+      "original_rows": 29725,
+      "cleaned_rows": 28742,
+      "rows_removed": 983,
+      "output_file": "cleaned_merged_gw_2023-24.csv"
+    }
+  ]
+}
