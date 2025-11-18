@@ -21,10 +21,6 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-# Imports aus eigenem Projekt (nach PATH-Setup)
-from code.utils.season_rules import load_rules  # noqa: E402
-from code.lineup.auto_formation_cli_v2 import pick_lineup_autoformation  # noqa: E402
-
 
 # FPL-Formationsregeln
 ALLOWED_FORMATIONS = [
@@ -809,6 +805,10 @@ def evaluate_single_lineup_for_webapp(
 
         # 4. Finde optimales Lineup (Hindsight mit echten Punkten)
         # Nutze pick_lineup_autoformation mit echten Punkten statt Predictions
+        # Imports zur Runtime (vermeidet Linter-Fehler)
+        from code.utils.season_rules import load_rules  # type: ignore
+        from code.lineup.auto_formation_cli_v2 import pick_lineup_autoformation  # type: ignore
+        
         rules = load_rules(season)
         budget = rules["squad"]["budget"]
         max_per_club = rules["squad"]["max_from_club"]
