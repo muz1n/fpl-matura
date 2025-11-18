@@ -8,7 +8,7 @@ import { Select } from '../src/components/Select'
 import { LoadingState, ErrorState, EmptyState } from '../src/components/States'
 import { saveSquad, loadSquad } from '../src/lib/squad-storage'
 import { HistoricalEvaluation } from '../src/components/HistoricalEvaluation'
-import { isSeasonUsable } from '../lib/seasonQuality'
+import { getUsableSeasons } from '../lib/seasonQuality'
 
 type LoadingStateType = 'idle' | 'loading' | 'success' | 'error'
 type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank' | 'rf_pos'
@@ -51,6 +51,8 @@ export default function PredictionsPage() {
     const [selectedGW, setSelectedGW] = useState<number | null>(null)
     const [selectedMethod, setSelectedMethod] = useState<string | null>('rf')
     const [selectedSeason, setSelectedSeason] = useState<string>('2022-23')
+    const [availableSeasons, setAvailableSeasons] = useState<string[]>([])
+    const [seasonsLoading, setSeasonsLoading] = useState<boolean>(true)
 
     // Dein Team (LocalStorage) + Transfer-Hilfe
     const [teamInput, setTeamInput] = useState<string>("")
@@ -68,6 +70,27 @@ export default function PredictionsPage() {
     const [downloadError, setDownloadError] = useState<string>("")
     const [showDownloads, setShowDownloads] = useState<boolean>(true)
     const [availableDownloadLinks, setAvailableDownloadLinks] = useState<Array<{ href: string; label: string }>>([])
+
+    // Lade verfügbare Seasons on mount
+    useEffect(() => {
+        async function loadSeasons() {
+            try {
+                const seasons = await getUsableSeasons()
+                setAvailableSeasons(seasons)
+                // Setze default auf neueste Season falls nicht schon gesetzt
+                if (seasons.length > 0 && !selectedSeason) {
+                    setSelectedSeason(seasons[seasons.length - 1])
+                }
+            } catch (err) {
+                console.error('Fehler beim Laden der Seasons:', err)
+                // Fallback auf hardcoded seasons
+                setAvailableSeasons(['2020-21', '2021-22', '2022-23', '2023-24'])
+            } finally {
+                setSeasonsLoading(false)
+            }
+        }
+        loadSeasons()
+    }, [])
 
     // Verfuegbare Downloads vorab pruefen (nur anzeigen, was existiert)
     useEffect(() => {
@@ -170,12 +193,15 @@ export default function PredictionsPage() {
             setLineupError('');
 
             try {
-                // Fetch predictions
-                const predRes = await fetch(`/api/gw/${selectedGW}/predictions?methode=${selectedMethod}`);
+                // Fetch predictions with optional season parameter
+                const seasonParam = selectedSeason ? `&season=${selectedSeason}` : ''
+                const predRes = await fetch(`/api/gw/${selectedGW}/predictions?methode=${selectedMethod}${seasonParam}`);
 
                 if (!predRes.ok) {
                     const errorData = await predRes.json().catch(() => ({}));
-                    throw new Error(errorData.error || 'Fehler beim Laden der Prognosen');
+                    const errorMsg = errorData.error || 'Fehler beim Laden der Prognosen'
+                    const suggestion = errorData.suggestion ? `\n${errorData.suggestion}` : ''
+                    throw new Error(errorMsg + suggestion);
                 }
 
                 const predData: PredictionsPayload = await predRes.json();
@@ -183,16 +209,20 @@ export default function PredictionsPage() {
 
                 // Fetch lineup - handle 404 gracefully
                 try {
-                    const lineupRes = await fetch(`/api/gw/${selectedGW}/lineup?methode=${selectedMethod}`);
+                    const lineupRes = await fetch(`/api/gw/${selectedGW}/lineup?methode=${selectedMethod}${seasonParam}`);
 
                     if (!lineupRes.ok) {
                         if (lineupRes.status === 404) {
                             const errorData = await lineupRes.json().catch(() => ({}));
-                            setLineupError(errorData.error || 'Lineup-Daten nicht verfügbar');
+                            const errorMsg = errorData.error || 'Lineup-Daten nicht verfügbar'
+                            const suggestion = errorData.suggestion ? `\n${errorData.suggestion}` : ''
+                            setLineupError(errorMsg + suggestion);
                             setLineup(null);
                         } else {
                             const errorData = await lineupRes.json().catch(() => ({}));
-                            throw new Error(errorData.error || 'Fehler beim Laden der Lineup-Daten');
+                            const errorMsg = errorData.error || 'Fehler beim Laden der Lineup-Daten'
+                            const suggestion = errorData.suggestion ? `\n${errorData.suggestion}` : ''
+                            throw new Error(errorMsg + suggestion);
                         }
                     } else {
                         const lineupData: LineupPayload = await lineupRes.json();
@@ -216,7 +246,7 @@ export default function PredictionsPage() {
         }
 
         fetchData();
-    }, [selectedGW, selectedMethod]);
+    }, [selectedGW, selectedMethod, selectedSeason]);
 
     // Helper: find player by ID
     const findPlayer = (id: number): PredictionPlayer | undefined => {
@@ -497,12 +527,11 @@ export default function PredictionsPage() {
                             label="Season"
                             value={selectedSeason}
                             onChange={(val) => setSelectedSeason(val as string)}
-                            options={[
-                                { value: '2020-21', label: 'Season 2020-21' },
-                                { value: '2021-22', label: 'Season 2021-22' },
-                                { value: '2022-23', label: 'Season 2022-23' },
-                                { value: '2023-24', label: 'Season 2023-24' },
-                            ]}
+                            options={availableSeasons.map(s => ({
+                                value: s,
+                                label: `Season ${s}`
+                            }))}
+                            disabled={seasonsLoading || availableSeasons.length === 0}
                             tooltip={<HelpIcon text="Nur Seasons 2020-24 haben vollständige Datenqualität" />}
                         />
 

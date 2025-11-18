@@ -48,72 +48,102 @@ export default async function handler(
     }
 
     try {
-        const { gw, methode } = req.query
+        const { gw, methode, season } = req.query
         const gwNum = Number.parseInt(gw as string, 10)
         const methodRaw = (methode as string)?.toLowerCase() || 'rf'
         const method: PredictionMethod = (methodRaw === 'ma3' || methodRaw === 'pos' || methodRaw === 'rf' || methodRaw === 'rf_rank' || methodRaw === 'rf_pos') ? methodRaw : 'rf'
+        const seasonStr = season as string | undefined
 
         if (!Number.isFinite(gwNum)) {
             return res.status(400).json({ error: 'Bad gw parameter' })
         }
 
-        // Try primary lineup file first
-        const primaryFile = join(OUT_DIR, `lineup_gw${gwNum}_${method}.json`)
-        try {
-            const raw = await readFile(primaryFile, 'utf8')
-            const parsed = LineupPayloadSchema.parse(JSON.parse(raw))
-            return res.status(200).json({ ...parsed, methode: method })
-        } catch (e: any) {
-            if (e.code !== 'ENOENT') throw e
+        // Try paths in order:
+        // 1. lineup_{season}_gw{N}_{method}.json (season-specific)
+        // 2. lineup_gw{N}_{method}.json (current/default)
+        // 3. lineup_gw{N}.json (legacy)
+        
+        const candidatePaths: Array<{ path: string; method: string; description: string }> = []
+        
+        if (seasonStr) {
+            candidatePaths.push({
+                path: join(OUT_DIR, `lineup_${seasonStr}_gw${gwNum}_${method}.json`),
+                method,
+                description: `season-specific (${seasonStr})`
+            })
         }
+        
+        candidatePaths.push({
+            path: join(OUT_DIR, `lineup_gw${gwNum}_${method}.json`),
+            method,
+            description: 'method-specific'
+        })
+        
+        candidatePaths.push({
+            path: join(OUT_DIR, `lineup_gw${gwNum}.json`),
+            method: 'legacy',
+            description: 'legacy'
+        })
 
-        // Fallback: legacy lineup file
-        const legacyFile = join(OUT_DIR, `lineup_gw${gwNum}.json`)
-        try {
-            const raw = await readFile(legacyFile, 'utf8')
-            const parsed = LineupPayloadSchema.parse(JSON.parse(raw))
-            return res.status(200).json({ ...parsed, methode: 'legacy' })
-        } catch (e: any) {
-            if (e.code !== 'ENOENT') throw e
-        }
-
-        // Fallback: build lineup from predictions
-        // Try method-specific predictions file
-        const predFile = join(OUT_DIR, `predictions_gw${gwNum}_${method}.json`)
-        let predRaw: string | null = null
+        let lineupData: any = null
         let usedMethod: string = method
-        try {
-            predRaw = await readFile(predFile, 'utf8')
-        } catch (e: any) {
-            if (e.code === 'ENOENT') {
-                // Try legacy predictions file
-                const legacyPredFile = join(OUT_DIR, `predictions_gw${gwNum}.json`)
-                try {
-                    predRaw = await readFile(legacyPredFile, 'utf8')
-                    usedMethod = 'legacy'
-                } catch (e2: any) {
-                    if (e2.code === 'ENOENT') {
-                        // Neither predictions file found: return available GWs/methods
-                        const { available, methodsByGw } = await getAvailableGWsAndMethods()
-                        return res.status(404).json({
-                            error: 'GW not available',
-                            available,
-                            methodsByGw
-                        })
-                    }
-                    throw e2
+
+        for (const candidate of candidatePaths) {
+            try {
+                const raw = await readFile(candidate.path, 'utf8')
+                const parsed = LineupPayloadSchema.parse(JSON.parse(raw))
+                lineupData = parsed
+                usedMethod = candidate.method
+                break
+            } catch (e: any) {
+                if (e.code !== 'ENOENT') {
+                    throw e
                 }
-            } else {
-                throw e
             }
         }
 
-        // Build lineup from predictions
-        if (!predRaw) {
-            const { available, methodsByGw } = await getAvailableGWsAndMethods()
-            return res.status(404).json({ error: 'GW not available', available, methodsByGw })
+        if (lineupData) {
+            return res.status(200).json({ ...lineupData, methode: usedMethod })
         }
 
+        // No pre-generated lineup found - try building from predictions
+        // Try method-specific predictions file with season support
+        const predCandidates: string[] = []
+        
+        if (seasonStr) {
+            predCandidates.push(join(OUT_DIR, `predictions_${seasonStr}_gw${gwNum}_${method}.json`))
+        }
+        predCandidates.push(join(OUT_DIR, `predictions_gw${gwNum}_${method}.json`))
+        predCandidates.push(join(OUT_DIR, `predictions_gw${gwNum}.json`))
+        
+        let predRaw: string | null = null
+        
+        for (const predPath of predCandidates) {
+            try {
+                predRaw = await readFile(predPath, 'utf8')
+                break
+            } catch (e: any) {
+                if (e.code !== 'ENOENT') {
+                    throw e
+                }
+            }
+        }
+
+        if (!predRaw) {
+            // No predictions found - return helpful 404
+            const { available, methodsByGw } = await getAvailableGWsAndMethods()
+            const seasonMsg = seasonStr ? ` für Season ${seasonStr}` : ''
+            return res.status(404).json({
+                error: `Keine Lineup-Daten${seasonMsg} für GW ${gwNum} verfügbar`,
+                available,
+                methodsByGw,
+                suggestion: seasonStr 
+                    ? `Generiere zuerst Predictions für Season ${seasonStr} GW ${gwNum}` 
+                    : 'Verfügbare Gameweeks prüfen'
+            })
+        }
+
+        // Build lineup from predictions
         // Parse predictions
         const predJson = JSON.parse(predRaw)
         const predParse = PredictionsPayloadSchema.safeParse(predJson)

@@ -62,10 +62,11 @@ export default async function handler(
     }
 
     try {
-        const { gw, methode } = req.query
+        const { gw, methode, season } = req.query
         const gwNum = Number.parseInt(gw as string, 10)
         const methodRaw = (methode as string)?.toLowerCase() || 'rf'
         const method: PredictionMethod = (methodRaw === 'ma3' || methodRaw === 'pos' || methodRaw === 'rf' || methodRaw === 'rf_rank' || methodRaw === 'rf_pos') ? methodRaw : 'rf'
+        const seasonStr = season as string | undefined
 
         if (!Number.isFinite(gwNum)) {
             return res.status(400).json({ error: 'Bad gw parameter' })
@@ -79,49 +80,61 @@ export default async function handler(
             })
         }
 
-        // Try primary path: predictions_gw{N}_{method}.json
-        const primaryFilename = `predictions_gw${gwNum}_${method}.json`
-        const primaryPath = join(OUT_DIR, primaryFilename)
-
-        // Try legacy path: predictions_gw{N}.json
-        const legacyFilename = `predictions_gw${gwNum}.json`
-        const legacyPath = join(OUT_DIR, legacyFilename)
+        // Try paths in order:
+        // 1. predictions_{season}_gw{N}_{method}.json (season-specific)
+        // 2. predictions_gw{N}_{method}.json (current/default)
+        // 3. predictions_gw{N}.json (legacy)
+        
+        const candidatePaths: Array<{ path: string; method: string; description: string }> = []
+        
+        if (seasonStr) {
+            candidatePaths.push({
+                path: join(OUT_DIR, `predictions_${seasonStr}_gw${gwNum}_${method}.json`),
+                method,
+                description: `season-specific (${seasonStr})`
+            })
+        }
+        
+        candidatePaths.push({
+            path: join(OUT_DIR, `predictions_gw${gwNum}_${method}.json`),
+            method,
+            description: 'method-specific'
+        })
+        
+        candidatePaths.push({
+            path: join(OUT_DIR, `predictions_gw${gwNum}.json`),
+            method: 'legacy',
+            description: 'legacy'
+        })
 
         let raw: string | null = null
         let usedMethod: string = method
+        let usedDescription: string = ''
 
-        // Attempt primary first
-        try {
-            raw = await readFile(primaryPath, 'utf8')
-        } catch (e: any) {
-            if (e.code === 'ENOENT') {
-                // Primary not found, try legacy
-                try {
-                    raw = await readFile(legacyPath, 'utf8')
-                    usedMethod = 'legacy'
-                } catch (e2: any) {
-                    if (e2.code === 'ENOENT') {
-                        // Neither found, return 404 with availability
-                        const { available, methodsByGw } = await getAvailableGWs()
-                        return res.status(404).json({
-                            error: 'GW not available',
-                            available,
-                            methodsByGw
-                        })
-                    }
-                    throw e2
+        for (const candidate of candidatePaths) {
+            try {
+                raw = await readFile(candidate.path, 'utf8')
+                usedMethod = candidate.method
+                usedDescription = candidate.description
+                break
+            } catch (e: any) {
+                if (e.code !== 'ENOENT') {
+                    throw e
                 }
-            } else {
-                throw e
             }
         }
 
         if (!raw) {
+            // None found - return 404 with helpful message
             const { available, methodsByGw } = await getAvailableGWs()
+            const seasonMsg = seasonStr ? ` für Season ${seasonStr}` : ''
             return res.status(404).json({
-                error: 'GW not available',
+                error: `Keine Predictions${seasonMsg} für GW ${gwNum} mit Methode ${method} verfügbar`,
                 available,
-                methodsByGw
+                methodsByGw,
+                suggestion: seasonStr 
+                    ? `Generiere zuerst Predictions für Season ${seasonStr} GW ${gwNum}` 
+                    : 'Verfügbare Gameweeks prüfen'
             })
         }
 
