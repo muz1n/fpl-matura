@@ -808,7 +808,7 @@ def evaluate_single_lineup_for_webapp(
         # Imports zur Runtime (vermeidet Linter-Fehler)
         from code.utils.season_rules import load_rules  # type: ignore
         from code.lineup.auto_formation_cli_v2 import pick_lineup_autoformation  # type: ignore
-        
+
         rules = load_rules(season)
         budget = rules["squad"]["budget"]
         max_per_club = rules["squad"]["max_from_club"]

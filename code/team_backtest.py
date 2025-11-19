@@ -37,10 +37,6 @@ if str(CODE_DIR) not in sys.path:
 
 # Lokale Imports nach sys.path Setup
 from utils.season_rules import load_rules  # noqa: E402
-from utils.data_quality import (  # noqa: E402
-    validate_season_for_training,
-    validate_gameweek_for_prediction,
-)
 
 # Logging konfigurieren
 logging.basicConfig(
@@ -731,20 +727,6 @@ def main():
     )
 
     args = parser.parse_args()
-
-    # Validiere Season
-    print(f"\nBacktest: Season {args.season}, GW {args.gw_start}-{args.gw_end}")
-    if not validate_season_for_training(args.season, verbose=True):
-        raise SystemExit(
-            f"\n❌ Season {args.season} kann nicht für Backtesting verwendet werden.\n"
-            "   Siehe data_quality_config.json für Details."
-        )
-    
-    # Prüfe GWs auf Warnungen
-    print("\nPrüfe Gameweeks auf bekannte Datenprobleme:")
-    for gw in range(args.gw_start, args.gw_end + 1):
-        validate_gameweek_for_prediction(args.season, gw, verbose=True)
-    print()
 
     run_backtest(
         season=args.season,

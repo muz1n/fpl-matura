@@ -62,9 +62,9 @@ export default async function handler(
         // 1. lineup_{season}_gw{N}_{method}.json (season-specific)
         // 2. lineup_gw{N}_{method}.json (current/default)
         // 3. lineup_gw{N}.json (legacy)
-        
+
         const candidatePaths: Array<{ path: string; method: string; description: string }> = []
-        
+
         if (seasonStr) {
             candidatePaths.push({
                 path: join(OUT_DIR, `lineup_${seasonStr}_gw${gwNum}_${method}.json`),
@@ -72,13 +72,13 @@ export default async function handler(
                 description: `season-specific (${seasonStr})`
             })
         }
-        
+
         candidatePaths.push({
             path: join(OUT_DIR, `lineup_gw${gwNum}_${method}.json`),
             method,
             description: 'method-specific'
         })
-        
+
         candidatePaths.push({
             path: join(OUT_DIR, `lineup_gw${gwNum}.json`),
             method: 'legacy',
@@ -109,15 +109,15 @@ export default async function handler(
         // No pre-generated lineup found - try building from predictions
         // Try method-specific predictions file with season support
         const predCandidates: string[] = []
-        
+
         if (seasonStr) {
             predCandidates.push(join(OUT_DIR, `predictions_${seasonStr}_gw${gwNum}_${method}.json`))
         }
         predCandidates.push(join(OUT_DIR, `predictions_gw${gwNum}_${method}.json`))
         predCandidates.push(join(OUT_DIR, `predictions_gw${gwNum}.json`))
-        
+
         let predRaw: string | null = null
-        
+
         for (const predPath of predCandidates) {
             try {
                 predRaw = await readFile(predPath, 'utf8')
@@ -137,8 +137,8 @@ export default async function handler(
                 error: `Keine Lineup-Daten${seasonMsg} für GW ${gwNum} verfügbar`,
                 available,
                 methodsByGw,
-                suggestion: seasonStr 
-                    ? `Generiere zuerst Predictions für Season ${seasonStr} GW ${gwNum}` 
+                suggestion: seasonStr
+                    ? `Generiere zuerst Predictions für Season ${seasonStr} GW ${gwNum}`
                     : 'Verfügbare Gameweeks prüfen'
             })
         }
