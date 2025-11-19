@@ -41,35 +41,35 @@ const METHOD_LABELS: Record<string, string> = {
     legacy: 'Legacy',
 }
 
-export function TeamBacktestChart({ 
-    data, 
+export function TeamBacktestChart({
+    data,
     title = 'Team Backtest: Punkte pro Gameweek',
     height = '500px',
-    showLegend = true 
+    showLegend = true
 }: TeamBacktestChartProps) {
-    
+
     const option: EChartsOption = useMemo(() => {
         // Gruppiere Daten nach Methode
         const methodsData: Record<string, Array<[number, number]>> = {}
         const methods = new Set<string>()
         const gameweeks = new Set<number>()
-        
+
         data.forEach(row => {
             methods.add(row.method)
             gameweeks.add(row.gw)
-            
+
             if (!methodsData[row.method]) {
                 methodsData[row.method] = []
             }
-            
+
             // Nur Punkte > 0 plotten (Selection failures ignorieren)
             if (row.xi_points > 0) {
                 methodsData[row.method].push([row.gw, row.xi_points])
             }
         })
-        
+
         const gwArray = Array.from(gameweeks).sort((a, b) => a - b)
-        
+
         // Erstelle Series für jede Methode
         const series = Array.from(methods).map(method => ({
             name: METHOD_LABELS[method] || method,
@@ -89,7 +89,7 @@ export function TeamBacktestChart({
                 blurScope: 'coordinateSystem' as const,
             },
         }))
-        
+
         return {
             title: {
                 text: title,
@@ -115,10 +115,10 @@ export function TeamBacktestChart({
                 },
                 formatter: (params: any) => {
                     if (!params || params.length === 0) return ''
-                    
+
                     const gw = params[0].data[0]
                     let tooltip = `<div style="font-weight: 600; margin-bottom: 8px;">GW ${gw}</div>`
-                    
+
                     params.forEach((param: any) => {
                         const points = param.data[1]
                         const color = param.color
@@ -130,7 +130,7 @@ export function TeamBacktestChart({
                             </div>
                         `
                     })
-                    
+
                     return tooltip
                 },
             },
@@ -196,11 +196,11 @@ export function TeamBacktestChart({
             ],
         }
     }, [data, title, showLegend])
-    
+
     return (
         <div className="w-full">
-            <ReactECharts 
-                option={option} 
+            <ReactECharts
+                option={option}
                 style={{ height, width: '100%' }}
                 opts={{ renderer: 'svg' }}
             />

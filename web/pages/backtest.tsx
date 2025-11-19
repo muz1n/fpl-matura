@@ -41,10 +41,10 @@ export default function BacktestPage() {
     const [availableSeasons, setAvailableSeasons] = useState<string[]>([])
     const [seasonsLoading, setSeasonsLoading] = useState<boolean>(true)
     const [selectedSeason, setSelectedSeason] = useState<string>('2022-23')
-    
+
     const [availableRanges, setAvailableRanges] = useState<string[]>([])
     const [selectedRange, setSelectedRange] = useState<string | null>(null)
-    
+
     const [backtestData, setBacktestData] = useState<BacktestData | null>(null)
     const [state, setState] = useState<LoadingStateType>('idle')
     const [error, setError] = useState<string>('')
@@ -78,10 +78,10 @@ export default function BacktestPage() {
                 if (!res.ok) {
                     throw new Error('Fehler beim Laden der verfügbaren Ranges')
                 }
-                
+
                 const data = await res.json()
                 setAvailableRanges(data.available_ranges || [])
-                
+
                 // Setze default Range (neueste/letzte)
                 if (data.available_ranges && data.available_ranges.length > 0) {
                     setSelectedRange(data.available_ranges[data.available_ranges.length - 1])
@@ -94,7 +94,7 @@ export default function BacktestPage() {
                 setSelectedRange(null)
             }
         }
-        
+
         fetchRanges()
     }, [selectedSeason])
 
@@ -105,17 +105,17 @@ export default function BacktestPage() {
         async function fetchBacktest() {
             setState('loading')
             setError('')
-            
+
             try {
                 const res = await fetch(`/api/backtest/${selectedSeason}/${selectedRange}`)
-                
+
                 if (!res.ok) {
                     const errorData = await res.json().catch(() => ({}))
                     const errorMsg = errorData.error || 'Fehler beim Laden der Backtest-Daten'
                     const suggestion = errorData.suggestion ? `\n${errorData.suggestion}` : ''
                     throw new Error(errorMsg + suggestion)
                 }
-                
+
                 const data: BacktestData = await res.json()
                 setBacktestData(data)
                 setState('success')
@@ -125,7 +125,7 @@ export default function BacktestPage() {
                 setBacktestData(null)
             }
         }
-        
+
         fetchBacktest()
     }, [selectedSeason, selectedRange])
 
@@ -193,7 +193,7 @@ export default function BacktestPage() {
                                 disabled={availableRanges.length === 0}
                             />
                         </div>
-                        
+
                         {availableRanges.length === 0 && !seasonsLoading && (
                             <div className="text-sm text-amber-600 dark:text-amber-400 mt-4">
                                 Keine Backtest-Daten für Season {selectedSeason} verfügbar. Führe zuerst `team_backtest.py` aus.
@@ -224,7 +224,7 @@ export default function BacktestPage() {
                                         </h3>
                                         <Activity className="w-5 h-5 text-blue-500" />
                                     </div>
-                                    
+
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
@@ -235,7 +235,7 @@ export default function BacktestPage() {
                                                 {row.avg_xi_points.toFixed(1)}
                                             </span>
                                         </div>
-                                        
+
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
                                                 <Target className="w-4 h-4" />
@@ -245,7 +245,7 @@ export default function BacktestPage() {
                                                 {getMaxPoints(row.method)}
                                             </span>
                                         </div>
-                                        
+
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm text-gray-600 dark:text-gray-400">
                                                 Std. Abw.
@@ -254,7 +254,7 @@ export default function BacktestPage() {
                                                 ± {row.std_xi_points.toFixed(1)}
                                             </span>
                                         </div>
-                                        
+
                                         <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
                                             <span className="text-xs text-gray-500 dark:text-gray-500">
                                                 Gameweeks
@@ -277,7 +277,7 @@ export default function BacktestPage() {
                             transition={{ duration: 0.5, delay: 0.3 }}
                             className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700"
                         >
-                            <TeamBacktestChart 
+                            <TeamBacktestChart
                                 data={backtestData.detail}
                                 title={`Team Backtest: ${backtestData.season}, GW ${backtestData.gw_start}-${backtestData.gw_end}`}
                                 height="600px"
@@ -302,7 +302,7 @@ export default function BacktestPage() {
                                 <Download className="w-4 h-4" />
                                 Detail CSV
                             </a>
-                            
+
                             <a
                                 href={`/api/files?name=team_backtest_summary_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.csv`}
                                 target="_blank"
@@ -312,7 +312,7 @@ export default function BacktestPage() {
                                 <Download className="w-4 h-4" />
                                 Summary CSV
                             </a>
-                            
+
                             <a
                                 href={`/api/files?name=team_backtest_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.png`}
                                 target="_blank"
