@@ -56,12 +56,33 @@ export default function Home() {
                     />
 
                     <ActionCard
+                        title="Team Backtest"
+                        description="Analysiere wie verschiedene Prognose-Methoden über mehrere Gameweeks performt hätten."
+                        icon={BarChart3}
+                        href="/backtest"
+                        gradient="from-violet-500 to-purple-600"
+                        delay={0.3}
+                    />
+                </div>
+
+                {/* Secondary Action Cards */}
+                <div className="grid md:grid-cols-2 gap-6">
+                    <ActionCard
                         title="Dein Team verwalten"
                         description="Analysiere dein aktuelles Team und erhalte Vorschläge für sinnvolle Transfers."
                         icon={Users}
                         href="/team"
-                        gradient="from-purple-500 to-pink-600"
-                        delay={0.3}
+                        gradient="from-amber-500 to-orange-600"
+                        delay={0.4}
+                    />
+
+                    <ActionCard
+                        title="FPL Glossar"
+                        description="Lerne alle wichtigen Begriffe und Konzepte rund um Fantasy Premier League kennen."
+                        icon={BookOpen}
+                        href="/glossary"
+                        gradient="from-emerald-500 to-teal-600"
+                        delay={0.5}
                     />
                 </div>
 
@@ -69,7 +90,7 @@ export default function Home() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.4 }}
+                    transition={{ duration: 0.6, delay: 0.6 }}
                     className="grid md:grid-cols-2 gap-6"
                 >
                     {/* Stats Card */}
@@ -115,7 +136,7 @@ export default function Home() {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.5 }}
+                    transition={{ duration: 0.6, delay: 0.7 }}
                     className="bg-gradient-to-r from-green-500 to-blue-600 rounded-lg p-8 text-white text-center shadow-xl"
                 >
                     <h2 className="text-3xl font-bold mb-4">
