@@ -9,6 +9,7 @@ import { LoadingState, ErrorState, EmptyState } from '../src/components/States'
 import { saveSquad, loadSquad } from '../src/lib/squad-storage'
 import { HistoricalEvaluation } from '../src/components/HistoricalEvaluation'
 import { getUsableSeasons } from '../lib/seasonQuality'
+import { Navbar } from '../src/components/Navbar'
 
 type LoadingStateType = 'idle' | 'loading' | 'success' | 'error'
 type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank' | 'rf_pos'
@@ -513,8 +514,10 @@ export default function PredictionsPage() {
             <Head>
                 <title>Prognosen GW{selectedGW ?? ''} — FPL Assistent</title>
             </Head>
+            
+            <Navbar />
 
-            <div className="space-y-6">
+            <div className="space-y-6 container mx-auto px-4 py-8">
                 {/* Toolbar mit Auswahl */}
                 <motion.div
                     initial={{ opacity: 0, y: -10 }}

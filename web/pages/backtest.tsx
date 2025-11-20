@@ -6,6 +6,7 @@ import { LoadingState, ErrorState } from '../src/components/States'
 import { TeamBacktestChart } from '../src/components/TeamBacktestChart'
 import { getUsableSeasons } from '../lib/seasonQuality'
 import { BarChart3, Download, TrendingUp, Activity, Target, Filter, Table } from 'lucide-react'
+import { Navbar } from '../src/components/Navbar'
 
 interface BacktestDetailRow {
     method: string
@@ -224,6 +225,8 @@ export default function BacktestPage() {
                 <title>Team Backtest - FPL Matura</title>
                 <meta name="description" content="Multi-GW Team Backtest: Vergleich verschiedener Prognosemethoden" />
             </Head>
+            
+            <Navbar />
 
             <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
                 <div className="container mx-auto px-4 py-8">
