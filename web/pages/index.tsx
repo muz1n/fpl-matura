@@ -25,10 +25,7 @@ export default function Home() {
                     className="text-center space-y-4"
                 >
                     <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white">
-                        Dein FPL{' '}
-                        <span className="bg-gradient-to-r from-green-500 to-blue-600 bg-clip-text text-transparent">
-                            Assistent
-                        </span>
+                        Dein <span className="bg-gradient-to-r from-green-500 to-blue-600 bg-clip-text text-transparent">FPL Assistent</span>
                     </h1>
                     <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                         Wähle eine Aktion, um zu starten
