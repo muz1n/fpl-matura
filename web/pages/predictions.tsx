@@ -3,6 +3,7 @@ import Head from 'next/head'
 import { motion } from 'framer-motion'
 import type { PredictionsPayload, LineupPayload, PredictionPlayer } from '../types/fpl'
 import { HelpIcon } from '../src/components/HelpIcon'
+import { Tooltip } from '../src/components/Tooltip'
 import { glossary } from '../src/data/glossary'
 import { Select } from '../src/components/Select'
 import { LoadingState, ErrorState, EmptyState } from '../src/components/States'
@@ -514,7 +515,7 @@ export default function PredictionsPage() {
             <Head>
                 <title>Prognosen GW{selectedGW ?? ''} — FPL Assistent</title>
             </Head>
-            
+
             <Navbar />
 
             <div className="space-y-6 container mx-auto px-4 py-8">
