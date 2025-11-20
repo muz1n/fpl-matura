@@ -617,12 +617,16 @@ def main():
     # Ausgabe mit Saisonbegrenzung erstellen
     output = build_output(args.season, args.gw, method, pred_df, season_ids)
 
-    # Schreibe JSON-Datei
-    output_file = args.output_dir / f"predictions_gw{args.gw}_{method}.json"
+    # Neues konsistentes Dateischema mit Season-Prefix:
+    # predictions_<season>_gw<gw>_<method>.json
+    output_file = (
+        args.output_dir / f"predictions_{args.season}_gw{args.gw}_{method}.json"
+    )
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=4, ensure_ascii=False)
 
     print(f"\n✓ Vorhersagen wurden geschrieben nach: {output_file}")
+    print("  Hinweis: Neues Schema mit Season-Prefix aktiv (kein Altmodus).")
     print(f"  Anzahl Spieler: {len(output['players'])}")
     if output["players"]:
         print("  Top 5 Vorhersagen:")

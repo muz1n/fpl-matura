@@ -283,12 +283,12 @@ def evaluate_method(
     for gw in range(gw_start, gw_end + 1):
         print(f"\nProcessing GW {gw}...")
 
-        # Pruefen, ob Prognosen bereits vorhanden sind
-        pred_file = OUT_DIR / f"predictions_gw{gw}.json"
+        # Pruefen, ob Prognosen bereits vorhanden sind (neues Dateischema mit Season-Prefix)
+        pred_file = OUT_DIR / f"predictions_{season}_gw{gw}.json"
 
         if skip_generation and pred_file.exists():
             print(f"  Loading existing predictions from {pred_file}")
-            with open(pred_file, "r") as f:
+            with open(pred_file, "r", encoding="utf-8") as f:
                 predictions_data = json.load(f)
         else:
             # Prognosen generieren

@@ -320,10 +320,10 @@ def main():
                 }
             )
 
-        # Write prediction JSON
-        pred_path = Path("out") / f"predictions_gw{gw}_rf_pos.json"
-        with open(pred_path, "w") as f:
-            json.dump(pred_list, f, indent=2)
+        # Write prediction JSON (neues Dateischema mit Season-Prefix)
+        pred_path = Path("out") / f"predictions_{season}_gw{gw}_rf_pos.json"
+        with open(pred_path, "w", encoding="utf-8") as f:
+            json.dump(pred_list, f, indent=2, ensure_ascii=False)
 
         # Collect for overall metrics
         for item in pred_list:

@@ -8,14 +8,14 @@
 #   2) Produce or load predictions for that GW as a pandas DataFrame with at least:
 #      [player_id, gw, name, team, pos, predicted_points, minutes_exp, opponent, is_home, opp_strength, price].
 #      If a local predictor function exists (e.g., `from code.model.predict import predict_gw`), call it.
-#      Else: look for `out/predictions_gw{gw}.json` and load it.
+#      Else: look for `out/predictions_{season}_gw{gw}.json` und lade diese Datei.
 #   3) Call an existing lineup picker (e.g., `from code.lineup.pick import pick_lineup`) to select
 #      formation, xi_ids, bench_gk_id, bench_out_ids, captain_id, vice_id and compute xi_points_sum
 #      based on predicted_points.
 #      If the picker is not available, implement a simple fallback that chooses a valid formation
 #      and the top predicted players per position.
 #   4) Save two files under `out/`:
-#      - `predictions_gw{gw}.json` with this structure:
+#      - `predictions_{season}_gw{gw}.json` mit dieser Struktur:
 #        {
 #          "season": "2023-24",
 #          "gw": 38,
@@ -43,7 +43,7 @@
 
 This script follows the user's spec and will:
 - load a 15-man squad JSON
-- try to call a local predictor `predict_gw` if available, else load `out/predictions_gw{gw}.json`
+- Versuch lokales `predict_gw` aufzurufen; falls nicht vorhanden, lade `out/predictions_{season}_gw{gw}.json`
 - try to call `pick_lineup` from the project; if missing, use a simple fallback picker
 - save predictions and chosen lineup JSONs under `out/`
 
@@ -154,8 +154,8 @@ def predictions_from_local_predictor(
         return None
 
 
-def load_predictions_from_file(gw: int) -> Optional[pd.DataFrame]:
-    p = Path("out") / f"predictions_gw{gw}.json"
+def load_predictions_from_file(season: str, gw: int) -> Optional[pd.DataFrame]:
+    p = Path("out") / f"predictions_{season}_gw{gw}.json"
     if not p.exists():
         return None
     data = json.loads(p.read_text(encoding="utf8"))
@@ -343,7 +343,7 @@ def save_predictions_json(
     season: str, gw: int, model_version: str, pred_df: pd.DataFrame, out_dir: Path
 ) -> Path:
     out_dir.mkdir(parents=True, exist_ok=True)
-    outp = out_dir / f"predictions_gw{gw}.json"
+    outp = out_dir / f"predictions_{season}_gw{gw}.json"
     payload = {
         "season": season,
         "gw": int(gw),
@@ -428,10 +428,10 @@ def main() -> None:
     # Try local predictor
     pred_df = predictions_from_local_predictor(season, gw, squad)
     if pred_df is None:
-        pred_df = load_predictions_from_file(gw)
+        pred_df = load_predictions_from_file(season, gw)
         if pred_df is None:
             raise SystemExit(
-                "No predictions found: neither local predictor available nor out/predictions_gw{gw}.json exists"
+                f"Keine Prognosen gefunden: weder lokaler Predictor vorhanden noch out/predictions_{season}_gw{gw}.json existiert"
             )
 
     pred_df = ensure_prediction_columns(pred_df)

@@ -9,7 +9,7 @@ Ausgaben:
     1) out/rf_rank_boost_summary_<season>_gw<start>-<end>.csv
     2) out/rf_rank_boost_bypos_<season>_gw<start>-<end>.csv
     3) out/rf_rank_boost_preds_<season>_gw<start>-<end>.csv
-    4) Fuer jede GW: out/predictions_gw{gw}_rf_rank.json
+    4) Fuer jede GW: out/predictions_<season>_gw{gw}_rf_rank.json (neues Schema)
 """
 import argparse
 import os
@@ -220,7 +220,7 @@ def main():
             ["GW", "element", "name", "position", "team", "predicted_points"]
         ].to_dict(orient="records")
         with open(
-            f"{out_dir}/predictions_gw{gw}_rf_rank.json", "w", encoding="utf-8"
+            f"{out_dir}/predictions_{season}_gw{gw}_rf_rank.json", "w", encoding="utf-8"
         ) as f:
             json.dump(pred_json, f, ensure_ascii=False, indent=2)
         preds_list.append(gw_df)

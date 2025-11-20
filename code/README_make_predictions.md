@@ -20,7 +20,7 @@ python code/make_predictions.py --season 2023-24 --gw 38 --method rf
 
 ## Output
 
-Generiert eine Datei `out/predictions_gwXX.json` im Format:
+Generiert eine Datei `out/predictions_{season}_gwXX_{method}.json` im Format:
 
 ```json
 {

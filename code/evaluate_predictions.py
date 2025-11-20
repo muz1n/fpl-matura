@@ -21,7 +21,7 @@ def load_predictions(pattern: str) -> pd.DataFrame:
     """Ladet alle Prognose-JSONs, die zum Muster passen.
 
     Args:
-        pattern: Glob-Muster fuer Prognosedateien (z.B. 'out/predictions_gw*.json')
+        pattern: Glob-Muster fuer Prognosedateien (z.B. 'out/predictions_*_gw*.json')
 
     Returns:
         DataFrame mit Spalten: player_id, gw, pred_points
@@ -683,7 +683,7 @@ def main():
         epilog="""
 Example usage:
   python code/evaluate_predictions.py
-  python code/evaluate_predictions.py --predictions "out/predictions_gw*.json"
+  python code/evaluate_predictions.py --predictions "out/predictions_*_gw*.json"
   python code/evaluate_predictions.py --data-22-23 "data/merged_gw_2022-23.csv"
         """,
     )
@@ -691,8 +691,8 @@ Example usage:
     parser.add_argument(
         "--predictions",
         type=str,
-        default="out/predictions_gw*.json",
-        help="Glob pattern for prediction JSON files (default: out/predictions_gw*.json)",
+        default="out/predictions_*_gw*.json",
+        help="Glob pattern for prediction JSON files (default: out/predictions_*_gw*.json)",
     )
 
     parser.add_argument(

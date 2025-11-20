@@ -59,10 +59,16 @@ FORMATION_SLOTS = {
 }
 
 
-def load_predictions(gw: int, method: str) -> pd.DataFrame | None:
-    """Ladet Prognosen aus JSON fuer eine bestimmte Spielwoche.
+def prediction_filename(season: str, gw: int, method: str) -> Path:
+    """Erzeugt konsistenten Dateinamen fuer Prognosedateien mit Season-Prefix."""
+    return OUT_DIR / f"predictions_{season}_gw{gw}_{method}.json"
+
+
+def load_predictions(season: str, gw: int, method: str) -> pd.DataFrame | None:
+    """Ladet Prognosen aus JSON fuer eine bestimmte Spielwoche (neues Schema).
 
     Args:
+        season: Saisonstring, Teil des Dateinamens
         gw: Spielwochen-Nummer
         method: Prognosemethode (rf, ma3, pos)
 
@@ -70,7 +76,7 @@ def load_predictions(gw: int, method: str) -> pd.DataFrame | None:
         DataFrame mit Spalten [player_id, name, pos, team, predicted_points, price]
         oder None, falls Datei nicht gefunden
     """
-    pred_file = OUT_DIR / f"predictions_gw{gw}_{method}.json"
+    pred_file = prediction_filename(season, gw, method)
 
     if not pred_file.exists():
         logger.warning(
@@ -84,31 +90,26 @@ def load_predictions(gw: int, method: str) -> pd.DataFrame | None:
 
         players = data.get("players", [])
         if not players:
-            logger.warning(f"GW{gw}: No players in prediction file")
+            logger.warning(f"GW{gw} {season}: No players in prediction file")
             return None
 
         df = pd.DataFrame(players)
 
-        # Standardize column names (position -> pos)
+        # Standardisieren
         if "position" in df.columns and "pos" not in df.columns:
             df["pos"] = df["position"]
-
-        # Ensure required columns exist
         required = ["player_id", "predicted_points", "pos", "team", "price"]
         missing = [c for c in required if c not in df.columns]
         if missing:
-            logger.error(f"GW{gw}: Missing columns in predictions: {missing}")
+            logger.error(f"GW{gw} {season}: Missing columns in predictions: {missing}")
             return None
-
-        # Standardize column names
         if "name" not in df.columns:
             df["name"] = "Unknown"
 
-        logger.info(f"GW{gw} ({method}): Loaded {len(df)} predictions")
+        logger.info(f"GW{gw} {season} ({method}): Loaded {len(df)} predictions")
         return df[["player_id", "name", "pos", "team", "predicted_points", "price"]]
-
     except Exception as e:
-        logger.error(f"GW{gw}: Error loading predictions: {e}")
+        logger.error(f"GW{gw} {season}: Error loading predictions: {e}")
         return None
 
 
@@ -121,7 +122,10 @@ def load_truth(season: str) -> pd.DataFrame | None:
         season: Saisonstring (z.B. "2023-24", "2022-23")
 
     Returns:
-        DataFrame mit Spalten [gw, player_id, points] oder None, falls nicht gefunden
+        DataFrame mit mindestens Spalten [gw, player_id, points] und – falls vorhanden –
+        Zusatzspalten wie [pos, team, price, name]. Diese Zusatzspalten sind fuer die
+        Berechnung des Hindsight-Optimums nuetzlich (Budget/Club/Formation basierend
+        auf echten Punkten).
     """
     # Bevorzuge bereinigte Datei, dann Original
     possible_files = [
@@ -194,7 +198,12 @@ def load_truth(season: str) -> pd.DataFrame | None:
         logger.info(
             f"Loaded truth data: {len(df)} rows across {df['gw'].nunique()} gameweeks"
         )
-        result_df = df[["gw", "player_id", "points"]].copy()
+        # Zusatzspalten falls vorhanden beibehalten
+        keep_cols = ["gw", "player_id", "points"]
+        for extra in ["pos", "team", "price", "name"]:
+            if extra in df.columns:
+                keep_cols.append(extra)
+        result_df = df[keep_cols].copy()
         return result_df
 
     except Exception as e:
@@ -401,6 +410,97 @@ def evaluate_xi(
     }
 
 
+def compute_hindsight_optimum(
+    truth_gw_df: pd.DataFrame,
+    max_budget: float = 100.0,
+    max_per_club: int = 3,
+) -> Dict | None:
+    """Berechnet das Hindsight-Optimum fuer eine Spielwoche.
+
+    Verwendet echte Punkte als "predicted_points" und waehlt analog zum normalen
+    Selektionsprozess die beste Formation + Captain (Captain = Spieler mit den
+    meisten echten Punkten in der gewaehlten XI).
+
+    Annahmen:
+    - Falls Spalten fuer Preis / Team / Position fehlen, kann keine Auswahl erfolgen.
+    - Die Budget- und Klubgrenzen orientieren sich an Season-Rules.
+
+    Returns:
+        Dict mit Keys [formation, xi_ids, xi_points, captain_id, budget_used] oder None.
+    """
+    required = {"player_id", "pos", "team", "price", "points"}
+    if not required.issubset(set(truth_gw_df.columns)):
+        missing = required - set(truth_gw_df.columns)
+        logger.warning(
+            f"Hindsight-Optimum: Fehlende Spalten {missing}, Optimum kann nicht berechnet werden."
+        )
+        return None
+
+    # Kandidatenpool analog: rename points -> predicted_points
+    pool = truth_gw_df.copy()
+    pool = pool.rename(columns={"points": "predicted_points"})
+
+    # Budget / Klub / Positions-Limits anwenden wie im normalen Prozess
+    # Wir nutzen build_candidate_pool (sortiert nach predicted_points = echte Punkte)
+    cols = ["player_id", "pos", "team", "predicted_points", "price"]
+    if "name" in pool.columns:
+        cols.insert(1, "name")
+    # Falls name fehlt, erzeugen wir einen Platzhalter
+    temp_pool = pool[cols].copy()
+    if "name" not in temp_pool.columns:
+        temp_pool["name"] = "Unknown"
+    candidates = build_candidate_pool(
+        temp_pool,
+        max_budget=max_budget,
+        max_per_club=max_per_club,
+    )
+    if len(candidates) < 11:
+        logger.warning(
+            f"Hindsight-Optimum: Zu wenige Kandidaten nach Regeln (n={len(candidates)})"
+        )
+        return None
+
+    best_formation = None
+    best_xi = None
+    best_total = -1.0
+    best_budget = 0.0
+
+    for formation in VALID_FORMATIONS:
+        result = pick_xi_for_formation(
+            candidates, formation, max_per_club=max_per_club, max_budget=max_budget
+        )
+        if result is None:
+            continue
+        xi_ids, budget_used = result
+        xi_df = candidates[candidates["player_id"].isin(xi_ids)].copy()
+        base_points = xi_df["predicted_points"].sum()
+        # Captain = Spieler mit meisten echten Punkten (predicted_points hier = echt)
+        captain_points = xi_df["predicted_points"].max() if len(xi_df) > 0 else 0.0
+        total_points = base_points + captain_points  # Captain doppelt
+        if total_points > best_total:
+            best_total = total_points
+            best_formation = formation
+            best_xi = xi_ids
+            best_budget = budget_used
+
+    if best_xi is None:
+        logger.warning("Hindsight-Optimum: Keine gueltige Formation gefunden")
+        return None
+
+    # Captain bestimmen
+    xi_df = candidates[candidates["player_id"].isin(best_xi)].copy()
+    xi_df = xi_df.sort_values("predicted_points", ascending=False)
+    captain_id = int(xi_df.iloc[0]["player_id"]) if len(xi_df) > 0 else None
+
+    return {
+        "formation": best_formation,
+        "xi_ids": best_xi,
+        "xi_points": best_total,
+        "captain_id": captain_id,
+        "budget_used": best_budget,
+    }
+
+
 def select_best_team_for_gw(
     pred_df: pd.DataFrame,
     truth_gw_df: pd.DataFrame,
@@ -529,11 +629,19 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
 
         logger.info(f"GW{gw}: {len(truth_gw)} players with true points")
 
+        # Hindsight-Optimum berechnen (einmal pro GW)
+        optimum = compute_hindsight_optimum(
+            truth_gw, max_budget=max_budget, max_per_club=max_per_club
+        )
+        optimum_points = optimum["xi_points"] if optimum else None
+        optimum_captain = optimum["captain_id"] if optimum else None
+        optimum_formation = optimum["formation"] if optimum else None
+
         for method in methods:
             logger.info(f"\n  Method: {method.upper()}")
 
             # Prognosen laden
-            pred_df = load_predictions(gw, method)
+            pred_df = load_predictions(season, gw, method)
             if pred_df is None:
                 logger.warning(f"  GW{gw} ({method}): No predictions, skipping")
                 continue
@@ -568,6 +676,11 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
                 f"Budget: {team_result['budget_used']:.1f}/100.0"
             )
 
+            eff = (
+                team_result["xi_points"] / optimum_points
+                if optimum_points and optimum_points > 0
+                else None
+            )
             results.append(
                 {
                     "method": method,
@@ -579,6 +692,10 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
                     "n_truth_matched": team_result["n_truth_matched"],
                     "n_candidates": team_result["n_candidates"],
                     "budget_used": team_result["budget_used"],
+                    "optimum_points": optimum_points,
+                    "optimum_formation": optimum_formation,
+                    "optimum_captain_id": optimum_captain,
+                    "efficiency": eff,
                     "notes": "OK",
                 }
             )
@@ -604,6 +721,7 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
             avg_xi_points=("xi_points", "mean"),
             std_xi_points=("xi_points", "std"),
             n_gw=("xi_points", "count"),
+            avg_efficiency=("efficiency", "mean"),
         )
         .reset_index()
     )
@@ -685,10 +803,10 @@ def create_comparison_plot(
         )
 
     plt.xlabel("Prediction Method", fontsize=13, fontweight="bold")
-    plt.ylabel("Average XI Points (with captain bonus)", fontsize=13, fontweight="bold")
+    plt.ylabel("Average XI Points (mit Captain-Bonus)", fontsize=13, fontweight="bold")
     plt.title(
         f"Team Backtest: {season} GW{gw_start}-{gw_end}\n"
-        f"Average Team Points by Method",
+        f"Average Team Points by Method\n(Effizienz vs. Hindsight nicht im Plot)",
         fontsize=14,
         fontweight="bold",
         pad=20,
