@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
 import { motion } from 'framer-motion'
 import { Select } from '../src/components/Select'
 import { LoadingState, ErrorState } from '../src/components/States'
 import { TeamBacktestChart } from '../src/components/TeamBacktestChart'
 import { getUsableSeasons } from '../lib/seasonQuality'
-import { BarChart3, Download, TrendingUp, Activity, Target } from 'lucide-react'
+import { BarChart3, Download, TrendingUp, Activity, Target, Filter, Table } from 'lucide-react'
 
 interface BacktestDetailRow {
     method: string
@@ -48,6 +48,9 @@ export default function BacktestPage() {
     const [backtestData, setBacktestData] = useState<BacktestData | null>(null)
     const [state, setState] = useState<LoadingStateType>('idle')
     const [error, setError] = useState<string>('')
+    const [selectedMethods, setSelectedMethods] = useState<string[]>([])
+    const [showTable, setShowTable] = useState<boolean>(false)
+    const [pivotCsvUrl, setPivotCsvUrl] = useState<string>('')
 
     // Lade verfügbare Seasons on mount
     useEffect(() => {
@@ -118,6 +121,9 @@ export default function BacktestPage() {
 
                 const data: BacktestData = await res.json()
                 setBacktestData(data)
+                // Alle Methoden initial selektiert
+                const allMethods = Array.from(new Set(data.detail.map(r => r.method)))
+                setSelectedMethods(allMethods)
                 setState('success')
             } catch (err) {
                 setError(err instanceof Error ? err.message : 'Unbekannter Fehler')
@@ -134,6 +140,74 @@ export default function BacktestPage() {
         if (!backtestData) return 0
         const methodData = backtestData.detail.filter(r => r.method === method && r.xi_points > 0)
         return methodData.length > 0 ? Math.max(...methodData.map(r => r.xi_points)) : 0
+    }
+
+    // Gefilterte Detail-Daten für Chart
+    const filteredDetail = useMemo(() => {
+        if (!backtestData) return []
+        return backtestData.detail.filter(r => selectedMethods.includes(r.method))
+    }, [backtestData, selectedMethods])
+
+    // Pivot Table: GW -> { gw, rf, ma3, pos, best_method, best_points }
+    const pivotRows = useMemo(() => {
+        if (!backtestData) return [] as Array<any>
+        const byGw: Record<number, Record<string, number>> = {}
+        for (const row of backtestData.detail) {
+            if (row.xi_points <= 0) continue
+            if (!byGw[row.gw]) byGw[row.gw] = {}
+            byGw[row.gw][row.method] = row.xi_points
+        }
+        const rows: any[] = []
+        Object.keys(byGw).map(n => Number(n)).sort((a, b) => a - b).forEach(gw => {
+            const methodsMap = byGw[gw]
+            const entries = Object.entries(methodsMap)
+            if (entries.length === 0) return
+            const best = entries.reduce((acc, cur) => cur[1] > acc[1] ? cur : acc)
+            rows.push({ gw, ...methodsMap, best_method: best[0], best_points: best[1] })
+        })
+        return rows
+    }, [backtestData])
+
+    // CSV Export erstellen (on demand bei Änderungen der PivotRows)
+    useEffect(() => {
+        if (!pivotRows.length) {
+            setPivotCsvUrl('')
+            return
+        }
+        const headersSet = new Set<string>()
+        pivotRows.forEach(r => Object.keys(r).forEach(k => headersSet.add(k)))
+        const headers = Array.from(headersSet)
+        const lines = [headers.join(',')]
+        pivotRows.forEach(r => {
+            lines.push(headers.map(h => (r[h] !== undefined ? r[h] : '')).join(','))
+        })
+        const blob = new Blob([lines.join('\n')], { type: 'text/csv' })
+        const url = URL.createObjectURL(blob)
+        setPivotCsvUrl(url)
+        return () => URL.revokeObjectURL(url)
+    }, [pivotRows])
+
+    const METHOD_COLORS: Record<string, string> = {
+        rf: '#3b82f6',
+        rf_rank: '#8b5cf6',
+        rf_pos: '#6366f1',
+        ma3: '#10b981',
+        pos: '#f59e0b',
+        legacy: '#6b7280'
+    }
+
+    const toggleMethod = (m: string) => {
+        setSelectedMethods(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m])
+    }
+
+    const allSelected = backtestData && selectedMethods.length === Array.from(new Set(backtestData.detail.map(r => r.method))).length
+    const toggleAll = () => {
+        if (!backtestData) return
+        if (allSelected) {
+            setSelectedMethods([])
+        } else {
+            setSelectedMethods(Array.from(new Set(backtestData.detail.map(r => r.method))))
+        }
     }
 
     return (
@@ -269,8 +343,61 @@ export default function BacktestPage() {
                         </motion.div>
                     )}
 
+                    {/* Erklärbox & Filter */}
+                    {state === 'success' && backtestData && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.25 }}
+                            className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 mb-8"
+                        >
+                            <div className="flex flex-col md:flex-row md:items-start gap-6">
+                                <div className="flex-1 space-y-3 text-sm text-gray-600 dark:text-gray-400">
+                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"><BarChart3 className="w-5 h-5" /> Was zeigt der Backtest?</h2>
+                                    <p>Für jede Gameweek wird rückblickend ein optimales Team anhand der Prognosen der jeweiligen Methode gebaut (Budget & max 3 pro Klub gelten). Die angezeigten Punkte enthalten Captain-Bonus. Fehlgeschlagene Selektionsversuche (xi_points = 0) werden ausgefiltert.</p>
+                                    <ul className="list-disc pl-5 space-y-1">
+                                        <li><strong>RF</strong>: Random Forest Modell mit engineered Features.</li>
+                                        <li><strong>MA3</strong>: Gleitender 3er Mittelwert der Punkte (Form-Proxi).</li>
+                                        <li><strong>POS</strong>: Positionsbasierter Durchschnitt (einfache Baseline).</li>
+                                        <li><strong>rf_rank / rf_pos</strong>: Varianten, falls vorhanden (Ranking / Positionsmodellierung).</li>
+                                    </ul>
+                                    <p className="mt-2 text-xs">Interpretation: Stabil hohe Durchschnittswerte + geringe Streuung deuten auf robuste Methode hin. Einzelne Ausreisser können durch Captain-Wahl oder fehlende Verfügbarkeit echter Punkte entstehen.</p>
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2"><Filter className="w-4 h-4" /> Methoden filtern</h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {Array.from(new Set(backtestData.detail.map(r => r.method))).map(m => (
+                                            <button
+                                                key={m}
+                                                onClick={() => toggleMethod(m)}
+                                                className={`px-3 py-1.5 rounded-md border text-xs font-medium flex items-center gap-2 transition-colors ${selectedMethods.includes(m) ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
+                                                title={`Toggle ${m}`}
+                                            >
+                                                <span className="inline-block w-2 h-2 rounded-full" style={{ background: METHOD_COLORS[m] || '#6b7280' }} /> {m.toUpperCase()}
+                                            </button>
+                                        ))}
+                                        <button
+                                            onClick={toggleAll}
+                                            className="px-3 py-1.5 rounded-md border text-xs font-semibold bg-indigo-600 text-white border-indigo-600"
+                                        >{allSelected ? 'Alle aus' : 'Alle an'}</button>
+                                    </div>
+                                    <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                                        <Table className="w-4 h-4" />
+                                        <button
+                                            onClick={() => setShowTable(t => !t)}
+                                            className="underline decoration-dotted hover:text-gray-700 dark:hover:text-gray-200"
+                                        >{showTable ? 'GW-Tabelle ausblenden' : 'GW-Tabelle anzeigen'}</button>
+                                        {pivotCsvUrl && (
+                                            <a href={pivotCsvUrl} download={`backtest_pivot_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.csv`} className="text-blue-600 dark:text-blue-400 hover:text-blue-700 ml-2">Pivot CSV exportieren</a>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+
                     {/* Chart */}
-                    {state === 'success' && backtestData && backtestData.detail.length > 0 && (
+                    {state === 'success' && backtestData && filteredDetail.length > 0 && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -278,10 +405,55 @@ export default function BacktestPage() {
                             className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700"
                         >
                             <TeamBacktestChart
-                                data={backtestData.detail}
+                                data={filteredDetail}
                                 title={`Team Backtest: ${backtestData.season}, GW ${backtestData.gw_start}-${backtestData.gw_end}`}
                                 height="600px"
                             />
+                        </motion.div>
+                    )}
+
+                    {/* GW Pivot Tabelle */}
+                    {state === 'success' && backtestData && showTable && pivotRows.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.35 }}
+                            className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 mt-8"
+                        >
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">GW Punkte Vergleich (beste Methode hervorgehoben)</h3>
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full text-sm">
+                                    <thead>
+                                        <tr className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+                                            <th className="px-3 py-2 text-left">GW</th>
+                                            {Array.from(new Set(backtestData.detail.map(r => r.method))).map(m => (
+                                                <th key={m} className="px-3 py-2 text-left">{m.toUpperCase()}</th>
+                                            ))}
+                                            <th className="px-3 py-2 text-left">Beste</th>
+                                            <th className="px-3 py-2 text-left">Diff RF→Best</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {pivotRows.map(row => {
+                                            const methods = Array.from(new Set(backtestData.detail.map(r => r.method)))
+                                            const best = row.best_method
+                                            const rfVal = row['rf'] ?? null
+                                            const diff = rfVal !== null ? (row.best_points - rfVal) : ''
+                                            return (
+                                                <tr key={row.gw} className="border-b border-gray-200 dark:border-gray-700">
+                                                    <td className="px-3 py-1.5 font-medium text-gray-900 dark:text-gray-100">{row.gw}</td>
+                                                    {methods.map(m => (
+                                                        <td key={m} className={`px-3 py-1.5 ${best === m ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>{row[m] !== undefined ? row[m].toFixed(1) : '-'}</td>
+                                                    ))}
+                                                    <td className="px-3 py-1.5 font-semibold text-gray-900 dark:text-gray-100">{best.toUpperCase()} ({row.best_points.toFixed(1)})</td>
+                                                    <td className="px-3 py-1.5 text-gray-700 dark:text-gray-300">{typeof diff === 'number' ? diff.toFixed(1) : '-'}</td>
+                                                </tr>
+                                            )
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">Diff RF→Best zeigt wie viele Punkte RF gegenüber der jeweils besten Methode verloren hat (negativ = RF schlechter). Nur informative Kennzahl – Captain-Volatilität beachten.</p>
                         </motion.div>
                     )}
 
