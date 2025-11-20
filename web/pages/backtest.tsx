@@ -4,8 +4,10 @@ import { motion } from 'framer-motion'
 import { Select } from '../src/components/Select'
 import { LoadingState, ErrorState } from '../src/components/States'
 import { TeamBacktestChart } from '../src/components/TeamBacktestChart'
+import { Tooltip } from '../src/components/Tooltip'
+import { tooltips } from '../src/data/tooltips'
 import { getUsableSeasons } from '../lib/seasonQuality'
-import { BarChart3, Download, TrendingUp, Activity, Target, Filter, Table } from 'lucide-react'
+import { BarChart3, Download, TrendingUp, Activity, Target, Filter, Table, ArrowUpDown } from 'lucide-react'
 import { Navbar } from '../src/components/Navbar'
 
 interface BacktestDetailRow {
@@ -55,6 +57,8 @@ export default function BacktestPage() {
     const [selectedMethods, setSelectedMethods] = useState<string[]>([])
     const [showTable, setShowTable] = useState<boolean>(false)
     const [pivotCsvUrl, setPivotCsvUrl] = useState<string>('')
+    const [sortColumn, setSortColumn] = useState<string>('gw')
+    const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
     // Lade verfügbare Seasons on mount
     useEffect(() => {
@@ -152,7 +156,7 @@ export default function BacktestPage() {
         return backtestData.detail.filter(r => selectedMethods.includes(r.method))
     }, [backtestData, selectedMethods])
 
-    // Pivot Table: GW -> { gw, rf, ma3, pos, best_method, best_points }
+    // Pivot Table: GW -> { gw, rf, ma3, pos, best_method, best_points } mit Sortierung
     const pivotRows = useMemo(() => {
         if (!backtestData) return [] as Array<any>
         const byGw: Record<number, Record<string, number>> = {}
@@ -167,10 +171,27 @@ export default function BacktestPage() {
             const entries = Object.entries(methodsMap)
             if (entries.length === 0) return
             const best = entries.reduce((acc, cur) => cur[1] > acc[1] ? cur : acc)
-            rows.push({ gw, ...methodsMap, best_method: best[0], best_points: best[1] })
+            const detailGw = backtestData.detail.filter(d => d.gw === gw)
+            const anyOptimum = detailGw.find(d => d.optimum_points && d.optimum_points > 0)
+            const rfDetail = detailGw.find(d => d.method === 'rf')
+            rows.push({ 
+                gw, 
+                ...methodsMap, 
+                best_method: best[0], 
+                best_points: best[1],
+                optimum: anyOptimum?.optimum_points ?? null,
+                efficiency_rf: rfDetail?.efficiency ?? null,
+            })
         })
-        return rows
-    }, [backtestData])
+        
+        // Sortierung anwenden
+        return rows.sort((a, b) => {
+            const aVal = a[sortColumn] ?? 0
+            const bVal = b[sortColumn] ?? 0
+            if (sortDirection === 'asc') return aVal > bVal ? 1 : -1
+            return aVal < bVal ? 1 : -1
+        })
+    }, [backtestData, sortColumn, sortDirection])
 
     // CSV Export erstellen (on demand bei Änderungen der PivotRows)
     useEffect(() => {
@@ -225,7 +246,7 @@ export default function BacktestPage() {
                 <title>Team Backtest - FPL Matura</title>
                 <meta name="description" content="Multi-GW Team Backtest: Vergleich verschiedener Prognosemethoden" />
             </Head>
-            
+
             <Navbar />
 
             <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
@@ -314,7 +335,9 @@ export default function BacktestPage() {
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
                                                 <TrendingUp className="w-4 h-4" />
-                                                Ø Punkte
+                                                <Tooltip content={tooltips.predicted_points}>
+                                                    <span className="border-b border-dotted border-gray-400 cursor-help">Ø Punkte</span>
+                                                </Tooltip>
                                             </span>
                                             <span className="text-xl font-bold text-gray-900 dark:text-white">
                                                 {row.avg_xi_points.toFixed(1)}
@@ -343,7 +366,9 @@ export default function BacktestPage() {
                                         <div className="flex items-center justify-between">
                                             <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
                                                 <Activity className="w-4 h-4" />
-                                                Ø Effizienz
+                                                <Tooltip content={tooltips.effizienz}>
+                                                    <span className="border-b border-dotted border-gray-400 cursor-help">Ø Effizienz</span>
+                                                </Tooltip>
                                             </span>
                                             <span className="text-lg font-semibold text-gray-900 dark:text-white">
                                                 {formatEff(row.avg_efficiency ?? null)}
@@ -442,40 +467,74 @@ export default function BacktestPage() {
                             transition={{ duration: 0.5, delay: 0.35 }}
                             className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 mt-8"
                         >
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">GW Punkte Vergleich (beste Methode hervorgehoben)</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                GW Punkte Vergleich (beste Methode hervorgehoben)
+                                <Tooltip content={tooltips.gw_range}>
+                                    <span className="text-sm text-gray-500 dark:text-gray-400 cursor-help">ℹ</span>
+                                </Tooltip>
+                            </h3>
                             <div className="overflow-x-auto">
                                 <table className="min-w-full text-sm">
-                                    <thead>
-                                        <tr className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
-                                            <th className="px-3 py-2 text-left">GW</th>
+                                    <thead className="sticky top-0 bg-gray-100 dark:bg-gray-700">
+                                        <tr className="text-gray-700 dark:text-gray-200">
+                                            <th 
+                                                className="px-3 py-2 text-left cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                                onClick={() => {
+                                                    if (sortColumn === 'gw') setSortDirection(d => d === 'asc' ? 'desc' : 'asc')
+                                                    else { setSortColumn('gw'); setSortDirection('asc') }
+                                                }}
+                                            >
+                                                <span className="flex items-center gap-1">
+                                                    GW <ArrowUpDown className="w-3 h-3" />
+                                                </span>
+                                            </th>
                                             {Array.from(new Set(backtestData.detail.map(r => r.method))).map(m => (
-                                                <th key={m} className="px-3 py-2 text-left">{m.toUpperCase()}</th>
+                                                <th 
+                                                    key={m} 
+                                                    className="px-3 py-2 text-left cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                                    onClick={() => {
+                                                        if (sortColumn === m) setSortDirection(d => d === 'asc' ? 'desc' : 'asc')
+                                                        else { setSortColumn(m); setSortDirection('desc') }
+                                                    }}
+                                                >
+                                                    <span className="flex items-center gap-1">
+                                                        {m.toUpperCase()} <ArrowUpDown className="w-3 h-3" />
+                                                    </span>
+                                                </th>
                                             ))}
-                                            <th className="px-3 py-2 text-left">Optimum</th>
-                                            <th className="px-3 py-2 text-left">Effizienz RF</th>
+                                            <th className="px-3 py-2 text-left">
+                                                <Tooltip content={tooltips.hindsight_optimum}>
+                                                    <span className="border-b border-dotted border-gray-400 cursor-help">Optimum</span>
+                                                </Tooltip>
+                                            </th>
+                                            <th className="px-3 py-2 text-left">
+                                                <Tooltip content={tooltips.effizienz}>
+                                                    <span className="border-b border-dotted border-gray-400 cursor-help">Effizienz RF</span>
+                                                </Tooltip>
+                                            </th>
                                             <th className="px-3 py-2 text-left">Beste</th>
                                             <th className="px-3 py-2 text-left">Diff RF→Best</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {pivotRows.map(row => {
+                                        {pivotRows.map((row, idx) => {
                                             const methods = Array.from(new Set(backtestData.detail.map(r => r.method)))
                                             const best = row.best_method
                                             const rfVal = row['rf'] ?? null
                                             const diff = rfVal !== null ? (row.best_points - rfVal) : ''
-                                            // Optimum & Effizienz RF aus Detail ableiten
-                                            const detailGw = backtestData.detail.filter(d => d.gw === row.gw)
-                                            const anyOptimum = detailGw.find(d => d.optimum_points && d.optimum_points > 0)
-                                            const rfDetail = detailGw.find(d => d.method === 'rf')
-                                            const effRf = rfDetail?.efficiency ?? null
                                             return (
-                                                <tr key={row.gw} className="border-b border-gray-200 dark:border-gray-700">
+                                                <tr 
+                                                    key={row.gw} 
+                                                    className={`border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${idx % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800/50'}`}
+                                                >
                                                     <td className="px-3 py-1.5 font-medium text-gray-900 dark:text-gray-100">{row.gw}</td>
                                                     {methods.map(m => (
-                                                        <td key={m} className={`px-3 py-1.5 ${best === m ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>{row[m] !== undefined ? row[m].toFixed(1) : '-'}</td>
+                                                        <td key={m} className={`px-3 py-1.5 ${best === m ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                                                            {row[m] !== undefined ? row[m].toFixed(1) : '-'}
+                                                        </td>
                                                     ))}
-                                                    <td className="px-3 py-1.5 text-gray-700 dark:text-gray-300">{anyOptimum ? anyOptimum.optimum_points?.toFixed(1) : '-'}</td>
-                                                    <td className="px-3 py-1.5 text-gray-700 dark:text-gray-300">{formatEff(effRf)}</td>
+                                                    <td className="px-3 py-1.5 text-gray-700 dark:text-gray-300">{row.optimum ? row.optimum.toFixed(1) : '-'}</td>
+                                                    <td className="px-3 py-1.5 text-gray-700 dark:text-gray-300">{formatEff(row.efficiency_rf)}</td>
                                                     <td className="px-3 py-1.5 font-semibold text-gray-900 dark:text-gray-100">{best.toUpperCase()} ({row.best_points.toFixed(1)})</td>
                                                     <td className="px-3 py-1.5 text-gray-700 dark:text-gray-300">{typeof diff === 'number' ? diff.toFixed(1) : '-'}</td>
                                                 </tr>
@@ -484,7 +543,7 @@ export default function BacktestPage() {
                                     </tbody>
                                 </table>
                             </div>
-                            <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">Diff RF→Best zeigt wie viele Punkte RF gegenüber der jeweils besten Methode verloren hat (negativ = RF schlechter). Effizienz RF bezieht sich auf das Hindsight-Optimum (theoretisches Maximum für diese GW). Nur informative Kennzahlen – Captain-Volatilität beachten.</p>
+                            <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">Diff RF→Best zeigt wie viele Punkte RF gegenüber der jeweils besten Methode verloren hat (negativ = RF schlechter). Effizienz RF bezieht sich auf das Hindsight-Optimum (theoretisches Maximum für diese GW). Nur informative Kennzahlen – Captain-Volatilität beachten. Klicke auf Spaltenüberschriften zum Sortieren.</p>
                         </motion.div>
                     )}
 
