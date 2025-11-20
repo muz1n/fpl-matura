@@ -1,7 +1,7 @@
 import Head from 'next/head'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { TrendingUp, Calendar, Users, BarChart3, Lightbulb, BookOpen } from 'lucide-react'
+import { TrendingUp, Calendar, Users, BarChart3, Lightbulb, BookOpen, BrainCircuit } from 'lucide-react'
 import { ActionCard } from '../src/components/ActionCard'
 import { HelpIcon } from '../src/components/HelpIcon'
 import { glossary } from '../src/data/glossary'
@@ -36,7 +36,7 @@ export default function Home() {
                 </motion.div>
 
                 {/* Main Action Cards */}
-                <div className="grid md:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-4 gap-6">
                     <ActionCard
                         title="Prognosen ansehen"
                         description="Sieh dir die KI-Vorhersagen für alle Spieler an und finde die besten Optionen für dein Team."
@@ -57,16 +57,24 @@ export default function Home() {
 
                     <ActionCard
                         title="Team Backtest"
-                        description="Analysiere wie verschiedene Prognose-Methoden über mehrere Gameweeks performt hätten."
+                        description="Vergleich Prognose-Methoden über mehrere Gameweeks (Performance-Trend)."
                         icon={BarChart3}
                         href="/backtest"
                         gradient="from-violet-500 to-purple-600"
                         delay={0.3}
                     />
+                    <ActionCard
+                        title="Feature Importances"
+                        description="Verstehe welche Variablen das Modell antreiben (Transparenz & Reflexion)."
+                        icon={BrainCircuit}
+                        href="/feature-importance"
+                        gradient="from-indigo-500 to-fuchsia-600"
+                        delay={0.4}
+                    />
                 </div>
 
                 {/* Secondary Action Cards */}
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid md:grid-cols-3 gap-6">
                     <ActionCard
                         title="Dein Team verwalten"
                         description="Analysiere dein aktuelles Team und erhalte Vorschläge für sinnvolle Transfers."
@@ -78,11 +86,27 @@ export default function Home() {
 
                     <ActionCard
                         title="FPL Glossar"
-                        description="Lerne alle wichtigen Begriffe und Konzepte rund um Fantasy Premier League kennen."
+                        description="Alle wichtigen Begriffe & Konzepte rund um Fantasy Premier League auf einen Blick."
                         icon={BookOpen}
                         href="/glossary"
                         gradient="from-emerald-500 to-teal-600"
                         delay={0.5}
+                    />
+                    <ActionCard
+                        title="Dein Team verwalten"
+                        description="Aktuelles Team analysieren & sinnvolle Transferideen erhalten."
+                        icon={Users}
+                        href="/team"
+                        gradient="from-amber-500 to-orange-600"
+                        delay={0.6}
+                    />
+                    <ActionCard
+                        title="Mehr Coming Soon"
+                        description="Weitere Auswertungen & Metriken folgen (Captain-Analyse, Bench-Policy)."
+                        icon={Lightbulb}
+                        href="/roadmap"
+                        gradient="from-gray-500 to-slate-600"
+                        delay={0.7}
                     />
                 </div>
 
