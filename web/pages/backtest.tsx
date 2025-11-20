@@ -18,6 +18,8 @@ interface BacktestDetailRow {
     n_candidates: number
     budget_used?: number
     notes: string
+    optimum_points?: number | null
+    efficiency?: number | null
 }
 
 interface BacktestSummaryRow {
@@ -25,6 +27,7 @@ interface BacktestSummaryRow {
     avg_xi_points: number
     std_xi_points: number
     n_gw: number
+    avg_efficiency?: number | null
 }
 
 interface BacktestData {
@@ -210,6 +213,11 @@ export default function BacktestPage() {
         }
     }
 
+    const formatEff = (v: number | null | undefined) => {
+        if (v === null || v === undefined || isNaN(v)) return '–'
+        return `${(v * 100).toFixed(1)} %`
+    }
+
     return (
         <>
             <Head>
@@ -285,7 +293,7 @@ export default function BacktestPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
-                            className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
+                            className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8"
                         >
                             {backtestData.summary.map((row, idx) => (
                                 <div
@@ -329,6 +337,16 @@ export default function BacktestPage() {
                                             </span>
                                         </div>
 
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                                                <Activity className="w-4 h-4" />
+                                                Ø Effizienz
+                                            </span>
+                                            <span className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                {formatEff(row.avg_efficiency ?? null)}
+                                            </span>
+                                        </div>
+
                                         <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
                                             <span className="text-xs text-gray-500 dark:text-gray-500">
                                                 Gameweeks
@@ -355,6 +373,7 @@ export default function BacktestPage() {
                                 <div className="flex-1 space-y-3 text-sm text-gray-600 dark:text-gray-400">
                                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"><BarChart3 className="w-5 h-5" /> Was zeigt der Backtest?</h2>
                                     <p>Für jede Gameweek wird rückblickend ein optimales Team anhand der Prognosen der jeweiligen Methode gebaut (Budget & max 3 pro Klub gelten). Die angezeigten Punkte enthalten Captain-Bonus. Fehlgeschlagene Selektionsversuche (xi_points = 0) werden ausgefiltert.</p>
+                                    <p className="mt-2"><strong>Effizienz</strong>: Verhältnis aus erzielten XI-Punkten (inkl. Captain) zur hypothetisch perfekten Auswahl auf Basis der echten Punkte (Hindsight-Optimum). 100&nbsp;% = identische Punkte wie theoretisches Maximum. Werte unter 100&nbsp;% zeigen Spielraum für Verbesserung der Prognose oder Auswahlstrategie.</p>
                                     <ul className="list-disc pl-5 space-y-1">
                                         <li><strong>RF</strong>: Random Forest Modell mit engineered Features.</li>
                                         <li><strong>MA3</strong>: Gleitender 3er Mittelwert der Punkte (Form-Proxi).</li>
@@ -429,6 +448,8 @@ export default function BacktestPage() {
                                             {Array.from(new Set(backtestData.detail.map(r => r.method))).map(m => (
                                                 <th key={m} className="px-3 py-2 text-left">{m.toUpperCase()}</th>
                                             ))}
+                                            <th className="px-3 py-2 text-left">Optimum</th>
+                                            <th className="px-3 py-2 text-left">Effizienz RF</th>
                                             <th className="px-3 py-2 text-left">Beste</th>
                                             <th className="px-3 py-2 text-left">Diff RF→Best</th>
                                         </tr>
@@ -439,12 +460,19 @@ export default function BacktestPage() {
                                             const best = row.best_method
                                             const rfVal = row['rf'] ?? null
                                             const diff = rfVal !== null ? (row.best_points - rfVal) : ''
+                                            // Optimum & Effizienz RF aus Detail ableiten
+                                            const detailGw = backtestData.detail.filter(d => d.gw === row.gw)
+                                            const anyOptimum = detailGw.find(d => d.optimum_points && d.optimum_points > 0)
+                                            const rfDetail = detailGw.find(d => d.method === 'rf')
+                                            const effRf = rfDetail?.efficiency ?? null
                                             return (
                                                 <tr key={row.gw} className="border-b border-gray-200 dark:border-gray-700">
                                                     <td className="px-3 py-1.5 font-medium text-gray-900 dark:text-gray-100">{row.gw}</td>
                                                     {methods.map(m => (
                                                         <td key={m} className={`px-3 py-1.5 ${best === m ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>{row[m] !== undefined ? row[m].toFixed(1) : '-'}</td>
                                                     ))}
+                                                    <td className="px-3 py-1.5 text-gray-700 dark:text-gray-300">{anyOptimum ? anyOptimum.optimum_points?.toFixed(1) : '-'}</td>
+                                                    <td className="px-3 py-1.5 text-gray-700 dark:text-gray-300">{formatEff(effRf)}</td>
                                                     <td className="px-3 py-1.5 font-semibold text-gray-900 dark:text-gray-100">{best.toUpperCase()} ({row.best_points.toFixed(1)})</td>
                                                     <td className="px-3 py-1.5 text-gray-700 dark:text-gray-300">{typeof diff === 'number' ? diff.toFixed(1) : '-'}</td>
                                                 </tr>
@@ -453,7 +481,7 @@ export default function BacktestPage() {
                                     </tbody>
                                 </table>
                             </div>
-                            <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">Diff RF→Best zeigt wie viele Punkte RF gegenüber der jeweils besten Methode verloren hat (negativ = RF schlechter). Nur informative Kennzahl – Captain-Volatilität beachten.</p>
+                            <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">Diff RF→Best zeigt wie viele Punkte RF gegenüber der jeweils besten Methode verloren hat (negativ = RF schlechter). Effizienz RF bezieht sich auf das Hindsight-Optimum (theoretisches Maximum für diese GW). Nur informative Kennzahlen – Captain-Volatilität beachten.</p>
                         </motion.div>
                     )}
 

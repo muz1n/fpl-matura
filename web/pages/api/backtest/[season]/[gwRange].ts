@@ -15,6 +15,10 @@ interface BacktestDetailRow {
     n_candidates: number
     budget_used?: number
     notes: string
+    optimum_points?: number | null
+    optimum_formation?: string | null
+    optimum_captain_id?: number | null
+    efficiency?: number | null
 }
 
 interface BacktestSummaryRow {
@@ -22,6 +26,7 @@ interface BacktestSummaryRow {
     avg_xi_points: number
     std_xi_points: number
     n_gw: number
+    avg_efficiency?: number | null
 }
 
 interface BacktestResponse {
@@ -152,6 +157,51 @@ export default async function handler(
             }
             // Summary file optional - can be calculated from detail data
         }
+
+        // Falls keine Summary vorhanden oder Effizienz-Spalte fehlt: aus Detail berechnen
+        if (!summaryData.length || !('avg_efficiency' in summaryData[0])) {
+            const byMethod: Record<string, { pts: number[]; eff: number[] }> = {}
+            for (const row of detailData) {
+                if (!byMethod[row.method]) byMethod[row.method] = { pts: [], eff: [] }
+                if (typeof row.xi_points === 'number' && row.xi_points > 0) {
+                    byMethod[row.method].pts.push(row.xi_points)
+                }
+                if (typeof row.efficiency === 'number' && row.efficiency > 0) {
+                    byMethod[row.method].eff.push(row.efficiency)
+                }
+            }
+            const computed: BacktestSummaryRow[] = Object.entries(byMethod).map(([method, vals]) => {
+                const avgPts = vals.pts.length ? vals.pts.reduce((a, b) => a + b, 0) / vals.pts.length : 0
+                const stdPts = (() => {
+                    if (vals.pts.length < 2) return 0
+                    const mean = avgPts
+                    const varSum = vals.pts.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0)
+                    return Math.sqrt(varSum / (vals.pts.length - 1))
+                })()
+                const avgEff = vals.eff.length ? vals.eff.reduce((a, b) => a + b, 0) / vals.eff.length : null
+                return { method, avg_xi_points: avgPts, std_xi_points: stdPts, n_gw: vals.pts.length, avg_efficiency: avgEff }
+            })
+            // Wenn originale Summary existiert aber avg_efficiency fehlt -> mergen
+            if (summaryData.length && !('avg_efficiency' in summaryData[0])) {
+                summaryData = summaryData.map(orig => {
+                    const comp = computed.find(c => c.method === orig.method)
+                    return { ...orig, avg_efficiency: comp?.avg_efficiency ?? null }
+                })
+            } else if (!summaryData.length) {
+                summaryData = computed
+            }
+        } else {
+            // Summary vorhanden mit Effizienz? ensure numeric
+            summaryData = summaryData.map(r => ({ ...r, avg_efficiency: (r as any).avg_efficiency ?? null }))
+        }
+
+        // Sortierung nach Effizienz (falls vorhanden), sonst nach avg_xi_points
+        summaryData.sort((a, b) => {
+            const ea = a.avg_efficiency ?? -1
+            const eb = b.avg_efficiency ?? -1
+            if (ea === eb) return b.avg_xi_points - a.avg_xi_points
+            return eb - ea
+        })
 
         const response: BacktestResponse = {
             season,
