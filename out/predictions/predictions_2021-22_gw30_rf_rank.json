@@ -1,0 +1,2338 @@
+[
+  {
+    "GW": 30,
+    "element": 49,
+    "name": "Keinan Davis",
+    "position": "FWD",
+    "team": "Aston Villa",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 428,
+    "name": "Willy Boly",
+    "position": "DEF",
+    "team": "Wolves",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 554,
+    "name": "Jamal Baptiste",
+    "position": "DEF",
+    "team": "West Ham",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 650,
+    "name": "Filip Marschall",
+    "position": "GK",
+    "team": "Aston Villa",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 686,
+    "name": "Dion Sanderson",
+    "position": "DEF",
+    "team": "Wolves",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 184,
+    "name": "Liam Cooper",
+    "position": "DEF",
+    "team": "Leeds",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 46,
+    "name": "Frédéric Guilbert",
+    "position": "DEF",
+    "team": "Aston Villa",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 435,
+    "name": "Adama Traoré",
+    "position": "MID",
+    "team": "Wolves",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 710,
+    "name": "Daniel Chesters",
+    "position": "MID",
+    "team": "West Ham",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 659,
+    "name": "Brandon Austin",
+    "position": "GK",
+    "team": "Spurs",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 421,
+    "name": "Declan Rice",
+    "position": "MID",
+    "team": "West Ham",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 192,
+    "name": "Hélder Wander Sousa de Azevedo e Costa",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 711,
+    "name": "Zak Swanson",
+    "position": "DEF",
+    "team": "Arsenal",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 37,
+    "name": "Mahmoud Ahmed Ibrahim Hassan",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 52,
+    "name": "Ashley Young",
+    "position": "DEF",
+    "team": "Aston Villa",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 214,
+    "name": "Hamza Choudhury",
+    "position": "MID",
+    "team": "Leicester",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 547,
+    "name": "Luke Cundle",
+    "position": "MID",
+    "team": "Wolves",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 552,
+    "name": "Adam Forshaw",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 36,
+    "name": "Kortney Hause",
+    "position": "DEF",
+    "team": "Aston Villa",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 38,
+    "name": "Tyrone Mings",
+    "position": "DEF",
+    "team": "Aston Villa",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 13,
+    "name": "Ainsley Maitland-Niles",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 497,
+    "name": "Jaden Philogene-Bidace",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 31,
+    "name": "Björn Engels",
+    "position": "DEF",
+    "team": "Aston Villa",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 79,
+    "name": "Tariqe Fosu-Henry",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 15,
+    "name": "Thomas Partey",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 532,
+    "name": "Karl Hein",
+    "position": "GK",
+    "team": "Arsenal",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 430,
+    "name": "Raúl Jiménez",
+    "position": "FWD",
+    "team": "Wolves",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 458,
+    "name": "Boubakary Soumaré",
+    "position": "MID",
+    "team": "Leicester",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 9,
+    "name": "Héctor Bellerín",
+    "position": "DEF",
+    "team": "Arsenal",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 18,
+    "name": "Lucas Torreira",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 203,
+    "name": "Nampalys Mendy",
+    "position": "MID",
+    "team": "Leicester",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 589,
+    "name": "Alex Kral",
+    "position": "MID",
+    "team": "West Ham",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 670,
+    "name": "Josh Feeney",
+    "position": "DEF",
+    "team": "Aston Villa",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 32,
+    "name": "Bertrand Traoré",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 77,
+    "name": "Christian Nørgaard",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 220,
+    "name": "Wesley Fofana",
+    "position": "DEF",
+    "team": "Leicester",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 417,
+    "name": "Arthur Masuaku",
+    "position": "DEF",
+    "team": "West Ham",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 20,
+    "name": "Edward Nketiah",
+    "position": "FWD",
+    "team": "Arsenal",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 186,
+    "name": "Mateusz Klich",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 412,
+    "name": "Andriy Yarmolenko",
+    "position": "MID",
+    "team": "West Ham",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 434,
+    "name": "Leander Dendoncker",
+    "position": "MID",
+    "team": "Wolves",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 583,
+    "name": "Hee-Chan Hwang",
+    "position": "FWD",
+    "team": "Wolves",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 470,
+    "name": "Rayan Ait Nouri",
+    "position": "DEF",
+    "team": "Wolves",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 35,
+    "name": "John McGinn",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 22,
+    "name": "Bukayo Saka",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 41,
+    "name": "Marvelous Nakamba",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 5,
+    "name": "Cédric Soares",
+    "position": "DEF",
+    "team": "Arsenal",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 361,
+    "name": "Eric Dier",
+    "position": "DEF",
+    "team": "Spurs",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 563,
+    "name": "Charlie Cresswell",
+    "position": "DEF",
+    "team": "Leeds",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 573,
+    "name": "Eldin Jakupovic",
+    "position": "GK",
+    "team": "Leicester",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 701,
+    "name": "Dejan Kulusevski",
+    "position": "MID",
+    "team": "Spurs",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 695,
+    "name": "Ryan Alebiosu",
+    "position": "DEF",
+    "team": "Arsenal",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 628,
+    "name": "Maxwell Haygarth",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 76,
+    "name": "Pontus Jansson",
+    "position": "DEF",
+    "team": "Brentford",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 426,
+    "name": "João Filipe Iria Santos Moutinho",
+    "position": "MID",
+    "team": "Wolves",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 621,
+    "name": "James Storer",
+    "position": "GK",
+    "team": "Wolves",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 466,
+    "name": "Nuno Varela Tavares",
+    "position": "DEF",
+    "team": "Arsenal",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 524,
+    "name": "Yoane Wissa",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 692,
+    "name": "Omari Hutchinson",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 638,
+    "name": "Tim Iroegbunam",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 520,
+    "name": "Dane Scarlett",
+    "position": "FWD",
+    "team": "Spurs",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 559,
+    "name": "Aaron Ramsdale",
+    "position": "GK",
+    "team": "Arsenal",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 219,
+    "name": "Luke Thomas",
+    "position": "DEF",
+    "team": "Leicester",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 190,
+    "name": "Diego Llorente",
+    "position": "DEF",
+    "team": "Leeds",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 194,
+    "name": "Robin Koch",
+    "position": "DEF",
+    "team": "Leeds",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 478,
+    "name": "Albert Sambi Lokonga",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 550,
+    "name": "Sam Greenwood",
+    "position": "FWD",
+    "team": "Leeds",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 6,
+    "name": "Alexandre Lacazette",
+    "position": "FWD",
+    "team": "Arsenal",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 198,
+    "name": "Pascal Struijk",
+    "position": "DEF",
+    "team": "Leeds",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 611,
+    "name": "Louie Moulden",
+    "position": "GK",
+    "team": "Wolves",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 24,
+    "name": "Konstantinos Mavropanos",
+    "position": "DEF",
+    "team": "Arsenal",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 358,
+    "name": "Serge Aurier",
+    "position": "DEF",
+    "team": "Spurs",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 88,
+    "name": "Marcus Forss",
+    "position": "FWD",
+    "team": "Brentford",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 577,
+    "name": "Joe Gelhardt",
+    "position": "FWD",
+    "team": "Leeds",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 420,
+    "name": "Jarrod Bowen",
+    "position": "MID",
+    "team": "West Ham",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 530,
+    "name": "Folarin Balogun",
+    "position": "FWD",
+    "team": "Arsenal",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 3,
+    "name": "Willian Borges Da Silva",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 461,
+    "name": "Francisco Machado Mota de Castro Trincão",
+    "position": "MID",
+    "team": "Wolves",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 416,
+    "name": "Manuel Lanzini",
+    "position": "MID",
+    "team": "West Ham",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 658,
+    "name": "Archie Gray",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 498,
+    "name": "Dominic Thompson",
+    "position": "DEF",
+    "team": "Brentford",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 576,
+    "name": "Liam McCarron",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 2,
+    "name": "Rúnar Alex Rúnarsson",
+    "position": "GK",
+    "team": "Arsenal",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 427,
+    "name": "Rui Pedro dos Santos Patrício",
+    "position": "GK",
+    "team": "Wolves",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 703,
+    "name": "Benjamin Chrisene",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 196,
+    "name": "Raphael Dias Belloli",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 681,
+    "name": "Philippe Coutinho Correia",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 424,
+    "name": "Issa Diop",
+    "position": "DEF",
+    "team": "West Ham",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 436,
+    "name": "Rúben Diogo da Silva Neves",
+    "position": "MID",
+    "team": "Wolves",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 619,
+    "name": "Matthew Cox",
+    "position": "GK",
+    "team": "Brentford",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 551,
+    "name": "Crysencio Summerville",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 83,
+    "name": "Rico Henry",
+    "position": "DEF",
+    "team": "Brentford",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 366,
+    "name": "Harry Winks",
+    "position": "MID",
+    "team": "Spurs",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 617,
+    "name": "Harrison Ashby",
+    "position": "DEF",
+    "team": "West Ham",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 521,
+    "name": "Frederik Alves",
+    "position": "DEF",
+    "team": "West Ham",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 187,
+    "name": "Rodrigo Moreno",
+    "position": "FWD",
+    "team": "Leeds",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 494,
+    "name": "Cristian Romero",
+    "position": "DEF",
+    "team": "Spurs",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 639,
+    "name": "Vontae Daley-Campbell",
+    "position": "DEF",
+    "team": "Leicester",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 713,
+    "name": "Tommi O'Reilly",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 419,
+    "name": "Saïd Benrahma",
+    "position": "MID",
+    "team": "West Ham",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 601,
+    "name": "Stuart McKinstry",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 693,
+    "name": "Salah-Eddine Oulad M'hand",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 407,
+    "name": "Darren Randolph",
+    "position": "GK",
+    "team": "West Ham",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 90,
+    "name": "Mads Bech Sørensen",
+    "position": "DEF",
+    "team": "Brentford",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 50,
+    "name": "Douglas Luiz Soares de Paulo",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 81,
+    "name": "Sergi Canós",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 455,
+    "name": "Patson Daka",
+    "position": "FWD",
+    "team": "Leicester",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 442,
+    "name": "Owen Otasowie",
+    "position": "MID",
+    "team": "Wolves",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 408,
+    "name": "Lukasz Fabianski",
+    "position": "GK",
+    "team": "West Ham",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 25,
+    "name": "Mattéo Guendouzi",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 499,
+    "name": "Shandon Baptiste",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 218,
+    "name": "James Justin",
+    "position": "DEF",
+    "team": "Leicester",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 522,
+    "name": "Conor Coventry",
+    "position": "MID",
+    "team": "West Ham",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 30,
+    "name": "Emiliano Martínez",
+    "position": "GK",
+    "team": "Aston Villa",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 217,
+    "name": "Çaglar Söyüncü",
+    "position": "DEF",
+    "team": "Leicester",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 596,
+    "name": "Viljami Sinisalo",
+    "position": "GK",
+    "team": "Aston Villa",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 441,
+    "name": "Pedro Lomba Neto",
+    "position": "MID",
+    "team": "Wolves",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 337,
+    "name": "Danny Ings",
+    "position": "FWD",
+    "team": "Aston Villa",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 588,
+    "name": "Emerson Aparecido Leite de Souza Junior",
+    "position": "DEF",
+    "team": "Spurs",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 8,
+    "name": "Pablo Marí",
+    "position": "DEF",
+    "team": "Arsenal",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 647,
+    "name": "Kasey McAteer",
+    "position": "MID",
+    "team": "Leicester",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 694,
+    "name": "Mika Biereth",
+    "position": "FWD",
+    "team": "Arsenal",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 582,
+    "name": "Nikola Vlasic",
+    "position": "MID",
+    "team": "West Ham",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 590,
+    "name": "Takehiro Tomiyasu",
+    "position": "DEF",
+    "team": "Arsenal",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 191,
+    "name": "Kalvin Phillips",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 373,
+    "name": "Oliver Skipp",
+    "position": "MID",
+    "team": "Spurs",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 40,
+    "name": "Ollie Watkins",
+    "position": "FWD",
+    "team": "Aston Villa",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 91,
+    "name": "Ethan Pinnock",
+    "position": "DEF",
+    "team": "Brentford",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 84,
+    "name": "Vitaly Janelt",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 657,
+    "name": "Kris Moore",
+    "position": "DEF",
+    "team": "Leeds",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 367,
+    "name": "Davinson Sánchez",
+    "position": "DEF",
+    "team": "Spurs",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 96,
+    "name": "Bryan Mbeumo",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 410,
+    "name": "Winston Reid",
+    "position": "DEF",
+    "team": "West Ham",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 587,
+    "name": "Ademola Lookman",
+    "position": "MID",
+    "team": "Leicester",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 634,
+    "name": "Sonny Perkins",
+    "position": "MID",
+    "team": "West Ham",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 189,
+    "name": "Patrick Bamford",
+    "position": "FWD",
+    "team": "Leeds",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 645,
+    "name": "Ben Nelson",
+    "position": "DEF",
+    "team": "Leicester",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 27,
+    "name": "William Saliba",
+    "position": "DEF",
+    "team": "Arsenal",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 202,
+    "name": "Marc Albrighton",
+    "position": "MID",
+    "team": "Leicester",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 689,
+    "name": "Francisco Jorge Tomás Oliveira",
+    "position": "MID",
+    "team": "Wolves",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 205,
+    "name": "Jamie Vardy",
+    "position": "FWD",
+    "team": "Leicester",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 43,
+    "name": "Emiliano Buendía Stati",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 423,
+    "name": "Pablo Fornals",
+    "position": "MID",
+    "team": "West Ham",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 360,
+    "name": "Matt Doherty",
+    "position": "DEF",
+    "team": "Spurs",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 87,
+    "name": "Charlie Goode",
+    "position": "DEF",
+    "team": "Brentford",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 82,
+    "name": "Pelenda Joshua Dasilva",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 646,
+    "name": "Lewis Brunt",
+    "position": "MID",
+    "team": "Leicester",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 28,
+    "name": "Jed Steer",
+    "position": "GK",
+    "team": "Aston Villa",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 406,
+    "name": "Mark Noble",
+    "position": "MID",
+    "team": "West Ham",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 668,
+    "name": "Harvey White",
+    "position": "MID",
+    "team": "Spurs",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 562,
+    "name": "Cody Drameh",
+    "position": "DEF",
+    "team": "Leeds",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 4,
+    "name": "Pierre-Emerick Aubameyang",
+    "position": "FWD",
+    "team": "Arsenal",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 475,
+    "name": "José Malheiro de Sá",
+    "position": "GK",
+    "team": "Wolves",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 44,
+    "name": "Matthew Cash",
+    "position": "DEF",
+    "team": "Aston Villa",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 418,
+    "name": "Vladimir Coufal",
+    "position": "DEF",
+    "team": "West Ham",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 682,
+    "name": "Pierre Ekwah",
+    "position": "DEF",
+    "team": "West Ham",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 425,
+    "name": "Ben Johnson",
+    "position": "DEF",
+    "team": "West Ham",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 21,
+    "name": "Emile Smith Rowe",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 355,
+    "name": "Toby Alderweireld",
+    "position": "DEF",
+    "team": "Spurs",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 505,
+    "name": "Kiernan Dewsbury-Hall",
+    "position": "MID",
+    "team": "Leicester",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 479,
+    "name": "Frank Onyeka",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 652,
+    "name": "Armstrong Oko-Flex",
+    "position": "MID",
+    "team": "West Ham",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 92,
+    "name": "Ellery Balcombe",
+    "position": "GK",
+    "team": "Brentford",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 352,
+    "name": "Joe Hart",
+    "position": "GK",
+    "team": "Spurs",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 687,
+    "name": "Ryan Giles",
+    "position": "MID",
+    "team": "Wolves",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 568,
+    "name": "Cameron Archer",
+    "position": "FWD",
+    "team": "Aston Villa",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 699,
+    "name": "Christian Eriksen",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 97,
+    "name": "Mads Bidstrup",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 437,
+    "name": "Nélson Cabral Semedo",
+    "position": "DEF",
+    "team": "Wolves",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 431,
+    "name": "Romain Saïss",
+    "position": "DEF",
+    "team": "Wolves",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 489,
+    "name": "Alphonse Areola",
+    "position": "GK",
+    "team": "West Ham",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 432,
+    "name": "Fernando Marçal",
+    "position": "DEF",
+    "team": "Wolves",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 362,
+    "name": "Lucas Rodrigues Moura da Silva",
+    "position": "MID",
+    "team": "Spurs",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 369,
+    "name": "Steven Bergwijn",
+    "position": "MID",
+    "team": "Spurs",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 34,
+    "name": "Morgan Sanson",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 439,
+    "name": "Max Kilman",
+    "position": "DEF",
+    "team": "Wolves",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 12,
+    "name": "Mohamed Naser El Sayed Elneny",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 213,
+    "name": "Kelechi Iheanacho",
+    "position": "FWD",
+    "team": "Leicester",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 287,
+    "name": "Daniel James",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 16,
+    "name": "Kieran Tierney",
+    "position": "DEF",
+    "team": "Arsenal",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 705,
+    "name": "Zach Awe",
+    "position": "DEF",
+    "team": "Arsenal",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 624,
+    "name": "Lewis Bate",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 572,
+    "name": "Arthur Okonkwo",
+    "position": "GK",
+    "team": "Arsenal",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 598,
+    "name": "Tobi Omole",
+    "position": "DEF",
+    "team": "Spurs",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 443,
+    "name": "Ki-Jana Hoever",
+    "position": "DEF",
+    "team": "Wolves",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 635,
+    "name": "Hugo Bueno",
+    "position": "DEF",
+    "team": "Wolves",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 188,
+    "name": "Stuart Dallas",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 526,
+    "name": "Carney Chukwuemeka",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 193,
+    "name": "Tyler Roberts",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 197,
+    "name": "Jamie Shackleton",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 78,
+    "name": "Ivan Toney",
+    "position": "FWD",
+    "team": "Brentford",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 212,
+    "name": "James Maddison",
+    "position": "MID",
+    "team": "Leicester",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 372,
+    "name": "Giovani Lo Celso",
+    "position": "MID",
+    "team": "Spurs",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 673,
+    "name": "Jonas Lössl",
+    "position": "GK",
+    "team": "Brentford",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 714,
+    "name": "Alfie Devine",
+    "position": "MID",
+    "team": "Spurs",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 610,
+    "name": "Lamare Bogarde",
+    "position": "DEF",
+    "team": "Aston Villa",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 86,
+    "name": "Mathias Jensen",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 371,
+    "name": "Japhet Tanganga",
+    "position": "DEF",
+    "team": "Spurs",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 691,
+    "name": "Robin Olsen",
+    "position": "GK",
+    "team": "Aston Villa",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 463,
+    "name": "Héctor Junior Firpo Adames",
+    "position": "DEF",
+    "team": "Leeds",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 365,
+    "name": "Pierre-Emile Højbjerg",
+    "position": "MID",
+    "team": "Spurs",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 207,
+    "name": "Ricardo Domingos Barbosa Pereira",
+    "position": "DEF",
+    "team": "Leicester",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 483,
+    "name": "Kristoffer Ajer",
+    "position": "DEF",
+    "team": "Brentford",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 594,
+    "name": "Mathias Jorgensen",
+    "position": "DEF",
+    "team": "Brentford",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 356,
+    "name": "Erik Lamela",
+    "position": "MID",
+    "team": "Spurs",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 29,
+    "name": "Conor Hourihane",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 664,
+    "name": "Charlie Patino",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 429,
+    "name": "Conor Coady",
+    "position": "DEF",
+    "team": "Wolves",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 48,
+    "name": "Mbwana Ally Samatta",
+    "position": "FWD",
+    "team": "Aston Villa",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 685,
+    "name": "Toti António Gomes",
+    "position": "DEF",
+    "team": "Wolves",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 210,
+    "name": "Youri Tielemans",
+    "position": "MID",
+    "team": "Leicester",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 353,
+    "name": "Hugo Lloris",
+    "position": "GK",
+    "team": "Spurs",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 702,
+    "name": "Rodrigo Bentancur",
+    "position": "MID",
+    "team": "Spurs",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 85,
+    "name": "Saman Ghoddos",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 199,
+    "name": "Illan Meslier",
+    "position": "GK",
+    "team": "Leeds",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 183,
+    "name": "Francisco Casilla Cortés",
+    "position": "GK",
+    "team": "Leeds",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 597,
+    "name": "Dilan Markanday",
+    "position": "MID",
+    "team": "Spurs",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 23,
+    "name": "Gabriel Magalhães",
+    "position": "DEF",
+    "team": "Arsenal",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 375,
+    "name": "Tanguy Ndombele",
+    "position": "MID",
+    "team": "Spurs",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 10,
+    "name": "Calum Chambers",
+    "position": "DEF",
+    "team": "Aston Villa",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 433,
+    "name": "Jonathan Castro Otto",
+    "position": "DEF",
+    "team": "Wolves",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 94,
+    "name": "Patrik Gunnarsson",
+    "position": "GK",
+    "team": "Brentford",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 80,
+    "name": "David Raya Martin",
+    "position": "GK",
+    "team": "Brentford",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 45,
+    "name": "Ezri Konsa Ngoyo",
+    "position": "DEF",
+    "team": "Aston Villa",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 490,
+    "name": "Kristoffer Klaesson",
+    "position": "GK",
+    "team": "Leeds",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 26,
+    "name": "Gabriel Teodoro Martinelli Silva",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 549,
+    "name": "Christian Marques",
+    "position": "DEF",
+    "team": "Wolves",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 359,
+    "name": "Heung-Min Son",
+    "position": "MID",
+    "team": "Spurs",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 631,
+    "name": "Jack Jenkins",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 496,
+    "name": "Aaron Ramsey",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 523,
+    "name": "Patrick Cutrone",
+    "position": "FWD",
+    "team": "Wolves",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 51,
+    "name": "Jacob Ramsey",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 608,
+    "name": "Leo Fuhr Hjelde",
+    "position": "DEF",
+    "team": "Leeds",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 206,
+    "name": "Dennis Praet",
+    "position": "MID",
+    "team": "Leicester",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 409,
+    "name": "Angelo Ogbonna",
+    "position": "DEF",
+    "team": "West Ham",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 182,
+    "name": "Pablo Hernández Domínguez",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 531,
+    "name": "Reiss Nelson",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 14,
+    "name": "Rob Holding",
+    "position": "DEF",
+    "team": "Arsenal",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 357,
+    "name": "Harry Kane",
+    "position": "FWD",
+    "team": "Spurs",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 215,
+    "name": "Harvey Barnes",
+    "position": "MID",
+    "team": "Leicester",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 370,
+    "name": "Sergio Reguilón",
+    "position": "DEF",
+    "team": "Spurs",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 209,
+    "name": "Timothy Castagne",
+    "position": "DEF",
+    "team": "Leicester",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 486,
+    "name": "Pierluigi Gollini",
+    "position": "GK",
+    "team": "Spurs",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 195,
+    "name": "Ian Carlo Poveda-Ocampo",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 600,
+    "name": "Nohan Kenneh",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 446,
+    "name": "Yerson Mosquera Valdelamar",
+    "position": "DEF",
+    "team": "Wolves",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 267,
+    "name": "Jack Harrison",
+    "position": "MID",
+    "team": "Leeds",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 340,
+    "name": "Jannik Vestergaard",
+    "position": "DEF",
+    "team": "Leicester",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 211,
+    "name": "Ayoze Pérez",
+    "position": "MID",
+    "team": "Leicester",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 422,
+    "name": "Tomas Soucek",
+    "position": "MID",
+    "team": "West Ham",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 614,
+    "name": "Paris Maghoma",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 661,
+    "name": "Bruno André Cavaco Jordão",
+    "position": "MID",
+    "team": "Wolves",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 364,
+    "name": "Ben Davies",
+    "position": "DEF",
+    "team": "Spurs",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 17,
+    "name": "Nicolas Pépé",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 444,
+    "name": "Andreas Söndergaard",
+    "position": "GK",
+    "team": "Wolves",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 7,
+    "name": "Granit Xhaka",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 93,
+    "name": "Jan Zamburek",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 445,
+    "name": "Fabio Silva",
+    "position": "FWD",
+    "team": "Wolves",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 413,
+    "name": "Michail Antonio",
+    "position": "FWD",
+    "team": "West Ham",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 185,
+    "name": "Luke Ayling",
+    "position": "DEF",
+    "team": "Leeds",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 89,
+    "name": "Mads Roerslev Rasmussen",
+    "position": "DEF",
+    "team": "Brentford",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 201,
+    "name": "Jonny Evans",
+    "position": "DEF",
+    "team": "Leicester",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 644,
+    "name": "Ajibola Alese",
+    "position": "DEF",
+    "team": "West Ham",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 374,
+    "name": "Joe Rodon",
+    "position": "DEF",
+    "team": "Spurs",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 662,
+    "name": "Myles Peart-Harris",
+    "position": "MID",
+    "team": "Brentford",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 569,
+    "name": "Finley Stevens",
+    "position": "DEF",
+    "team": "Brentford",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 47,
+    "name": "Wesley Moraes",
+    "position": "FWD",
+    "team": "Aston Villa",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 1,
+    "name": "Bernd Leno",
+    "position": "GK",
+    "team": "Arsenal",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 558,
+    "name": "Martin Ødegaard",
+    "position": "MID",
+    "team": "Arsenal",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 492,
+    "name": "Leon Bailey",
+    "position": "MID",
+    "team": "Aston Villa",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 440,
+    "name": "Morgan Gibbs-White",
+    "position": "MID",
+    "team": "Wolves",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 368,
+    "name": "Ryan Sessegnon",
+    "position": "DEF",
+    "team": "Spurs",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 487,
+    "name": "Bryan Gil Salvatierra",
+    "position": "MID",
+    "team": "Spurs",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 208,
+    "name": "Daniel Amartey",
+    "position": "DEF",
+    "team": "Leicester",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 548,
+    "name": "Chem Campbell",
+    "position": "MID",
+    "team": "Wolves",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 473,
+    "name": "Ryan Bertrand",
+    "position": "DEF",
+    "team": "Leicester",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 168,
+    "name": "Lucas Digne",
+    "position": "DEF",
+    "team": "Aston Villa",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 640,
+    "name": "Nathan Young-Coombes",
+    "position": "FWD",
+    "team": "Brentford",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 204,
+    "name": "Danny Ward",
+    "position": "GK",
+    "team": "Leicester",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 11,
+    "name": "Sead Kolasinac",
+    "position": "DEF",
+    "team": "Arsenal",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 556,
+    "name": "Álvaro Fernández",
+    "position": "GK",
+    "team": "Brentford",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 414,
+    "name": "Craig Dawson",
+    "position": "DEF",
+    "team": "West Ham",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 200,
+    "name": "Kasper Schmeichel",
+    "position": "GK",
+    "team": "Leicester",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 67,
+    "name": "Ben White",
+    "position": "DEF",
+    "team": "Arsenal",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 684,
+    "name": "Kaine Hayden",
+    "position": "DEF",
+    "team": "Aston Villa",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 438,
+    "name": "Daniel Castelo Podence",
+    "position": "MID",
+    "team": "Wolves",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 95,
+    "name": "Halil Dervişoğlu",
+    "position": "FWD",
+    "team": "Brentford",
+    "predicted_points": 0.2611888158482673
+  },
+  {
+    "GW": 30,
+    "element": 128,
+    "name": "Kurt Zouma",
+    "position": "DEF",
+    "team": "West Ham",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 411,
+    "name": "Aaron Cresswell",
+    "position": "DEF",
+    "team": "West Ham",
+    "predicted_points": 0.2680975654151175
+  },
+  {
+    "GW": 30,
+    "element": 452,
+    "name": "John Ruddy",
+    "position": "GK",
+    "team": "Wolves",
+    "predicted_points": 0.10253188647980309
+  },
+  {
+    "GW": 30,
+    "element": 216,
+    "name": "Wilfred Ndidi",
+    "position": "MID",
+    "team": "Leicester",
+    "predicted_points": 0.2669645059075006
+  },
+  {
+    "GW": 30,
+    "element": 415,
+    "name": "Ryan Fredericks",
+    "position": "DEF",
+    "team": "West Ham",
+    "predicted_points": 0.2680975654151175
+  }
+]

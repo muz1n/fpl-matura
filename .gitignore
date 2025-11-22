@@ -196,13 +196,23 @@ cython_debug/
 
 # Project outputs
 out/*
-docs/plots/*
 !out/.gitkeep
+!out/backtests/
+!out/predictions/
+!out/lineups/
+!out/legacy/
+!out/ab_eval/
+!out/error_analysis/
+!out/player_features/
+!out/plots/
+!out/team_metrics/
+docs/plots/*
 !docs/plots/.gitkeep
 
 # Project specific
 *.bak
 *.tmp
+logs/*.log
 
 # Node.js / Next.js
 node_modules/

@@ -1,0 +1,46 @@
+method,gw,formation,xi_points,captain_id,vice_id,n_truth_matched,n_candidates,budget_used,optimum_points,optimum_formation,optimum_captain_id,efficiency,notes
+rf,30,3-4-3,29.0,196.0,701.0,11,15,73.2,,,,,OK
+ma3,30,4-3-3,53.0,44.0,360.0,11,15,71.6,,,,,OK
+pos,30,5-4-1,1.0,711.0,635.0,11,15,50.00000000000001,,,,,OK
+rf_pos,30,,0.0,,,0,0,0.0,,,,,Selection failed
+rf_rank,30,,0.0,,,0,0,0.0,,,,,Selection failed
+rf,31,3-4-3,43.0,237.0,357.0,11,14,89.8,,,,,OK
+ma3,31,4-4-2,76.0,360.0,44.0,11,13,84.4,,,,,OK
+pos,31,5-4-1,18.0,695.0,685.0,11,15,37.9,,,,,OK
+rf_pos,31,,0.0,,,0,0,0.0,,,,,Selection failed
+rf_rank,31,,0.0,,,0,0,0.0,,,,,Selection failed
+rf,32,4-5-1,59.0,237.0,357.0,11,12,91.19999999999999,,,,,OK
+ma3,32,,0.0,,,0,0,0.0,,,,,Selection failed
+pos,32,5-4-1,12.0,8.0,690.0,11,15,57.599999999999994,,,,,OK
+rf_pos,32,,0.0,,,0,0,0.0,,,,,Selection failed
+rf_rank,32,,0.0,,,0,0,0.0,,,,,Selection failed
+rf,33,4-5-1,63.0,234.0,233.0,11,13,90.3,,,,,OK
+ma3,33,5-4-1,38.0,251.0,359.0,11,14,81.60000000000001,,,,,OK
+pos,33,3-5-2,12.0,7.0,726.0,11,15,42.0,,,,,OK
+rf_pos,33,,0.0,,,0,0,0.0,,,,,Selection failed
+rf_rank,33,,0.0,,,0,0,0.0,,,,,Selection failed
+rf,34,,0.0,,,0,0,0.0,,,,,Selection failed
+ma3,34,3-5-2,37.0,359.0,96.0,11,13,85.89999999999999,,,,,OK
+pos,34,3-5-2,11.0,728.0,727.0,11,15,49.79999999999999,,,,,OK
+rf_pos,34,,0.0,,,0,0,0.0,,,,,Selection failed
+rf_rank,34,,0.0,,,0,0,0.0,,,,,Selection failed
+rf,35,,0.0,,,0,0,0.0,,,,,Selection failed
+ma3,35,3-5-2,61.0,359.0,233.0,11,14,83.79999999999998,,,,,OK
+pos,35,3-5-2,3.0,32.0,730.0,11,15,44.99999999999999,,,,,OK
+rf_pos,35,,0.0,,,0,0,0.0,,,,,Selection failed
+rf_rank,35,,0.0,,,0,0,0.0,,,,,Selection failed
+rf,36,,0.0,,,0,0,0.0,,,,,Selection failed
+ma3,36,,0.0,,,0,0,0.0,,,,,Selection failed
+pos,36,3-5-2,10.0,734.0,733.0,11,15,41.5,,,,,OK
+rf_pos,36,,0.0,,,0,0,0.0,,,,,Selection failed
+rf_rank,36,,0.0,,,0,0,0.0,,,,,Selection failed
+rf,37,3-5-2,36.0,359.0,143.0,11,12,91.60000000000001,,,,,OK
+ma3,37,3-5-2,24.0,263.0,234.0,11,15,78.4,,,,,OK
+pos,37,4-5-1,7.0,22.0,32.0,11,15,43.0,,,,,OK
+rf_pos,37,,0.0,,,0,0,0.0,,,,,Selection failed
+rf_rank,37,,0.0,,,0,0,0.0,,,,,Selection failed
+rf,38,,0.0,,,0,0,0.0,,,,,Selection failed
+ma3,38,,0.0,,,0,0,0.0,,,,,Selection failed
+pos,38,3-5-2,43.0,737.0,698.0,11,15,49.00000000000001,,,,,OK
+rf_pos,38,,0.0,,,0,0,0.0,,,,,Selection failed
+rf_rank,38,,0.0,,,0,0,0.0,,,,,Selection failed

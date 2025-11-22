@@ -1,0 +1,16 @@
+player_id,role,is_captain,is_vice
+1,xi,1,0
+3,xi,0,1
+4,xi,0,0
+5,xi,0,0
+8,xi,0,0
+9,xi,0,0
+10,xi,0,0
+11,xi,0,0
+13,xi,0,0
+14,xi,0,0
+15,xi,0,0
+2,bench_gk,0,0
+6,bench,0,0
+7,bench,0,0
+12,bench,0,0

@@ -1,0 +1,33 @@
+{
+    "season": "2024-25",
+    "gw": 38,
+    "generated_at": "2025-05-18T10:30:00Z",
+    "model_version": "rf_v2.1",
+    "formation": "3-4-3",
+    "xi_ids": [
+        107,
+        106,
+        108,
+        111,
+        102,
+        103,
+        104,
+        112,
+        101,
+        105,
+        109
+    ],
+    "bench_gk_id": 114,
+    "bench_out_ids": [
+        115,
+        117,
+        113
+    ],
+    "captain_id": 101,
+    "vice_id": 102,
+    "xi_points_sum": 98.6,
+    "debug": {
+        "rules_ok": true,
+        "notes": "Formation valid, budget constraint met"
+    }
+}
