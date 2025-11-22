@@ -2,18 +2,18 @@
 
 ## ✅ Hauptskripte (BEHALTEN)
 
-### Modell-Training & Vorhersage
+### Modell-Training & Vorhersage (code/models/)
 - **make_predictions.py**: Haupt-Skript für Prognosen (rf, ma3, pos) ✅
-- **rf_baseline.py**: Random Forest Baseline-Modell ✅
-- **rf_pos_models.py**: Positionsspezifische RF-Modelle ✅
-- **rf_rank_boost.py**: Ranking-optimiertes RF-Modell ✅
+- **baseline_model.py**: Random Forest Baseline-Modell ✅
+- **position_model.py**: Positionsspezifische RF-Modelle ✅
+- **moving_average_model.py**: Ranking-optimiertes RF-Modell ✅
 
-### Evaluation
+### Evaluation (code/evaluation/)
 - **evaluate.py**: Haupt-Evaluation (MAE, RMSE, Spearman) ✅
 - **team_backtest.py**: Team-Performance-Test ✅
 - **error_analysis.py**: Fehleranalyse und Visualisierung ✅
 
-### Hilfsskripte
+### Hilfsskripte (code/analysis/)
 - **mvp_picker.py**: Cold-Start-Heuristik (MVP-Auswahl) ✅
 - **compute_team_def_metrics_cli.py**: Team-Defensive-Metriken ✅
 - **team_def_cli.py**: CLI für Team-Defense ✅
@@ -25,9 +25,9 @@
 - **rf_pos_tuning_fwd.py**: Tuning für Stürmer ⚠️
 - **rf_pos_tuning_mid.py**: Tuning für Mittelfeld (nicht verwendet, da Standard-Params) ⚠️
 
-**Hinweis:** Diese wurden nur einmal ausgeführt, um optimale Hyperparameter zu finden. Die Ergebnisse sind in `rf_pos_models.py` hardcoded. **Können archiviert werden.**
+**Hinweis:** Diese wurden nur einmal ausgeführt, um optimale Hyperparameter zu finden. Die Ergebnisse sind in `position_model.py` hardcoded. **Können archiviert werden.**
 
-### Alternative Evaluation-Skripte
+### Alternative Evaluation-Skripte (code/evaluation/)
 - **evaluate_methods.py**: Alternative zu evaluate.py (ähnliche Funktionalität) ⚠️
 - **evaluate_predictions.py**: Detaillierte Prognose-Bewertung (Kalibrierung, Residuen) ⚠️
 - **evaluate_lineup.py**: Lineup-Bewertung (anders als team_backtest.py) ⚠️

@@ -87,10 +87,10 @@ Die Ergebnisse können mit folgenden Kommandos nachvollzogen werden:
 
 ```bash
 # Mini-Validierung (Testfenster GW30-38, Saison 2023-24)
-python code\evaluate.py --season 2023-24 --gw_start 30 --gw_end 38 --methods rf ma3 pos --metrics mae rmse spearman
+python code\evaluation\evaluate.py --season 2023-24 --gw_start 30 --gw_end 38 --methods rf ma3 pos --metrics mae rmse spearman
 
 # Einzelne GW-Predictions erzeugen (Beispiel: GW38, Methode rf)
-python code\make_predictions.py --season 2023-24 --gw 38 --methode rf
+python code\models\make_predictions.py --season 2023-24 --gw 38 --methode rf
 ```
 
 ### Interpretation & Grenzen
@@ -109,7 +109,7 @@ Ziel ist eine bessere Rangordnung (hoeherer Spearman-Wert) bei stabiler MAE.
 
 Reproduzieren: 
 ```bash
-python code\rf_rank_boost.py --season 2022-23 --start_gw 30 --end_gw 38
+python code\models\moving_average_model.py --season 2022-23 --start_gw 30 --end_gw 38
 ```
 
 Im UI als "RF (Rank)" verfuegbar. Laedt `predictions_gw{GW}_rf_rank.json` und funktioniert mit der Lineup-API.
@@ -133,7 +133,7 @@ Das Team-Backtest simuliert die Auswahl einer konkreten Aufstellung basierend au
 ### Reproduktion
 
 ```bash
-python code\team_backtest.py --season 2022-23 --gw_start 30 --gw_end 38 --methods rf ma3 pos
+python code\evaluation\team_backtest.py --season 2022-23 --gw_start 30 --gw_end 38 --methods rf ma3 pos
 ```
 
 ### Interpretation
@@ -162,13 +162,13 @@ Mit `make_predictions.py` koennen Vorhersagen fuer eine spezifische Gameweek gen
 
 ```bash
 # Random Forest Vorhersage fuer Gameweek 38, Saison 2022-23
-python code\make_predictions.py --season 2022-23 --gw 38 --methode rf
+python code\models\make_predictions.py --season 2022-23 --gw 38 --methode rf
 
 # Moving Average Baseline (ma3)
-python code\make_predictions.py --season 2022-23 --gw 38 --methode ma3
+python code\models\make_predictions.py --season 2022-23 --gw 38 --methode ma3
 
 # Positionsbasierte Baseline (pos)
-python code\make_predictions.py --season 2022-23 --gw 38 --methode pos
+python code\models\make_predictions.py --season 2022-23 --gw 38 --methode pos
 ```
 
 Die Vorhersagen werden als JSON-Dateien im Ordner `out/` gespeichert:
@@ -181,7 +181,7 @@ Die Vorhersagen werden als JSON-Dateien im Ordner `out/` gespeichert:
 Mit `evaluate.py` werden die Modelle auf einem Testfenster evaluiert und Metriken berechnet:
 
 ```bash
-python code\evaluate.py --season 2022-23 --gw_start 30 --gw_end 38 --methods rf ma3 pos --metrics mae rmse spearman
+python code\evaluation\evaluate.py --season 2022-23 --gw_start 30 --gw_end 38 --methods rf ma3 pos --metrics mae rmse spearman
 ```
 
 Die Ergebnisse werden als Tabellen (CSV) und Grafiken (PNG) im Ordner `out/` gespeichert.
@@ -191,7 +191,7 @@ Die Ergebnisse werden als Tabellen (CSV) und Grafiken (PNG) im Ordner `out/` ges
 Das rf_pos Modell trainiert separate Random Forests pro Position:
 
 ```bash
-python code\rf_pos_models.py --season 2022-23 --start_gw 30 --end_gw 38
+python code\models\position_model.py --season 2022-23 --start_gw 30 --end_gw 38
 ```
 
 **5. Ranking-optimiertes Modell**
@@ -199,7 +199,7 @@ python code\rf_pos_models.py --season 2022-23 --start_gw 30 --end_gw 38
 Das rf_rank Modell optimiert auf bessere Rangfolgen:
 
 ```bash
-python code\rf_rank_boost.py --season 2022-23 --start_gw 30 --end_gw 38
+python code\models\moving_average_model.py --season 2022-23 --start_gw 30 --end_gw 38
 ```
 
 **6. Team-Backtest durchfuehren**
@@ -207,7 +207,7 @@ python code\rf_rank_boost.py --season 2022-23 --start_gw 30 --end_gw 38
 Simuliere die Teamauswahl und bewerte die Performance:
 
 ```bash
-python code\team_backtest.py --season 2022-23 --gw_start 30 --gw_end 38 --methods rf ma3 pos
+python code\evaluation\team_backtest.py --season 2022-23 --gw_start 30 --gw_end 38 --methods rf ma3 pos
 ```
 
 ### Web Teil: Benutzeroberflaeche
@@ -260,7 +260,7 @@ Beispiel-Workflow:
 
 ```bash
 # 1. Vorhersagen fuer Gameweek 30 erstellen
-python code\make_predictions.py --season 2024-25 --gw 30 --methode rf
+python code\models\make_predictions.py --season 2024-25 --gw 30 --methode rf
 
 # 2. Web-App starten
 cd web
