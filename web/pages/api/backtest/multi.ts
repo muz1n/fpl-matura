@@ -59,13 +59,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const outDir = path.join(process.cwd(), '..', 'out')
+    const backtestsDir = path.join(outDir, 'backtests')
     const results: Array<BacktestData> = []
     const errors: Array<{ season: string; error: string }> = []
 
     for (const season of seasonList) {
         try {
-            const detailPath = path.join(outDir, `team_backtest_${season}_gw${gwRange}.csv`)
-            const summaryPath = path.join(outDir, `team_backtest_summary_${season}_gw${gwRange}.csv`)
+            const detailPath = path.join(backtestsDir, `team_backtest_${season}_gw${gwRange}.csv`)
+            const summaryPath = path.join(backtestsDir, `team_backtest_summary_${season}_gw${gwRange}.csv`)
 
             if (!fs.existsSync(detailPath) || !fs.existsSync(summaryPath)) {
                 errors.push({ season, error: 'Backtest-Dateien nicht gefunden' })
@@ -93,7 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (results.length === 0) {
-        return res.status(404).json({ 
+        return res.status(404).json({
             error: 'Keine Backtest-Daten für die angegebenen Seasons gefunden',
             errors,
             suggestion: `Führe team_backtest.py für jede Season aus: ${seasonList.join(', ')}`

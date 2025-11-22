@@ -70,7 +70,7 @@ export function Navbar() {
                                 </Link>
                             )
                         })}
-                        
+
                         {/* Dark Mode Toggle */}
                         <button
                             onClick={toggleDarkMode}

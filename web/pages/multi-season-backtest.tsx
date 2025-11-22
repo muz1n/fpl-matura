@@ -75,7 +75,7 @@ const METHOD_DESCRIPTIONS: Record<string, string> = {
 export default function MultiSeasonBacktestPage() {
     // Alle verfügbaren Seasons aus Multi-Season Backtest
     const ALL_SEASONS = ['2020-21', '2021-22', '2022-23', '2023-24']
-    
+
     const [selectedSeason, setSelectedSeason] = useState<string>(ALL_SEASONS[0])
     const [selectedMethods, setSelectedMethods] = useState<string[]>(['rf', 'rf_relaxed', 'ma3'])
     const [backtestData, setBacktestData] = useState<BacktestData[]>([])
@@ -100,7 +100,7 @@ export default function MultiSeasonBacktestPage() {
         setError('')
 
         try {
-            const promises = ALL_SEASONS.map(season => 
+            const promises = ALL_SEASONS.map(season =>
                 fetch(`/api/backtest?season=${season}&gwStart=2&gwEnd=38`)
                     .then(res => res.ok ? res.json() : null)
                     .catch(() => null)
@@ -108,7 +108,7 @@ export default function MultiSeasonBacktestPage() {
 
             const results = await Promise.all(promises)
             const validData = results.filter((d): d is BacktestData => d !== null)
-            
+
             if (validData.length === 0) {
                 throw new Error('Keine Backtest-Daten gefunden')
             }
@@ -122,7 +122,7 @@ export default function MultiSeasonBacktestPage() {
     }
 
     // Aktuelle Season-Daten
-    const currentSeasonData = useMemo(() => 
+    const currentSeasonData = useMemo(() =>
         backtestData.find(d => d.season === selectedSeason),
         [backtestData, selectedSeason]
     )
@@ -136,7 +136,7 @@ export default function MultiSeasonBacktestPage() {
     // Toggle Method Selection
     const toggleMethod = (method: string) => {
         setSelectedMethods(prev =>
-            prev.includes(method) 
+            prev.includes(method)
                 ? prev.filter(m => m !== method)
                 : [...prev, method]
         )
@@ -162,13 +162,13 @@ export default function MultiSeasonBacktestPage() {
         }))
 
         return {
-            title: { 
-                text: 'Durchschnittliche Punkte pro Season', 
-                left: 'center', 
-                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#374151' } 
+            title: {
+                text: 'Durchschnittliche Punkte pro Season',
+                left: 'center',
+                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#374151' }
             },
-            tooltip: { 
-                trigger: 'axis', 
+            tooltip: {
+                trigger: 'axis',
                 axisPointer: { type: 'shadow' },
                 formatter: (params: any) => {
                     let result = `<strong>${params[0].axisValue}</strong><br/>`
@@ -213,12 +213,12 @@ export default function MultiSeasonBacktestPage() {
         }))
 
         return {
-            title: { 
-                text: 'Anzahl erfolgreicher Gameweeks (Coverage)', 
-                left: 'center', 
-                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#374151' } 
+            title: {
+                text: 'Anzahl erfolgreicher Gameweeks (Coverage)',
+                left: 'center',
+                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#374151' }
             },
-            tooltip: { 
+            tooltip: {
                 trigger: 'axis',
                 formatter: (params: any) => {
                     let result = `<strong>${params[0].axisValue}</strong><br/>`
@@ -252,10 +252,10 @@ export default function MultiSeasonBacktestPage() {
         if (!currentSeasonData || filteredSummary.length === 0) return null
 
         return {
-            title: { 
-                text: `Methoden-Vergleich: ${selectedSeason}`, 
-                left: 'center', 
-                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#374151' } 
+            title: {
+                text: `Methoden-Vergleich: ${selectedSeason}`,
+                left: 'center',
+                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#374151' }
             },
             tooltip: {
                 trigger: 'item',
@@ -312,12 +312,12 @@ export default function MultiSeasonBacktestPage() {
         ).sort((a, b) => a - b)
 
         return {
-            title: { 
-                text: `Punkteverlauf GW-für-GW: ${selectedSeason}`, 
-                left: 'center', 
-                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#374151' } 
+            title: {
+                text: `Punkteverlauf GW-für-GW: ${selectedSeason}`,
+                left: 'center',
+                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#374151' }
             },
-            tooltip: { 
+            tooltip: {
                 trigger: 'axis',
                 formatter: (params: any) => {
                     let result = `<strong>GW ${params[0].axisValue}</strong><br/>`
@@ -435,11 +435,10 @@ export default function MultiSeasonBacktestPage() {
                                             <button
                                                 key={method}
                                                 onClick={() => toggleMethod(method)}
-                                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
-                                                    selectedMethods.includes(method)
+                                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${selectedMethods.includes(method)
                                                         ? 'bg-blue-600 text-white border-blue-600 shadow-md'
                                                         : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'
-                                                }`}
+                                                    }`}
                                             >
                                                 {selectedMethods.includes(method) ? (
                                                     <CheckSquare className="w-4 h-4" />
@@ -472,7 +471,7 @@ export default function MultiSeasonBacktestPage() {
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                                         {Object.entries(METHOD_DESCRIPTIONS).map(([method, desc]) => (
                                             <div key={method} className="flex gap-2">
-                                                <div 
+                                                <div
                                                     className="w-3 h-3 rounded-full mt-1 flex-shrink-0"
                                                     style={{ backgroundColor: METHOD_COLORS[method] }}
                                                 />
@@ -542,7 +541,7 @@ export default function MultiSeasonBacktestPage() {
                                                         </td>
                                                         <td className="px-4 py-3">
                                                             <div className="flex items-center gap-2">
-                                                                <div 
+                                                                <div
                                                                     className="w-3 h-3 rounded-full"
                                                                     style={{ backgroundColor: METHOD_COLORS[row.method] }}
                                                                 />
@@ -561,8 +560,8 @@ export default function MultiSeasonBacktestPage() {
                                                             {row.n_gw} / 37
                                                         </td>
                                                         <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                            {row.avg_efficiency != null 
-                                                                ? `${(row.avg_efficiency * 100).toFixed(1)}%` 
+                                                            {row.avg_efficiency != null
+                                                                ? `${(row.avg_efficiency * 100).toFixed(1)}%`
                                                                 : '-'}
                                                         </td>
                                                     </tr>

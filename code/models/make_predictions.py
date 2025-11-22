@@ -3,7 +3,7 @@
 # Es nutzt verschiedene Methoden (RandomForest, gleitender Durchschnitt, Positionsmittelwert) und verwendet nur Daten aus der gewählten Saison.
 # Die Ergebnisse werden als JSON-Datei gespeichert und können für Analysen oder Vergleiche genutzt werden.
 
-"""Erstelle Vorhersagen für eine bestimmte Spielwoche (rf | ma3 | pos).
+"""Erstelle Vorhersagen für eine bestimmte Spielwoche (rf | rf_relaxed | ma3 | pos).
 
 Unterschiedliche Methoden und strenge Saisonbegrenzung:
 - Liest nur data/merged_gw_<season>.csv (meldet klaren Fehler, falls Datei fehlt)
@@ -12,11 +12,13 @@ Unterschiedliche Methoden und strenge Saisonbegrenzung:
 
 Methoden:
 - rf: RandomForest auf verschobenen, gleitenden Merkmalen aus vergangenen Spielwochen (< gw)
+- rf_relaxed: Wie RF aber mit aggressiverer Imputation (mehr verfügbare Spieler, weniger strikt)
 - ma3: Spieler-Durchschnitt der letzten 3 Spielwochen strikt vor gw
 - pos: Positionsmittelwert der letzten 5 Spielwochen strikt vor gw
 
 Verwendung:
     python code/make_predictions.py --season 2022-23 --gw 30 --methode rf
+    python code/make_predictions.py --season 2022-23 --gw 30 --methode rf_relaxed
     python code/make_predictions.py --season 2022-23 --gw 30 --methode ma3
     python code/make_predictions.py --season 2022-23 --gw 30 --methode pos
 """
@@ -37,7 +39,7 @@ DATA_DIR = ROOT / "data"
 OUT_DIR = ROOT / "out"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-PredictionMethod = Literal["rf", "ma3", "pos"]
+PredictionMethod = Literal["rf", "rf_relaxed", "ma3", "pos"]
 
 
 def _to_float(val: Any) -> float:
@@ -92,9 +94,10 @@ def load_season_data(season: str) -> pd.DataFrame:
         print(f"Lade bereinigte Daten von: {csv_path}")
     elif original_path.exists():
         csv_path = original_path
-        print(f"⚠ Lade Original-Daten (mit möglichen Duplikaten): {csv_path}")
+        # Unicode Warnsymbol entfernt fuer Windows cp1252 Kompatibilitaet
+        print(f"WARNUNG: Lade Original-Daten (moegliche Duplikate): {csv_path}")
         print(
-            "  Hinweis: Führe 'python tools/cleanup_season_data.py' aus um bereinigte Daten zu erstellen"
+            "  Hinweis: Fuehre 'python tools/cleanup_season_data.py' aus um bereinigte Daten zu erstellen"
         )
     else:
         raise SystemExit(
@@ -206,11 +209,12 @@ def get_pool_for_gw(df: pd.DataFrame, gw: int) -> list[int]:
 
     # Warne bei niedriger Spielerzahl (wahrscheinlich abgesagte Spiele)
     if len(pool) < 600:
-        print(f"⚠️ WARNUNG: Nur {len(pool)} Spieler für GW{gw} verfügbar (< 600)")
+        # Unicode Warnsymbol entfernt (cp1252)
+        print(f"WARNUNG: Nur {len(pool)} Spieler fuer GW{gw} verfuegbar (< 600)")
         print(
-            "   Möglicher Grund: Abgesagte oder verschobene Spiele in dieser Spielwoche"
+            "   Moeglicher Grund: Abgesagte oder verschobene Spiele in dieser Spielwoche"
         )
-        print("   Die Vorhersagequalität kann beeinträchtigt sein.")
+        print("   Die Vorhersagequalitaet kann beeintraechtigt sein.")
 
     return pool
     pool = df.loc[df["gw"] < gw, "player_id"].dropna().astype(int).unique().tolist()
@@ -248,11 +252,16 @@ def build_rolling_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def train_rf_model(
-    df: pd.DataFrame, gw_target: int
+    df: pd.DataFrame, gw_target: int, relaxed: bool = False
 ) -> tuple[RandomForestRegressor, list[str]]:
     """Trainiert RandomForest nur mit Zeilen gw < gw_target in DIESER Saison.
 
     Ziel = Punkte der aktuellen Zeile; Merkmale sind verschobene gleitende Mittelwerte.
+
+    Args:
+        df: Saison-Daten
+        gw_target: Ziel-Spielwoche
+        relaxed: Falls True, aggressivere Imputation und weniger strikt (rf_relaxed)
     """
     # Gleitende Merkmale berechnen
     df_feats = build_rolling_features(df)
@@ -272,10 +281,18 @@ def train_rf_model(
     ]
     features = [c for c in feature_candidates if c in df_feats.columns]
 
-    # Trainingsdaten: nur Zeilen strikt vor Ziel-Spielwoche und mit Punktewert
-    train_df = df_feats[
-        (df_feats["gw"] < gw_target) & df_feats["points"].notna()
-    ].copy()
+    # Trainingsdaten: nur Zeilen strikt vor Ziel-Spielwoche
+    if relaxed:
+        # rf_relaxed: Akzeptiere auch Zeilen mit fehlenden Punkten (imputation später)
+        train_df = df_feats[df_feats["gw"] < gw_target].copy()
+        # Punkte-NaNs mit 0 auffüllen (sehr relaxed)
+        train_df["points"] = train_df["points"].fillna(0.0)
+    else:
+        # rf: Nur Zeilen mit echten Punkten
+        train_df = df_feats[
+            (df_feats["gw"] < gw_target) & df_feats["points"].notna()
+        ].copy()
+
     # Mindestens ein nicht-NaN-Merkmal erforderlich
     if not features:
         # Fallback to price if available, else zero vector
@@ -296,12 +313,29 @@ def train_rf_model(
         tr_df = train_df
         val_df = train_df
 
-    X_tr = tr_df[features].fillna(0.0).to_numpy(dtype=float)
+    # rf_relaxed: Aggressivere Imputation
+    if relaxed:
+        # Impute missing features mit Median statt 0 für bessere Qualität
+        for feat in features:
+            if feat in tr_df.columns:
+                median_val = tr_df[feat].median()
+                if pd.notna(median_val):
+                    tr_df[feat] = tr_df[feat].fillna(median_val)
+                    val_df[feat] = val_df[feat].fillna(median_val)
+        X_tr = tr_df[features].fillna(0.0).to_numpy(dtype=float)
+        X_val = val_df[features].fillna(0.0).to_numpy(dtype=float)
+    else:
+        # rf: Einfaches fillna(0)
+        X_tr = tr_df[features].fillna(0.0).to_numpy(dtype=float)
+        X_val = val_df[features].fillna(0.0).to_numpy(dtype=float)
+
     y_tr = tr_df["points"].to_numpy(dtype=float)
-    X_val = val_df[features].fillna(0.0).to_numpy(dtype=float)
     y_val = val_df["points"].to_numpy(dtype=float)
 
-    print(f"Trainingsbeispiele: {len(X_tr)}, Validierungsbeispiele: {len(X_val)}")
+    mode_str = "rf_relaxed" if relaxed else "rf"
+    print(
+        f"[{mode_str}] Trainingsbeispiele: {len(X_tr)}, Validierungsbeispiele: {len(X_val)}"
+    )
 
     model = RandomForestRegressor(
         n_estimators=300,
@@ -315,7 +349,7 @@ def train_rf_model(
         if len(X_val) > 0:
             y_pred = model.predict(X_val)
             mae = mean_absolute_error(y_val, y_pred)
-            print(f"Validation MAE: {mae:.3f}")
+            print(f"[{mode_str}] Validation MAE: {mae:.3f}")
     else:
         # Triviales Modell fitten, um Fehler zu vermeiden
         model.fit(np.zeros((1, len(features))), np.array([0.0]))
@@ -438,9 +472,18 @@ def predict_ma3(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def predict_rf(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFrame:
-    """RandomForest-Modell, trainiert auf dieser Saison mit Zeilen gw < Ziel-Spielwoche."""
-    model, features = train_rf_model(df, gw)
+def predict_rf(
+    df: pd.DataFrame, gw: int, pool: list[int], relaxed: bool = False
+) -> pd.DataFrame:
+    """RandomForest-Modell, trainiert auf dieser Saison mit Zeilen gw < Ziel-Spielwoche.
+
+    Args:
+        df: Saison-Daten
+        gw: Ziel-Spielwoche
+        pool: Spieler-Pool
+        relaxed: Falls True, nutze rf_relaxed Variante mit aggressiverer Imputation
+    """
+    model, features = train_rf_model(df, gw, relaxed=relaxed)
 
     df_feats = build_rolling_features(df)
     # Merkmals-Snapshot per Spieler für gw-1
@@ -452,6 +495,14 @@ def predict_rf(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFrame:
         .set_index("player_id")
     )
 
+    # Für rf_relaxed: Median-Werte für Imputation berechnen
+    if relaxed:
+        median_vals = {}
+        for feat in features:
+            if feat in snap.columns:
+                med = snap[feat].median()
+                median_vals[feat] = med if pd.notna(med) else 0.0
+
     X = []
     meta = []
     for pid in pool:
@@ -460,7 +511,11 @@ def predict_rf(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFrame:
             vals = []
             for col in features:
                 v = _to_float(row[col]) if col in row else np.nan
-                vals.append(0.0 if np.isnan(v) else v)
+                if relaxed and np.isnan(v):
+                    # rf_relaxed: Nutze Median statt 0
+                    vals.append(median_vals.get(col, 0.0))
+                else:
+                    vals.append(0.0 if np.isnan(v) else v)
             X.append(vals)
 
             # Position aus row holen, aber NaN/None sicher behandeln
@@ -475,7 +530,12 @@ def predict_rf(df: pd.DataFrame, gw: int, pool: list[int]) -> pd.DataFrame:
             name = str(row.get("name", f"Player {pid}"))
             team = str(row.get("team", "UNK"))
         else:
-            X.append([0.0] * len(features))
+            if relaxed:
+                # rf_relaxed: Nutze Median auch für fehlende Spieler
+                vals = [median_vals.get(col, 0.0) for col in features]
+            else:
+                vals = [0.0] * len(features)
+            X.append(vals)
             pos, price, name, team = "MID", np.nan, f"Player {pid}", "UNK"
 
         meta.append(
@@ -584,7 +644,7 @@ def main():
         dest="method",
         type=str,
         default="rf",
-        choices=["rf", "ma3", "pos"],
+        choices=["rf", "rf_relaxed", "ma3", "pos"],
         help="Vorhersagemethode",
     )
     parser.add_argument(
@@ -611,8 +671,10 @@ def main():
         pred_df = predict_positional(df, args.gw, pool)
     elif method == "ma3":
         pred_df = predict_ma3(df, args.gw, pool)
+    elif method == "rf_relaxed":
+        pred_df = predict_rf(df, args.gw, pool, relaxed=True)
     else:
-        pred_df = predict_rf(df, args.gw, pool)
+        pred_df = predict_rf(df, args.gw, pool, relaxed=False)
 
     # Ausgabe mit Saisonbegrenzung erstellen
     output = build_output(args.season, args.gw, method, pred_df, season_ids)
@@ -625,7 +687,8 @@ def main():
     with open(output_file, "w", encoding="utf-8") as f:
         json.dump(output, f, indent=4, ensure_ascii=False)
 
-    print(f"\n✓ Vorhersagen wurden geschrieben nach: {output_file}")
+    # Hinweis: Unicode Symbol entfernt fuer Windows Kompatibilitaet (cp1252 Probleme)
+    print(f"\nOK Vorhersagen wurden geschrieben nach: {output_file}")
     print("  Hinweis: Neues Schema mit Season-Prefix aktiv (kein Altmodus).")
     print(f"  Anzahl Spieler: {len(output['players'])}")
     if output["players"]:

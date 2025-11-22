@@ -9,9 +9,9 @@ export default function InfoPage() {
                 <title>Info – FPL Maturaarbeit</title>
                 <meta name="description" content="Informationen über die FPL Vorhersage-WebApp" />
             </Head>
-            
+
             <Navbar />
-            
+
             <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
                 <div className="container mx-auto px-4 py-8 max-w-4xl">
                     {/* Header */}
@@ -82,7 +82,7 @@ export default function InfoPage() {
                                         Ein maschinelles Lernverfahren, das aus vergangenen Spielwochen lernt und dabei Merkmale wie Form, Preis und ICT-Werte berücksichtigt. Dies ist die Hauptmethode der Arbeit.
                                     </p>
                                 </div>
-                                
+
                                 <div className="border-l-4 border-green-500 pl-4">
                                     <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
                                         MA3 (Moving Average)
@@ -91,7 +91,7 @@ export default function InfoPage() {
                                         Eine einfache Heuristik: Der Durchschnitt der letzten 3 Spielwochen wird als Vorhersage verwendet. Dient als Vergleichsbasis.
                                     </p>
                                 </div>
-                                
+
                                 <div className="border-l-4 border-orange-500 pl-4">
                                     <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
                                         POS (Positions-Durchschnitt)
@@ -100,7 +100,7 @@ export default function InfoPage() {
                                         Berechnet den Durchschnitt aller Spieler einer Position (z.B. alle Stürmer). Zeigt die Baseline-Erwartung ohne individuelle Betrachtung.
                                     </p>
                                 </div>
-                                
+
                                 <div className="border-l-4 border-indigo-500 pl-4">
                                     <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
                                         Effizienz (Punkte / Optimum)
@@ -127,7 +127,7 @@ export default function InfoPage() {
                                         Zeigt die vorhergesagten Punkte für jeden Spieler in einem bestimmten Gameweek. Sie können nach Position filtern und sehen, welche Spieler die höchsten Erwartungen haben.
                                     </p>
                                 </div>
-                                
+
                                 <div>
                                     <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                                         Backtest-Seite
@@ -136,7 +136,7 @@ export default function InfoPage() {
                                         Vergleicht die verschiedenen Methoden über mehrere Gameweeks hinweg. Die Effizienz zeigt, wie nah jede Methode am theoretisch optimalen Team war. Ein direkter Methodenvergleich wird hier möglich.
                                     </p>
                                 </div>
-                                
+
                                 <div>
                                     <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
                                         Feature Importance-Seite

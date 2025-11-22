@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Team-Backtest: Vergleich verschiedener Prognose-Methoden via Teamselektion.
 
-Unterstuetzte Methoden jetzt: rf, ma3, pos, rf_pos, rf_rank
+Unterstuetzte Methoden jetzt: rf, rf_relaxed, ma3, pos, rf_pos, rf_rank, rf_filled, rf_optfill
+
+rf_optfill = Spezielle Variante: Bei Selection-Fail wird POS als Fallback genutzt (Optimizer-Level)
 
 Eigenstaendiges Skript ohne Repo-Imports.
 Verwendet nur Stdlib + pandas + matplotlib.
@@ -13,7 +15,7 @@ Budget-Modell:
 - Ein Spieler wird nur hinzugefuegt, wenn Budget- und Klubgrenzen eingehalten sind
 
 Verwendung:
-    python code/team_backtest.py --season 2022-23 --gw_start 30 --gw_end 38 --methods rf
+    python code/team_backtest.py --season 2022-23 --gw_start 30 --gw_end 38 --methods rf rf_optfill
 """
 
 import argparse
@@ -754,8 +756,12 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
         for method in methods:
             logger.info(f"\n  Method: {method.upper()}")
 
-            # Prognosen laden
-            pred_df = load_predictions(season, gw, method)
+            # rf_optfill: Spezielle Behandlung mit Fallback
+            is_optfill = method == "rf_optfill"
+            primary_method = "rf" if is_optfill else method
+
+            # Prognosen laden (primary method)
+            pred_df = load_predictions(season, gw, primary_method)
             if pred_df is None:
                 logger.warning(f"  GW{gw} ({method}): No predictions, skipping")
                 continue
@@ -764,6 +770,46 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
             team_result = select_best_team_for_gw(
                 pred_df, truth_gw, max_budget=max_budget, max_per_club=max_per_club
             )
+
+            # rf_optfill Fallback-Logik
+            used_fallback = False
+            if is_optfill and team_result is None:
+                logger.info(
+                    f"  GW{gw} (rf_optfill): RF selection failed, trying POS fallback..."
+                )
+
+                # Lade POS Predictions als Fallback
+                pos_df = load_predictions(season, gw, "pos")
+                if pos_df is not None:
+                    # Erstelle hybrid predictions: RF wo verfügbar, sonst POS
+                    # Merge RF und POS predictions
+                    if "player_id" in pred_df.columns and "player_id" in pos_df.columns:
+                        # Nutze RF predictions als Basis
+                        hybrid_df = pred_df.copy()
+                        # Fülle fehlende mit POS hinzu
+                        pos_only = pos_df[
+                            ~pos_df["player_id"].isin(hybrid_df["player_id"])
+                        ]
+                        hybrid_df = pd.concat([hybrid_df, pos_only], ignore_index=True)
+                    else:
+                        # Fallback: nutze POS komplett
+                        hybrid_df = pos_df.copy()
+
+                    # Versuche Team-Selektion mit hybrid predictions
+                    team_result = select_best_team_for_gw(
+                        hybrid_df,
+                        truth_gw,
+                        max_budget=max_budget,
+                        max_per_club=max_per_club,
+                    )
+
+                    if team_result is not None:
+                        used_fallback = True
+                        logger.info(
+                            f"  GW{gw} (rf_optfill): ✓ Fallback successful with hybrid RF+POS"
+                        )
+                    else:
+                        logger.warning(f"  GW{gw} (rf_optfill): Fallback also failed")
 
             if team_result is None:
                 logger.warning(f"  GW{gw} ({method}): Team selection failed")
@@ -779,6 +825,7 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
                         "n_candidates": 0,
                         "budget_used": 0.0,
                         "notes": "Selection failed",
+                        "used_fallback": used_fallback if is_optfill else None,
                     }
                 )
                 continue
@@ -788,6 +835,7 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
                 f"{team_result['xi_points']:.1f} pts "
                 f"(C={team_result['captain_id']}) "
                 f"Budget: {team_result['budget_used']:.1f}/100.0"
+                f"{' [FALLBACK USED]' if used_fallback else ''}"
             )
 
             eff = (
@@ -810,7 +858,8 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
                     "optimum_formation": optimum_formation,
                     "optimum_captain_id": optimum_captain,
                     "efficiency": eff,
-                    "notes": "OK",
+                    "notes": team_result.get("notes", ""),
+                    "used_fallback": used_fallback if is_optfill else None,
                 }
             )
 
@@ -825,7 +874,8 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
     detail_filename = f"team_backtest_{season}_gw{gw_start}-{gw_end}.csv"
     detail_path = OUT_DIR / detail_filename
     results_df.to_csv(detail_path, index=False)
-    logger.info(f"\n✓ Saved detailed results: {detail_filename}")
+    # Unicode Haken entfernt (Windows cp1252 Kompatibilitaet)
+    logger.info(f"\nOK Saved detailed results: {detail_filename}")
 
     # Zusammenfassende Statistik berechnen
     summary_df = (
@@ -846,7 +896,7 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
     summary_filename = f"team_backtest_summary_{season}_gw{gw_start}-{gw_end}.csv"
     summary_path = OUT_DIR / summary_filename
     summary_df.to_csv(summary_path, index=False)
-    logger.info(f"✓ Saved summary: {summary_filename}")
+    logger.info(f"OK Saved summary: {summary_filename}")
 
     # Zusammenfassung anzeigen
     logger.info("\n" + "=" * 70)
@@ -858,7 +908,7 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
     create_comparison_plot(summary_df, season, gw_start, gw_end)
 
     logger.info("\n" + "=" * 70)
-    logger.info("✓ Team backtest completed!")
+    logger.info("OK Team backtest completed!")
     logger.info("=" * 70)
 
 
@@ -934,7 +984,7 @@ def create_comparison_plot(
     plot_filename = f"team_backtest_{season}_gw{gw_start}-{gw_end}.png"
     plot_path = OUT_DIR / plot_filename
     plt.savefig(plot_path, dpi=300, bbox_inches="tight")
-    logger.info(f"✓ Saved plot: {plot_filename}")
+    logger.info(f"OK Saved plot: {plot_filename}")
     plt.close()
 
 
@@ -954,8 +1004,17 @@ def main():
         "--methods",
         nargs="+",
         default=["rf", "ma3", "pos"],
-        choices=["rf", "ma3", "pos", "rf_pos", "rf_rank"],
-        help="Prediction methods to compare (rf, ma3, pos, rf_pos, rf_rank)",
+        choices=[
+            "rf",
+            "rf_relaxed",
+            "rf_optfill",
+            "ma3",
+            "pos",
+            "rf_pos",
+            "rf_rank",
+            "rf_filled",
+        ],
+        help="Prediction methods to compare (rf, ma3, pos, rf_pos, rf_rank, rf_filled)",
     )
 
     args = parser.parse_args()

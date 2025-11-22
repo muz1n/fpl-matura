@@ -4,6 +4,7 @@
 
 ### Modell-Training & Vorhersage (code/models/)
 - **make_predictions.py**: Haupt-Skript für Prognosen (rf, ma3, pos) ✅
+- **filled_model.py**: Kombinierte Vorhersagen (rf_filled) mit Fallback-Logik ✅
 - **baseline_model.py**: Random Forest Baseline-Modell ✅
 - **position_model.py**: Positionsspezifische RF-Modelle ✅
 - **moving_average_model.py**: Ranking-optimiertes RF-Modell ✅

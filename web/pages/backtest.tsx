@@ -174,16 +174,16 @@ export default function BacktestPage() {
             const detailGw = backtestData.detail.filter(d => d.gw === gw)
             const anyOptimum = detailGw.find(d => d.optimum_points && d.optimum_points > 0)
             const rfDetail = detailGw.find(d => d.method === 'rf')
-            rows.push({ 
-                gw, 
-                ...methodsMap, 
-                best_method: best[0], 
+            rows.push({
+                gw,
+                ...methodsMap,
+                best_method: best[0],
                 best_points: best[1],
                 optimum: anyOptimum?.optimum_points ?? null,
                 efficiency_rf: rfDetail?.efficiency ?? null,
             })
         })
-        
+
         // Sortierung anwenden
         return rows.sort((a, b) => {
             const aVal = a[sortColumn] ?? 0
@@ -477,7 +477,7 @@ export default function BacktestPage() {
                                 <table className="min-w-full text-sm">
                                     <thead className="sticky top-0 bg-gray-100 dark:bg-gray-700">
                                         <tr className="text-gray-700 dark:text-gray-200">
-                                            <th 
+                                            <th
                                                 className="px-3 py-2 text-left cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                                 onClick={() => {
                                                     if (sortColumn === 'gw') setSortDirection(d => d === 'asc' ? 'desc' : 'asc')
@@ -489,8 +489,8 @@ export default function BacktestPage() {
                                                 </span>
                                             </th>
                                             {Array.from(new Set(backtestData.detail.map(r => r.method))).map(m => (
-                                                <th 
-                                                    key={m} 
+                                                <th
+                                                    key={m}
                                                     className="px-3 py-2 text-left cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                                     onClick={() => {
                                                         if (sortColumn === m) setSortDirection(d => d === 'asc' ? 'desc' : 'asc')
@@ -523,8 +523,8 @@ export default function BacktestPage() {
                                             const rfVal = row['rf'] ?? null
                                             const diff = rfVal !== null ? (row.best_points - rfVal) : ''
                                             return (
-                                                <tr 
-                                                    key={row.gw} 
+                                                <tr
+                                                    key={row.gw}
                                                     className={`border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${idx % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800/50'}`}
                                                 >
                                                     <td className="px-3 py-1.5 font-medium text-gray-900 dark:text-gray-100">{row.gw}</td>

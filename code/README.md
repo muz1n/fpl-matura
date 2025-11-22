@@ -24,6 +24,11 @@ code/
   python code/models/make_predictions.py --season 2022-23 --gw 30 --methode rf
   ```
 
+- **filled_model.py**: Kombinierte Vorhersagen (rf_filled) mit Fallback-Logik
+  ```bash
+  python code/models/filled_model.py --season 2022-23 --gw 30
+  ```
+
 - **baseline_model.py**: Random Forest Baseline-Modell
 - **position_model.py**: Positionsspezifische RF-Modelle
 - **moving_average_model.py**: Moving-Average-basiertes Modell
@@ -36,7 +41,7 @@ code/
 
 - **team_backtest.py**: Team-Performance-Backtest
   ```bash
-  python code/evaluation/team_backtest.py --season 2022-23 --gw_start 30 --gw_end 38 --methods rf ma3 pos
+  python code/evaluation/team_backtest.py --season 2022-23 --gw_start 30 --gw_end 38 --methods rf ma3 pos rf_filled
   ```
 
 - **error_analysis.py**: Fehleranalyse mit Visualisierung
