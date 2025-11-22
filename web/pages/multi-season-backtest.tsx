@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
 import { motion } from 'framer-motion'
-import { Select } from '../src/components/Select'
 import { LoadingState, ErrorState } from '../src/components/States'
 import { Tooltip } from '../src/components/Tooltip'
 import { tooltips } from '../src/data/tooltips'
-import { getUsableSeasons } from '../lib/seasonQuality'
-import { BarChart3, Download, TrendingUp, Activity, Target, Layers } from 'lucide-react'
+import { Layers, Filter, CheckSquare, Square, TrendingUp, Activity, BarChart3, Info } from 'lucide-react'
 import { Navbar } from '../src/components/Navbar'
 import ReactECharts from 'echarts-for-react'
 
@@ -52,157 +50,303 @@ type LoadingStateType = 'idle' | 'loading' | 'success' | 'error'
 
 const METHOD_COLORS: Record<string, string> = {
     rf: '#3b82f6',
-    rf_rank: '#8b5cf6',
-    rf_pos: '#6366f1',
+    rf_relaxed: '#2563eb',
+    rf_optfill: '#1d4ed8',
     ma3: '#10b981',
     pos: '#f59e0b',
-    legacy: '#6b7280'
+}
+
+const METHOD_NAMES: Record<string, string> = {
+    rf: 'Random Forest',
+    rf_relaxed: 'RF Relaxed',
+    rf_optfill: 'RF OptFill',
+    ma3: 'Moving Average 3',
+    pos: 'Position Model',
+}
+
+const METHOD_DESCRIPTIONS: Record<string, string> = {
+    rf: 'Standard Random Forest Modell mit strengen Datenfiltern',
+    rf_relaxed: 'RF mit weniger strikten Filtern und Median-Imputation',
+    rf_optfill: 'RF mit POS-Fallback bei Team-Selection Problemen',
+    ma3: '3-Gameweek Moving Average (einfache Baseline)',
+    pos: 'Positionsbasierter Durchschnitt der letzten 5 Spiele',
 }
 
 export default function MultiSeasonBacktestPage() {
-    const [availableSeasons, setAvailableSeasons] = useState<string[]>([])
-    const [selectedSeasons, setSelectedSeasons] = useState<string[]>([])
-    const [seasonsLoading, setSeasonsLoading] = useState<boolean>(true)
-    const [gwRange, setGwRange] = useState<string>('30-38')
-
-    const [backtestData, setBacktestData] = useState<MultiSeasonResponse | null>(null)
+    // Alle verfügbaren Seasons aus Multi-Season Backtest
+    const ALL_SEASONS = ['2020-21', '2021-22', '2022-23', '2023-24']
+    
+    const [selectedSeason, setSelectedSeason] = useState<string>(ALL_SEASONS[0])
+    const [selectedMethods, setSelectedMethods] = useState<string[]>(['rf', 'rf_relaxed', 'ma3'])
+    const [backtestData, setBacktestData] = useState<BacktestData[]>([])
     const [state, setState] = useState<LoadingStateType>('idle')
     const [error, setError] = useState<string>('')
 
-    // Lade verfügbare Seasons on mount
+    // Verfügbare Methoden aus geladenen Daten
+    const availableMethods = useMemo(() => {
+        if (backtestData.length === 0) return []
+        const methods = new Set<string>()
+        backtestData.forEach(d => d.summary.forEach(s => methods.add(s.method)))
+        return Array.from(methods).sort()
+    }, [backtestData])
+
+    // Lade alle Season-Backtests on mount
     useEffect(() => {
-        async function loadSeasons() {
-            try {
-                const seasons = await getUsableSeasons()
-                setAvailableSeasons(seasons)
-                // Default: letzte 3 Seasons
-                if (seasons.length >= 3) {
-                    setSelectedSeasons(seasons.slice(-3))
-                } else {
-                    setSelectedSeasons(seasons)
-                }
-            } catch (err) {
-                console.error('Fehler beim Laden der Seasons:', err)
-                setAvailableSeasons(['2020-21', '2021-22', '2022-23', '2023-24'])
-            } finally {
-                setSeasonsLoading(false)
-            }
-        }
-        loadSeasons()
+        loadAllBacktests()
     }, [])
 
-    // Lade Multi-Season Backtest
-    const loadBacktest = async () => {
-        if (selectedSeasons.length === 0 || !gwRange) return
-
+    const loadAllBacktests = async () => {
         setState('loading')
         setError('')
 
         try {
-            const res = await fetch(`/api/backtest/multi?seasons=${selectedSeasons.join(',')}&gwRange=${gwRange}`)
+            const promises = ALL_SEASONS.map(season => 
+                fetch(`/api/backtest?season=${season}&gwStart=2&gwEnd=38`)
+                    .then(res => res.ok ? res.json() : null)
+                    .catch(() => null)
+            )
 
-            if (!res.ok) {
-                const errorData = await res.json().catch(() => ({}))
-                const errorMsg = errorData.error || 'Fehler beim Laden der Multi-Season Backtest-Daten'
-                const suggestion = errorData.suggestion ? `\n${errorData.suggestion}` : ''
-                throw new Error(errorMsg + suggestion)
+            const results = await Promise.all(promises)
+            const validData = results.filter((d): d is BacktestData => d !== null)
+            
+            if (validData.length === 0) {
+                throw new Error('Keine Backtest-Daten gefunden')
             }
 
-            const data: MultiSeasonResponse = await res.json()
-            setBacktestData(data)
+            setBacktestData(validData)
             setState('success')
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'Unbekannter Fehler')
+            setError(err instanceof Error ? err.message : 'Fehler beim Laden der Backtest-Daten')
             setState('error')
-            setBacktestData(null)
         }
     }
 
-    useEffect(() => {
-        loadBacktest()
-    }, [selectedSeasons, gwRange])
+    // Aktuelle Season-Daten
+    const currentSeasonData = useMemo(() => 
+        backtestData.find(d => d.season === selectedSeason),
+        [backtestData, selectedSeason]
+    )
 
-    // Toggle Season Selection
-    const toggleSeason = (season: string) => {
-        setSelectedSeasons(prev =>
-            prev.includes(season) ? prev.filter(s => s !== season) : [...prev, season]
+    // Gefilterte Summary nach ausgewählten Methoden
+    const filteredSummary = useMemo(() => {
+        if (!currentSeasonData) return []
+        return currentSeasonData.summary.filter(s => selectedMethods.includes(s.method))
+    }, [currentSeasonData, selectedMethods])
+
+    // Toggle Method Selection
+    const toggleMethod = (method: string) => {
+        setSelectedMethods(prev =>
+            prev.includes(method) 
+                ? prev.filter(m => m !== method)
+                : [...prev, method]
         )
     }
 
-    // Chart: Avg Points per Season & Method
+    // Select/Deselect All Methods
+    const selectAllMethods = () => setSelectedMethods(availableMethods)
+    const deselectAllMethods = () => setSelectedMethods([])
+
+
+    // Chart 1: Durchschnittliche Punkte pro Season (ausgewählte Methoden)
     const avgPointsChartOption = useMemo(() => {
-        if (!backtestData || backtestData.data.length === 0) return null
+        if (backtestData.length === 0 || selectedMethods.length === 0) return null
 
-        const methods = Array.from(new Set(
-            backtestData.data.flatMap(d => d.summary.map(s => s.method))
-        ))
-
-        const series = methods.map(method => ({
-            name: method.toUpperCase(),
+        const series = selectedMethods.map(method => ({
+            name: METHOD_NAMES[method] || method.toUpperCase(),
             type: 'bar',
-            data: backtestData.data.map(d => {
+            data: backtestData.map(d => {
                 const summary = d.summary.find(s => s.method === method)
-                return summary ? summary.avg_xi_points : 0
+                return summary ? summary.avg_xi_points.toFixed(2) : 0
             }),
             itemStyle: { color: METHOD_COLORS[method] || '#6b7280' }
         }))
 
         return {
-            title: { text: 'Durchschnittliche Punkte pro Season', left: 'center', textStyle: { color: '#374151' } },
-            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-            legend: { bottom: 0, textStyle: { color: '#6b7280' } },
+            title: { 
+                text: 'Durchschnittliche Punkte pro Season', 
+                left: 'center', 
+                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#374151' } 
+            },
+            tooltip: { 
+                trigger: 'axis', 
+                axisPointer: { type: 'shadow' },
+                formatter: (params: any) => {
+                    let result = `<strong>${params[0].axisValue}</strong><br/>`
+                    params.forEach((p: any) => {
+                        result += `${p.marker} ${p.seriesName}: <strong>${p.data}</strong> Punkte<br/>`
+                    })
+                    return result
+                }
+            },
+            legend: { bottom: 10, textStyle: { color: '#6b7280' } },
+            grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
             xAxis: {
                 type: 'category',
-                data: backtestData.data.map(d => d.season),
-                axisLabel: { color: '#6b7280' }
+                data: backtestData.map(d => d.season),
+                axisLabel: { color: '#6b7280', fontSize: 12 }
             },
             yAxis: {
                 type: 'value',
                 name: 'Ø Punkte',
-                axisLabel: { color: '#6b7280' }
+                axisLabel: { color: '#6b7280' },
+                nameTextStyle: { color: '#374151' }
             },
             series
         }
-    }, [backtestData])
+    }, [backtestData, selectedMethods])
 
-    // Chart: Efficiency per Season & Method
-    const efficiencyChartOption = useMemo(() => {
-        if (!backtestData || backtestData.data.length === 0) return null
+    // Chart 2: Anzahl gültiger Gameweeks (Coverage)
+    const coverageChartOption = useMemo(() => {
+        if (backtestData.length === 0 || selectedMethods.length === 0) return null
 
-        const methods = Array.from(new Set(
-            backtestData.data.flatMap(d => d.summary.map(s => s.method))
-        ))
-
-        const series = methods.map(method => ({
-            name: method.toUpperCase(),
+        const series = selectedMethods.map(method => ({
+            name: METHOD_NAMES[method] || method.toUpperCase(),
             type: 'line',
-            data: backtestData.data.map(d => {
+            data: backtestData.map(d => {
                 const summary = d.summary.find(s => s.method === method)
-                return summary?.avg_efficiency != null ? (summary.avg_efficiency * 100).toFixed(1) : null
+                return summary ? summary.n_gw : 0
             }),
             itemStyle: { color: METHOD_COLORS[method] || '#6b7280' },
-            lineStyle: { width: 3 }
+            lineStyle: { width: 3 },
+            symbol: 'circle',
+            symbolSize: 8
         }))
 
         return {
-            title: { text: 'Durchschnittliche Effizienz pro Season (%)', left: 'center', textStyle: { color: '#374151' } },
-            tooltip: { trigger: 'axis' },
-            legend: { bottom: 0, textStyle: { color: '#6b7280' } },
+            title: { 
+                text: 'Anzahl erfolgreicher Gameweeks (Coverage)', 
+                left: 'center', 
+                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#374151' } 
+            },
+            tooltip: { 
+                trigger: 'axis',
+                formatter: (params: any) => {
+                    let result = `<strong>${params[0].axisValue}</strong><br/>`
+                    params.forEach((p: any) => {
+                        result += `${p.marker} ${p.seriesName}: <strong>${p.data}</strong> GWs<br/>`
+                    })
+                    return result
+                }
+            },
+            legend: { bottom: 10, textStyle: { color: '#6b7280' } },
+            grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
             xAxis: {
                 type: 'category',
-                data: backtestData.data.map(d => d.season),
-                axisLabel: { color: '#6b7280' }
+                data: backtestData.map(d => d.season),
+                axisLabel: { color: '#6b7280', fontSize: 12 }
             },
             yAxis: {
                 type: 'value',
-                name: 'Effizienz (%)',
+                name: '# Gameweeks',
                 min: 0,
-                max: 100,
-                axisLabel: { color: '#6b7280' }
+                max: 37,
+                axisLabel: { color: '#6b7280' },
+                nameTextStyle: { color: '#374151' }
             },
             series
         }
-    }, [backtestData])
+    }, [backtestData, selectedMethods])
+
+    // Chart 3: Methoden-Vergleich für ausgewählte Season
+    const seasonComparisonOption = useMemo(() => {
+        if (!currentSeasonData || filteredSummary.length === 0) return null
+
+        return {
+            title: { 
+                text: `Methoden-Vergleich: ${selectedSeason}`, 
+                left: 'center', 
+                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#374151' } 
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: (params: any) => {
+                    return `<strong>${params.name}</strong><br/>
+                            Ø Punkte: <strong>${params.value}</strong><br/>
+                            Anteil: ${params.percent}%`
+                }
+            },
+            legend: { bottom: 10, textStyle: { color: '#6b7280' } },
+            series: [
+                {
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderRadius: 10,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: true,
+                        formatter: '{b}: {c} pts'
+                    },
+                    data: filteredSummary.map(s => ({
+                        name: METHOD_NAMES[s.method] || s.method.toUpperCase(),
+                        value: s.avg_xi_points.toFixed(2),
+                        itemStyle: { color: METHOD_COLORS[s.method] || '#6b7280' }
+                    }))
+                }
+            ]
+        }
+    }, [currentSeasonData, filteredSummary, selectedSeason])
+
+    // Chart 4: Detail-Verlauf für ausgewählte Season
+    const seasonDetailOption = useMemo(() => {
+        if (!currentSeasonData || selectedMethods.length === 0) return null
+
+        const series = selectedMethods.map(method => {
+            const details = currentSeasonData.detail.filter(d => d.method === method)
+            return {
+                name: METHOD_NAMES[method] || method.toUpperCase(),
+                type: 'line',
+                data: details.map(d => ({ value: d.xi_points, gw: d.gw })),
+                itemStyle: { color: METHOD_COLORS[method] || '#6b7280' },
+                lineStyle: { width: 2 },
+                symbol: 'circle',
+                symbolSize: 6
+            }
+        })
+
+        const allGws = Array.from(
+            new Set(currentSeasonData.detail.map(d => d.gw))
+        ).sort((a, b) => a - b)
+
+        return {
+            title: { 
+                text: `Punkteverlauf GW-für-GW: ${selectedSeason}`, 
+                left: 'center', 
+                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#374151' } 
+            },
+            tooltip: { 
+                trigger: 'axis',
+                formatter: (params: any) => {
+                    let result = `<strong>GW ${params[0].axisValue}</strong><br/>`
+                    params.forEach((p: any) => {
+                        if (p.data) {
+                            result += `${p.marker} ${p.seriesName}: <strong>${p.data.value}</strong> Punkte<br/>`
+                        }
+                    })
+                    return result
+                }
+            },
+            legend: { bottom: 10, textStyle: { color: '#6b7280' } },
+            grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
+            xAxis: {
+                type: 'category',
+                data: allGws,
+                name: 'Gameweek',
+                axisLabel: { color: '#6b7280', fontSize: 11 },
+                nameTextStyle: { color: '#374151' }
+            },
+            yAxis: {
+                type: 'value',
+                name: 'Punkte',
+                axisLabel: { color: '#6b7280' },
+                nameTextStyle: { color: '#374151' }
+            },
+            series
+        }
+    }, [currentSeasonData, selectedMethods, selectedSeason])
 
     return (
         <>
@@ -219,7 +363,7 @@ export default function MultiSeasonBacktestPage() {
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="text-center mb-12"
+                        className="text-center mb-10"
                     >
                         <div className="flex items-center justify-center gap-3 mb-4">
                             <Layers className="w-10 h-10 text-blue-600 dark:text-blue-400" />
@@ -227,151 +371,271 @@ export default function MultiSeasonBacktestPage() {
                                 Multi-Season Backtest
                             </h1>
                         </div>
-                        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto flex items-center justify-center gap-2">
-                            Vergleich der Modellperformance über mehrere Saisons hinweg
-                            <Tooltip content={tooltips.multi_season}>
-                                <span className="text-sm text-gray-500 cursor-help">ℹ</span>
-                            </Tooltip>
+                        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                            Vergleich der Modellperformance über 4 Saisons (2020-21 bis 2023-24)
                         </p>
-                    </motion.div>
-
-                    {/* Controls */}
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: 0.1 }}
-                        className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 mb-8"
-                    >
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Seasons auswählen (Mehrfachauswahl)
-                                </label>
-                                <div className="flex flex-wrap gap-2">
-                                    {availableSeasons.map(season => (
-                                        <button
-                                            key={season}
-                                            onClick={() => toggleSeason(season)}
-                                            className={`px-4 py-2 rounded-lg border transition-colors ${
-                                                selectedSeasons.includes(season)
-                                                    ? 'bg-blue-600 text-white border-blue-600'
-                                                    : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'
-                                            }`}
-                                        >
-                                            {season}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    GW Range
-                                </label>
-                                <input
-                                    type="text"
-                                    value={gwRange}
-                                    onChange={(e) => setGwRange(e.target.value)}
-                                    placeholder="z.B. 30-38"
-                                    className="w-full md:w-64 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                                />
-                            </div>
-                        </div>
                     </motion.div>
 
                     {/* Loading/Error States */}
                     {state === 'loading' && <LoadingState message="Lade Multi-Season Backtest-Daten..." />}
                     {state === 'error' && <ErrorState message={error} />}
 
+                    {/* Controls */}
+                    {state === 'success' && backtestData.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.1 }}
+                            className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 mb-8"
+                        >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Season Selector */}
+                                <div>
+                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                        <Activity className="w-4 h-4" />
+                                        Season auswählen
+                                    </label>
+                                    <select
+                                        value={selectedSeason}
+                                        onChange={(e) => setSelectedSeason(e.target.value)}
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        {ALL_SEASONS.map(season => (
+                                            <option key={season} value={season}>
+                                                {season}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Method Filter */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-3">
+                                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            <Filter className="w-4 h-4" />
+                                            Methoden zum Vergleich
+                                        </label>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={selectAllMethods}
+                                                className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                            >
+                                                Alle
+                                            </button>
+                                            <button
+                                                onClick={deselectAllMethods}
+                                                className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300"
+                                            >
+                                                Keine
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {availableMethods.map(method => (
+                                            <button
+                                                key={method}
+                                                onClick={() => toggleMethod(method)}
+                                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
+                                                    selectedMethods.includes(method)
+                                                        ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                                                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'
+                                                }`}
+                                            >
+                                                {selectedMethods.includes(method) ? (
+                                                    <CheckSquare className="w-4 h-4" />
+                                                ) : (
+                                                    <Square className="w-4 h-4" />
+                                                )}
+                                                <span className="text-sm font-medium">
+                                                    {METHOD_NAMES[method] || method.toUpperCase()}
+                                                </span>
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* Methoden-Erklärungen */}
+                    {state === 'success' && backtestData.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: 0.2 }}
+                            className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-5 mb-8"
+                        >
+                            <div className="flex items-start gap-3">
+                                <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                                <div className="space-y-2">
+                                    <h3 className="font-semibold text-blue-900 dark:text-blue-100">Methoden-Erklärung</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                        {Object.entries(METHOD_DESCRIPTIONS).map(([method, desc]) => (
+                                            <div key={method} className="flex gap-2">
+                                                <div 
+                                                    className="w-3 h-3 rounded-full mt-1 flex-shrink-0"
+                                                    style={{ backgroundColor: METHOD_COLORS[method] }}
+                                                />
+                                                <div>
+                                                    <strong className="text-blue-900 dark:text-blue-100">
+                                                        {METHOD_NAMES[method]}:
+                                                    </strong>
+                                                    <span className="text-blue-800 dark:text-blue-200 ml-1">
+                                                        {desc}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+
                     {/* Summary Table */}
-                    {state === 'success' && backtestData && backtestData.data.length > 0 && (
-                        <>
-                            <motion.div
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: 0.2 }}
-                                className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 mb-8"
-                            >
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Summary Tabelle</h2>
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-sm">
-                                        <thead className="bg-gray-100 dark:bg-gray-700">
-                                            <tr>
-                                                <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200">Season</th>
-                                                <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200">Methode</th>
-                                                <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200">Ø Punkte</th>
-                                                <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200">Std. Abw.</th>
-                                                <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200">
-                                                    <Tooltip content={tooltips.effizienz}>
-                                                        <span className="border-b border-dotted border-gray-400 cursor-help">Ø Effizienz</span>
-                                                    </Tooltip>
-                                                </th>
-                                                <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200"># GWs</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {backtestData.data.map(seasonData =>
-                                                seasonData.summary.map((row, idx) => (
+                    {state === 'success' && backtestData.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.25 }}
+                            className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 mb-8"
+                        >
+                            <div className="flex items-center gap-2 mb-4">
+                                <BarChart3 className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                    Gesamt-Übersicht: Alle Seasons
+                                </h2>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead className="bg-gray-100 dark:bg-gray-700">
+                                        <tr>
+                                            <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">Season</th>
+                                            <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">Methode</th>
+                                            <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">Ø Punkte</th>
+                                            <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">Std. Abw.</th>
+                                            <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">
+                                                # GWs
+                                                <Tooltip content="Anzahl erfolgreicher Gameweeks (Coverage)">
+                                                    <span className="ml-1 text-gray-500 cursor-help">ℹ</span>
+                                                </Tooltip>
+                                            </th>
+                                            <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">
+                                                Ø Effizienz
+                                                <Tooltip content={tooltips.effizienz || "Verhältnis zu optimalen Punkten"}>
+                                                    <span className="ml-1 text-gray-500 cursor-help">ℹ</span>
+                                                </Tooltip>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {backtestData.map(seasonData =>
+                                            seasonData.summary
+                                                .filter(s => selectedMethods.includes(s.method))
+                                                .map((row) => (
                                                     <tr
                                                         key={`${seasonData.season}-${row.method}`}
-                                                        className={`border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
-                                                            idx % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800/50'
-                                                        }`}
+                                                        className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                                                     >
-                                                        <td className="px-4 py-2 font-medium text-gray-900 dark:text-gray-100">{seasonData.season}</td>
-                                                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">{row.method.toUpperCase()}</td>
-                                                        <td className="px-4 py-2 text-gray-900 dark:text-white font-semibold">{row.avg_xi_points.toFixed(1)}</td>
-                                                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">±{row.std_xi_points.toFixed(1)}</td>
-                                                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">
-                                                            {row.avg_efficiency != null ? `${(row.avg_efficiency * 100).toFixed(1)}%` : '-'}
+                                                        <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
+                                                            {seasonData.season}
                                                         </td>
-                                                        <td className="px-4 py-2 text-gray-700 dark:text-gray-300">{row.n_gw}</td>
+                                                        <td className="px-4 py-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <div 
+                                                                    className="w-3 h-3 rounded-full"
+                                                                    style={{ backgroundColor: METHOD_COLORS[row.method] }}
+                                                                />
+                                                                <span className="text-gray-700 dark:text-gray-300 font-medium">
+                                                                    {METHOD_NAMES[row.method] || row.method.toUpperCase()}
+                                                                </span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-4 py-3 text-gray-900 dark:text-white font-bold text-base">
+                                                            {row.avg_xi_points.toFixed(2)}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                            ±{row.std_xi_points.toFixed(2)}
+                                                        </td>
+                                                        <td className="px-4 py-3 text-gray-700 dark:text-gray-300 font-semibold">
+                                                            {row.n_gw} / 37
+                                                        </td>
+                                                        <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
+                                                            {row.avg_efficiency != null 
+                                                                ? `${(row.avg_efficiency * 100).toFixed(1)}%` 
+                                                                : '-'}
+                                                        </td>
                                                     </tr>
                                                 ))
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </motion.div>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </motion.div>
+                    )}
 
-                            {/* Charts */}
+                    {/* Charts Grid */}
+                    {state === 'success' && backtestData.length > 0 && selectedMethods.length > 0 && (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            {/* Chart 1: Avg Points */}
                             {avgPointsChartOption && (
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.5, delay: 0.3 }}
-                                    className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 mb-8"
+                                    className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700"
                                 >
-                                    <ReactECharts option={avgPointsChartOption} style={{ height: '500px' }} />
+                                    <ReactECharts option={avgPointsChartOption} style={{ height: '400px' }} />
                                 </motion.div>
                             )}
 
-                            {efficiencyChartOption && (
+                            {/* Chart 2: Coverage */}
+                            {coverageChartOption && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.35 }}
+                                    className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700"
+                                >
+                                    <ReactECharts option={coverageChartOption} style={{ height: '400px' }} />
+                                </motion.div>
+                            )}
+
+                            {/* Chart 3: Season Comparison Pie */}
+                            {seasonComparisonOption && (
                                 <motion.div
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.5, delay: 0.4 }}
-                                    className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 mb-8"
+                                    className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700"
                                 >
-                                    <ReactECharts option={efficiencyChartOption} style={{ height: '500px' }} />
+                                    <ReactECharts option={seasonComparisonOption} style={{ height: '400px' }} />
                                 </motion.div>
                             )}
-                        </>
+
+                            {/* Chart 4: Season Detail Line Chart */}
+                            {seasonDetailOption && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.5, delay: 0.45 }}
+                                    className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700"
+                                >
+                                    <ReactECharts option={seasonDetailOption} style={{ height: '400px' }} />
+                                </motion.div>
+                            )}
+                        </div>
                     )}
 
-                    {/* Errors */}
-                    {backtestData?.errors && backtestData.errors.length > 0 && (
+                    {/* Empty State */}
+                    {state === 'success' && selectedMethods.length === 0 && (
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-8"
+                            className="text-center py-12 text-gray-500 dark:text-gray-400"
                         >
-                            <h3 className="text-amber-800 dark:text-amber-400 font-semibold mb-2">Teilweise Fehler:</h3>
-                            <ul className="text-sm text-amber-700 dark:text-amber-300 list-disc list-inside">
-                                {backtestData.errors.map(err => (
-                                    <li key={err.season}>{err.season}: {err.error}</li>
-                                ))}
-                            </ul>
+                            <Filter className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                            <p>Keine Methoden ausgewählt. Bitte wähle mindestens eine Methode zum Vergleich.</p>
                         </motion.div>
                     )}
                 </div>
