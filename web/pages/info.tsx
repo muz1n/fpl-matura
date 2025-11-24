@@ -1,5 +1,4 @@
 import Head from 'next/head'
-import { Navbar } from '../src/components/Navbar'
 import { Info, Database, BarChart3, BrainCircuit, TrendingUp, AlertCircle } from 'lucide-react'
 
 export default function InfoPage() {
@@ -9,8 +8,6 @@ export default function InfoPage() {
                 <title>Info – FPL Maturaarbeit</title>
                 <meta name="description" content="Informationen über die FPL Vorhersage-WebApp" />
             </Head>
-
-            <Navbar />
 
             <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
                 <div className="container mx-auto px-4 py-8 max-w-4xl">

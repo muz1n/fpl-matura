@@ -230,22 +230,28 @@ def main():
     rf = RandomForestRegressor(**best_params, random_state=42, n_jobs=-1)
     rf.fit(train_df[features].fillna(0), train_df["total_points"])
 
+    # OPTIMIERUNG: Berechne rolling features EINMAL für alle Daten
+    print("Computing rolling features for all data...")
+    df_with_rolling = df.copy()
+    for stat in [
+        "minutes",
+        "total_points",
+        "ict_index",
+        "influence",
+        "creativity",
+        "threat",
+    ]:
+        df_with_rolling[f"{stat}_ma3"] = safe_rolling(df, stat, 3, "element")
+
     # Test-GWs schrittweise durchlaufen
     preds_list = []
     for gw in range(start_gw, end_gw + 1):
-        gw_df = df[df["GW"] == gw].copy()
-        # Gleitende Merkmale fuer gw < t neu berechnen
-        for stat in [
-            "minutes",
-            "total_points",
-            "ict_index",
-            "influence",
-            "creativity",
-            "threat",
-        ]:
-            gw_df[f"{stat}_ma3"] = safe_rolling(
-                df[df["GW"] < gw], stat, 3, "element"
-            ).reindex(gw_df.index)
+        gw_df = df_with_rolling[df_with_rolling["GW"] == gw].copy()
+
+        # Überspringe GWs ohne Daten (z.B. GW7 in 2022-23)
+        if len(gw_df) == 0:
+            print(f"  GW {gw}: No data - skipping")
+            continue
         if home_col:
             gw_df["home"] = gw_df["home"].astype(int)
         if opp_col:

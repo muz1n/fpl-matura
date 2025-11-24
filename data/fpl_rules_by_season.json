@@ -22,7 +22,7 @@
             "defensive_contributions": false
         },
         "squad": {
-            "budget": 100.0,
+            "budget": 1000.0,
             "total": 15,
             "gk": 2,
             "def": 5,

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import ReactECharts from 'echarts-for-react'
 import type { EChartsOption } from 'echarts'
+import { useTheme } from 'next-themes'
 
 interface BacktestDetailRow {
     method: string
@@ -43,10 +44,12 @@ const METHOD_LABELS: Record<string, string> = {
 
 export function TeamBacktestChart({
     data,
-    title = 'Team Backtest: Punkte pro Gameweek',
+    title = '',
     height = '500px',
     showLegend = true
 }: TeamBacktestChartProps) {
+    const { theme } = useTheme()
+    const isDark = theme === 'dark'
 
     const option: EChartsOption = useMemo(() => {
         // Gruppiere Daten nach Methode
@@ -91,14 +94,15 @@ export function TeamBacktestChart({
         }))
 
         return {
-            title: {
+            title: title ? {
                 text: title,
                 left: 'center',
                 textStyle: {
                     fontSize: 18,
                     fontWeight: 600,
+                    color: isDark ? '#f3f4f6' : '#1f2937',
                 },
-            },
+            } : undefined,
             tooltip: {
                 trigger: 'axis',
                 axisPointer: {
@@ -107,17 +111,17 @@ export function TeamBacktestChart({
                         backgroundColor: '#6b7280',
                     },
                 },
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                borderColor: '#e5e7eb',
+                backgroundColor: isDark ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                borderColor: isDark ? '#4b5563' : '#e5e7eb',
                 borderWidth: 1,
                 textStyle: {
-                    color: '#1f2937',
+                    color: isDark ? '#f3f4f6' : '#1f2937',
                 },
                 formatter: (params: any) => {
                     if (!params || params.length === 0) return ''
 
                     const gw = params[0].data[0]
-                    let tooltip = `<div style="font-weight: 600; margin-bottom: 8px;">GW ${gw}</div>`
+                    let tooltip = `<div style="font-weight: 600; margin-bottom: 8px;">Spieltag ${gw}</div>`
 
                     params.forEach((param: any) => {
                         const points = param.data[1]
@@ -126,7 +130,7 @@ export function TeamBacktestChart({
                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
                                 <span style="display: inline-block; width: 10px; height: 10px; background: ${color}; border-radius: 50%;"></span>
                                 <span style="flex: 1;">${param.seriesName}:</span>
-                                <span style="font-weight: 600;">${points} Punkte</span>
+                                <span style="font-weight: 600;">${points.toFixed(1)} Pkt</span>
                             </div>
                         `
                     })
@@ -136,36 +140,69 @@ export function TeamBacktestChart({
             },
             legend: showLegend ? {
                 data: Array.from(methods).map(m => METHOD_LABELS[m] || m),
-                top: 40,
+                top: title ? 40 : 10,
                 type: 'scroll',
+                textStyle: {
+                    color: isDark ? '#d1d5db' : '#374151',
+                },
             } : undefined,
             grid: {
                 left: '3%',
                 right: '4%',
-                bottom: '10%',
-                top: showLegend ? 80 : 60,
+                bottom: '12%',
+                top: showLegend ? (title ? 80 : 50) : (title ? 60 : 30),
                 containLabel: true,
             },
             xAxis: {
                 type: 'value',
-                name: 'Gameweek',
+                name: 'Spieltag (GW)',
                 nameLocation: 'middle',
                 nameGap: 30,
+                nameTextStyle: {
+                    color: isDark ? '#9ca3af' : '#6b7280',
+                    fontSize: 12,
+                },
                 min: Math.min(...gwArray),
                 max: Math.max(...gwArray),
                 interval: 1,
                 axisLabel: {
                     formatter: (value: number) => `GW${value}`,
+                    color: isDark ? '#9ca3af' : '#6b7280',
+                },
+                axisLine: {
+                    lineStyle: {
+                        color: isDark ? '#4b5563' : '#e5e7eb',
+                    },
+                },
+                splitLine: {
+                    lineStyle: {
+                        color: isDark ? '#374151' : '#f3f4f6',
+                    },
                 },
             },
             yAxis: {
                 type: 'value',
-                name: 'Punkte',
+                name: 'Punkte des Teams',
                 nameLocation: 'middle',
                 nameGap: 50,
+                nameTextStyle: {
+                    color: isDark ? '#9ca3af' : '#6b7280',
+                    fontSize: 12,
+                },
                 min: 0,
                 axisLabel: {
                     formatter: '{value}',
+                    color: isDark ? '#9ca3af' : '#6b7280',
+                },
+                axisLine: {
+                    lineStyle: {
+                        color: isDark ? '#4b5563' : '#e5e7eb',
+                    },
+                },
+                splitLine: {
+                    lineStyle: {
+                        color: isDark ? '#374151' : '#f3f4f6',
+                    },
                 },
             },
             series,
@@ -173,8 +210,14 @@ export function TeamBacktestChart({
                 feature: {
                     dataZoom: {
                         yAxisIndex: 'none',
+                        title: {
+                            zoom: 'Zoomen',
+                            back: 'Zurück',
+                        },
                     },
-                    restore: {},
+                    restore: {
+                        title: 'Zurücksetzen',
+                    },
                     saveAsImage: {
                         title: 'Als Bild speichern',
                         pixelRatio: 2,
@@ -182,6 +225,14 @@ export function TeamBacktestChart({
                 },
                 right: 20,
                 top: 10,
+                iconStyle: {
+                    borderColor: isDark ? '#9ca3af' : '#6b7280',
+                },
+                emphasis: {
+                    iconStyle: {
+                        borderColor: isDark ? '#f3f4f6' : '#1f2937',
+                    },
+                },
             },
             dataZoom: [
                 {
@@ -192,10 +243,27 @@ export function TeamBacktestChart({
                     type: 'slider',
                     xAxisIndex: 0,
                     bottom: 10,
+                    textStyle: {
+                        color: isDark ? '#9ca3af' : '#6b7280',
+                    },
+                    borderColor: isDark ? '#4b5563' : '#e5e7eb',
+                    fillerColor: isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)',
+                    handleStyle: {
+                        color: '#3b82f6',
+                        borderColor: '#3b82f6',
+                    },
+                    dataBackground: {
+                        lineStyle: {
+                            color: isDark ? '#6b7280' : '#9ca3af',
+                        },
+                        areaStyle: {
+                            color: isDark ? '#374151' : '#e5e7eb',
+                        },
+                    },
                 },
             ],
         }
-    }, [data, title, showLegend])
+    }, [data, title, showLegend, isDark])
 
     return (
         <div className="w-full">

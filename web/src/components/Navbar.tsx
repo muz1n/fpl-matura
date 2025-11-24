@@ -30,9 +30,9 @@ export function Navbar() {
     const isActive = (path: string) => router.pathname === path
 
     const links = [
-        { href: '/predictions', label: 'Prognosen', icon: LineChart },
+        { href: '/prognosen', label: 'Prognosen', icon: LineChart },
         { href: '/backtest', label: 'Backtest', icon: BarChart3 },
-        { href: '/multi-season-backtest', label: 'Multi-Season', icon: BarChart3 },
+        { href: '/multi-season', label: 'Multi-Season', icon: BarChart3 },
         { href: '/feature-importance', label: 'Feature Importance', icon: BrainCircuit },
         { href: '/info', label: 'Info', icon: Info },
     ]
@@ -70,11 +70,10 @@ export function Navbar() {
                                 </Link>
                             )
                         })}
-
-                        {/* Dark Mode Toggle */}
+                        {/* Dark Mode Toggle rechts */}
                         <button
                             onClick={toggleDarkMode}
-                            className="ml-2 p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            className="ml-4 p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             aria-label="Dark Mode umschalten"
                         >
                             {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}

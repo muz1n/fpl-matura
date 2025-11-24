@@ -23,7 +23,7 @@ import json
 import logging
 import sys
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -65,7 +65,7 @@ FORMATION_SLOTS = {
 
 def prediction_filename(season: str, gw: int, method: str) -> Path:
     """Erzeugt konsistenten Dateinamen fuer Prognosedateien mit Season-Prefix."""
-    return OUT_DIR / f"predictions_{season}_gw{gw}_{method}.json"
+    return OUT_DIR / "predictions" / f"predictions_{season}_gw{gw}_{method}.json"
 
 
 def load_predictions(season: str, gw: int, method: str) -> pd.DataFrame | None:
@@ -293,7 +293,7 @@ def load_truth(season: str) -> pd.DataFrame | None:
 
 
 def build_candidate_pool(
-    df_pred: pd.DataFrame, max_budget: float = 100.0, max_per_club: int = 3
+    df_pred: pd.DataFrame, max_budget: float = 1000.0, max_per_club: int = 3
 ) -> pd.DataFrame:
     """Erstellt aus Prognosen einen 15-Spieler-Kader.
 
@@ -313,12 +313,22 @@ def build_candidate_pool(
     pool_limits = {"GK": 2, "DEF": 5, "MID": 5, "FWD": 3}
 
     # Debug: Check input data
-    logger.debug(f"build_candidate_pool: {len(df_pred)} predictions")
+    logger.info(f"build_candidate_pool: {len(df_pred)} predictions")
     if len(df_pred) > 0:
-        logger.debug(f"  Positions: {df_pred['pos'].value_counts().to_dict()}")
-        logger.debug(
-            f"  Price range: {df_pred['price'].min():.1f} - {df_pred['price'].max():.1f}"
-        )
+        logger.info(f"  Positions: {df_pred['pos'].value_counts().to_dict()}")
+
+        # Check for NaN prices
+        nan_prices = df_pred["price"].isna().sum()
+        if nan_prices > 0:
+            logger.warning(f"  WARNING: {nan_prices} predictions have NaN price!")
+
+        non_nan_prices = df_pred["price"].dropna()
+        if len(non_nan_prices) > 0:
+            logger.info(
+                f"  Price range: {non_nan_prices.min():.1f} - {non_nan_prices.max():.1f}"
+            )
+        else:
+            logger.warning("  WARNING: ALL prices are NaN!")
 
     # Alle Kandidaten nach prognostizierten Punkten absteigend sortieren
     df_sorted = df_pred.sort_values("predicted_points", ascending=False).copy()
@@ -381,7 +391,7 @@ def pick_xi_for_formation(
     candidates: pd.DataFrame,
     formation: str,
     max_per_club: int = 3,
-    max_budget: float = 100.0,
+    max_budget: float = 1000.0,
 ) -> tuple[List[int], float] | None:
     """Waehlt die beste Startelf fuer eine Formation unter Einhaltung der Regeln.
 
@@ -490,7 +500,7 @@ def evaluate_xi(
 
 def compute_hindsight_optimum(
     truth_gw_df: pd.DataFrame,
-    max_budget: float = 100.0,
+    max_budget: float = 1000.0,
     max_per_club: int = 3,
 ) -> Dict | None:
     """Berechnet das Hindsight-Optimum fuer eine Spielwoche.
@@ -554,7 +564,7 @@ def compute_hindsight_optimum(
 def select_best_team_for_gw(
     pred_df: pd.DataFrame,
     truth_gw_df: pd.DataFrame,
-    max_budget: float = 100.0,
+    max_budget: float = 1000.0,
     max_per_club: int = 3,
 ) -> Dict | None:
     """Waehlt das beste Team (Startelf + Formation) fuer eine Spielwoche.
@@ -569,81 +579,98 @@ def select_best_team_for_gw(
         Dict mit formation, xi_ids, xi_points, captain_id etc. oder None bei Fehler
     """
     needed = ["player_id", "pos", "team", "price"]
-    # Anreicherung falls Pflichtspalten fehlen
-    for col in needed:
-        if col not in pred_df.columns or pred_df[col].isna().all():
-            # Merge nach name, team, pos
-            truth_basic = truth_gw_df[
-                ["player_id", "name", "pos", "team", "price"]
-            ].dropna(subset=["name", "team", "pos"])
-            pred_df = pred_df.merge(
-                truth_basic,
-                on=["name", "team", "pos"],
-                how="left",
-                suffixes=("", "_truth"),
-            )
-            # Fallback falls player_id immer noch fehlt: Merge nur nach name
-            if "player_id" in pred_df.columns and pred_df["player_id"].isna().all():
-                truth_name = truth_gw_df[
-                    ["player_id", "name", "pos", "team", "price"]
-                ].dropna(subset=["name"])
-                pred_df = pred_df.drop(
-                    columns=[c for c in pred_df.columns if c.endswith("_truth")]
+
+    # Prüfe, welche Felder fehlen
+    missing_fields = [
+        col for col in needed if col not in pred_df.columns or pred_df[col].isna().all()
+    ]
+
+    # Falls Felder fehlen: Merge mit truth_gw_df
+    if missing_fields:
+        logger.info(f"Anreicherung: Fehlende Felder {missing_fields}, starte Merge")
+
+        # Merge nach name, team, pos (am präzisesten)
+        truth_basic = truth_gw_df[["player_id", "name", "pos", "team", "price"]].dropna(
+            subset=["name", "team", "pos"]
+        )
+
+        pred_df = pred_df.merge(
+            truth_basic,
+            on=["name", "team", "pos"],
+            how="left",
+            suffixes=("", "_truth"),
+        )
+
+        # Übernehme _truth Felder in Hauptspalten
+        if "player_id_truth" in pred_df.columns:
+            if "player_id" in pred_df.columns:
+                pred_df["player_id"] = pred_df["player_id"].fillna(
+                    pred_df["player_id_truth"]
                 )
-                pred_df = pred_df.merge(
-                    truth_name, on="name", how="left", suffixes=("", "_truth")
-                )
-            # player_id auffuellen
-            if "player_id_truth" in pred_df.columns:
-                if "player_id" in pred_df.columns:
-                    pred_df["player_id"] = pred_df["player_id"].fillna(
-                        pred_df["player_id_truth"]
-                    )
-                else:
-                    pred_df["player_id"] = pred_df["player_id_truth"]
-            # Felder auffuellen
-            for c in ["player_id", "pos", "team", "price"]:
-                source_col = f"{c}_truth"
-                if c in pred_df.columns and source_col in pred_df.columns:
+            else:
+                pred_df["player_id"] = pred_df["player_id_truth"]
+
+        for c in ["pos", "team", "price"]:
+            source_col = f"{c}_truth"
+            if source_col in pred_df.columns:
+                if c in pred_df.columns:
                     pred_df[c] = pred_df[c].fillna(pred_df[source_col])
-                elif source_col in pred_df.columns:
+                else:
                     pred_df[c] = pred_df[source_col]
-                elif c not in pred_df.columns:
-                    pred_df[c] = None
-            # Aufraeumen *_truth
-            drop_cols = [c for c in pred_df.columns if c.endswith("_truth")]
-            if drop_cols:
-                pred_df = pred_df.drop(columns=drop_cols)
-            # Preis-Fallback
-            if "price" in pred_df.columns and pred_df["price"].isna().any():
-                avg_price = (
-                    truth_gw_df["price"].dropna().mean()
-                    if "price" in truth_gw_df.columns
-                    else 6.0
-                )
-                pred_df["price"] = pred_df["price"].fillna(avg_price)
-            # Fallback: Wenn nach Anreicherung < 50 Spieler mit gueltiger ID, nimm alle Spieler aus truth_gw_df
-            valid_ids = (
-                pred_df["player_id"].notna().sum()
-                if "player_id" in pred_df.columns
-                else 0
+
+        # Cleanup _truth columns
+        drop_cols = [c for c in pred_df.columns if c.endswith("_truth")]
+        if drop_cols:
+            pred_df = pred_df.drop(columns=drop_cols)
+
+        matched = (
+            pred_df["player_id"].notna().sum() if "player_id" in pred_df.columns else 0
+        )
+        matched_with_price = (
+            pred_df["price"].notna().sum() if "price" in pred_df.columns else 0
+        )
+        logger.info(
+            f"Anreicherung: Matched {matched}/{len(pred_df)} players via name+team+pos"
+        )
+        logger.info(f"  - player_id: {matched}/{len(pred_df)} filled")
+        logger.info(f"  - price: {matched_with_price}/{len(pred_df)} filled")
+
+        if matched_with_price < len(pred_df):
+            logger.warning(
+                f"  - WARNUNG: {len(pred_df) - matched_with_price} Spieler haben keinen Preis!"
             )
-            if valid_ids < 50:
-                logger.warning(
-                    f"Anreicherung: Weniger als 50 Spieler mit ID nach Merge ({valid_ids}), Fallback auf truth_gw_df"
-                )
-                fallback_df = truth_gw_df.copy()
-                fallback_df["predicted_points"] = None
-                pred_map = pred_df.set_index(["name", "team", "pos"])
-                for idx, row in fallback_df.iterrows():
-                    key = (row["name"], row["team"], row["pos"])
-                    if key in pred_map.index and "predicted_points" in pred_map.columns:
-                        fallback_df.loc[idx, "predicted_points"] = pred_map.loc[key, "predicted_points"]  # type: ignore
-                fallback_df["notes"] = "Fallback: truth_gw_df verwendet"
-                pred_df = fallback_df
-            # Entferne Spieler ohne ID
-            if "player_id" in pred_df.columns and pred_df["player_id"].isna().any():
-                removed = pred_df[pred_df["player_id"].isna()].shape[0]
+
+        # Preis-Fallback für noch fehlende Preise
+        if "price" in pred_df.columns and pred_df["price"].isna().any():
+            avg_price = (
+                truth_gw_df["price"].dropna().mean()
+                if "price" in truth_gw_df.columns
+                else 6.0
+            )
+            pred_df["price"] = pred_df["price"].fillna(avg_price)
+
+        # Fallback: Wenn nach Anreicherung < 50 Spieler mit gueltiger ID, nimm alle Spieler aus truth_gw_df
+        valid_ids = (
+            pred_df["player_id"].notna().sum() if "player_id" in pred_df.columns else 0
+        )
+        if valid_ids < 50:
+            logger.warning(
+                f"Anreicherung: Weniger als 50 Spieler mit ID nach Merge ({valid_ids}), Fallback auf truth_gw_df"
+            )
+            fallback_df = truth_gw_df.copy()
+            fallback_df["predicted_points"] = None
+            pred_map = pred_df.set_index(["name", "team", "pos"])
+            for idx, row in fallback_df.iterrows():
+                key = (row["name"], row["team"], row["pos"])
+                if key in pred_map.index and "predicted_points" in pred_map.columns:
+                    fallback_df.loc[idx, "predicted_points"] = pred_map.loc[key, "predicted_points"]  # type: ignore
+            fallback_df["notes"] = "Fallback: truth_gw_df verwendet"
+            pred_df = fallback_df
+
+        # Entferne Spieler ohne ID (nach allen Matching-Versuchen)
+        if "player_id" in pred_df.columns and pred_df["player_id"].isna().any():
+            removed = pred_df[pred_df["player_id"].isna()].shape[0]
+            if removed > 0:
                 pred_df = pred_df[pred_df["player_id"].notna()].copy()
                 logger.warning(
                     f"Anreicherung: Entferne {removed} Spieler ohne player_id"
@@ -714,7 +741,7 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
         logger.info(f"Season {season} - Budget: {max_budget}, Max/Club: {max_per_club}")
     except Exception as e:
         logger.warning(f"Could not load rules for {season}, using defaults: {e}")
-        max_budget = 100.0
+        max_budget = 1000.0
         max_per_club = 3
 
     logger.info("=" * 70)
@@ -878,17 +905,40 @@ def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]) ->
     logger.info(f"\nOK Saved detailed results: {detail_filename}")
 
     # Zusammenfassende Statistik berechnen
-    summary_df = (
-        results_df[results_df["xi_points"] > 0]
-        .groupby("method")
-        .agg(
-            avg_xi_points=("xi_points", "mean"),
-            std_xi_points=("xi_points", "std"),
-            n_gw=("xi_points", "count"),
-            avg_efficiency=("efficiency", "mean"),
+    valid_results = results_df[results_df["xi_points"] > 0].copy()
+
+    if len(valid_results) == 0:
+        logger.warning(
+            "Keine erfolgreichen Team-Auswahlen - keine Summary-Statistik moeglich"
         )
-        .reset_index()
-    )
+        return
+
+    # Berechne efficiency nur fuer Zeilen, wo es existiert
+    agg_operations: Any = {"xi_points": ["mean", "std", "count"]}
+
+    # Fuege efficiency hinzu, falls vorhanden
+    if (
+        "efficiency" in valid_results.columns
+        and valid_results["efficiency"].notna().any()
+    ):
+        agg_operations["efficiency"] = ["mean"]
+
+    summary_df = valid_results.groupby("method").agg(agg_operations)
+
+    # Flatten multi-level columns
+    summary_df.columns = ["_".join(col).strip() for col in summary_df.columns.values]
+    summary_df = summary_df.reset_index()
+
+    # Rename to expected column names
+    rename_map = {
+        "xi_points_mean": "avg_xi_points",
+        "xi_points_std": "std_xi_points",
+        "xi_points_count": "n_gw",
+    }
+    if "efficiency_mean" in summary_df.columns:
+        rename_map["efficiency_mean"] = "avg_efficiency"
+
+    summary_df = summary_df.rename(columns=rename_map)
 
     summary_df = summary_df.sort_values("avg_xi_points", ascending=False)
 

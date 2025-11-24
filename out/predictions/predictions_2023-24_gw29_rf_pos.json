@@ -1,0 +1,2410 @@
+[
+  {
+    "name": "Aaron Cresswell",
+    "team": "West Ham",
+    "position": "DEF",
+    "predicted_points": 1.41,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Aaron Hickey",
+    "team": "Brentford",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Aaron Ramsey",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Adama Traoré",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 1.27,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Admiral Muskwe",
+    "team": "Luton",
+    "position": "FWD",
+    "predicted_points": 1.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Aidan Francis-Clarke",
+    "team": "Luton",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Albert Sambi Lokonga",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Alejo Véliz",
+    "team": "Spurs",
+    "position": "FWD",
+    "predicted_points": 1.48,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Aleksandar Mitrović",
+    "team": "Fulham",
+    "position": "FWD",
+    "predicted_points": 1.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Alex Iwobi",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 2.72,
+    "actual_points": 3.0
+  },
+  {
+    "name": "Alex Mighten",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Alexandre Moreno Lopera",
+    "team": "Aston Villa",
+    "position": "DEF",
+    "predicted_points": 1.92,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Alfie Dorrington",
+    "team": "Spurs",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Alfie Doughty",
+    "team": "Luton",
+    "position": "DEF",
+    "predicted_points": 1.84,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Alfie Whiteman",
+    "team": "Spurs",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Allan Campbell",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Alphonse Areola",
+    "team": "West Ham",
+    "position": "GK",
+    "predicted_points": 1.17,
+    "actual_points": 3.0
+  },
+  {
+    "name": "Amari'i Bell",
+    "team": "Luton",
+    "position": "DEF",
+    "predicted_points": 1.01,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Ameen Al-Dakhil",
+    "team": "Burnley",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Anass Zaroury",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Andreas Hoelgebaum Pereira",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 1.72,
+    "actual_points": 3.0
+  },
+  {
+    "name": "Andrew Omobamidele",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 0.44,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Andros Townsend",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 1.4,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Angelo Ogbonna",
+    "team": "West Ham",
+    "position": "DEF",
+    "predicted_points": 1.02,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Anthony Elanga",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 0.76,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Anthony Knockaert",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Antonee Robinson",
+    "team": "Fulham",
+    "position": "DEF",
+    "predicted_points": 0.51,
+    "actual_points": 11.0
+  },
+  {
+    "name": "Aribim Pepple",
+    "team": "Luton",
+    "position": "FWD",
+    "predicted_points": 1.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Arijanet Muric",
+    "team": "Burnley",
+    "position": "GK",
+    "predicted_points": 0.67,
+    "actual_points": 3.0
+  },
+  {
+    "name": "Armando Broja",
+    "team": "Fulham",
+    "position": "FWD",
+    "predicted_points": 2.99,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Ashley Phillips",
+    "team": "Spurs",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Axel Piesold",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Bailey Peacock-Farrell",
+    "team": "Burnley",
+    "position": "GK",
+    "predicted_points": 0.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Ben Davies",
+    "team": "Spurs",
+    "position": "DEF",
+    "predicted_points": 1.17,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Ben Johnson",
+    "team": "West Ham",
+    "position": "DEF",
+    "predicted_points": 1.03,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Ben Mee",
+    "team": "Brentford",
+    "position": "DEF",
+    "predicted_points": 0.81,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Benjamin Arthur",
+    "team": "Brentford",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Benjamin Fredrick",
+    "team": "Brentford",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Bernd Leno",
+    "team": "Fulham",
+    "position": "GK",
+    "predicted_points": 0.75,
+    "actual_points": 7.0
+  },
+  {
+    "name": "Bertrand Traoré",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Bobby De Cordova-Reid",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 2.25,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Bobby Thomas",
+    "team": "Burnley",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Boubacar Kamara",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Braian Ojeda Rodríguez",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Brandon Aguilera Zamora",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Brandon Austin",
+    "team": "Spurs",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Brennan Johnson",
+    "team": "Spurs",
+    "position": "MID",
+    "predicted_points": 1.25,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Bryan Gil Salvatierra",
+    "team": "Spurs",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Bryan Mbeumo",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 1.0
+  },
+  {
+    "name": "CJ Egan-Riley",
+    "team": "Burnley",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Callum Hudson-Odoi",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 1.34,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Callum Marshall",
+    "team": "West Ham",
+    "position": "FWD",
+    "predicted_points": 1.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Calum Chambers",
+    "team": "Aston Villa",
+    "position": "DEF",
+    "predicted_points": 0.75,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Calvin Bassey",
+    "team": "Fulham",
+    "position": "DEF",
+    "predicted_points": 0.95,
+    "actual_points": 6.0
+  },
+  {
+    "name": "Carlos Mendes Gomes",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Carlos Vinícius Alves Morais",
+    "team": "Fulham",
+    "position": "FWD",
+    "predicted_points": 1.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Carlton Morris",
+    "team": "Luton",
+    "position": "FWD",
+    "predicted_points": 0.91,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Cauley Woodrow",
+    "team": "Luton",
+    "position": "FWD",
+    "predicted_points": 2.95,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Charlie Goode",
+    "team": "Brentford",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Charlie Taylor",
+    "team": "Burnley",
+    "position": "DEF",
+    "predicted_points": 1.91,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Cheikhou Kouyaté",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 1.22,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Chiedozie Ogbene",
+    "team": "Luton",
+    "position": "FWD",
+    "predicted_points": 1.11,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Chris Wood",
+    "team": "Nott'm Forest",
+    "position": "FWD",
+    "predicted_points": 3.21,
+    "actual_points": 9.0
+  },
+  {
+    "name": "Christian Nørgaard",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 1.15,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Clément Lenglet",
+    "team": "Aston Villa",
+    "position": "DEF",
+    "predicted_points": 0.95,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Connor Roberts",
+    "team": "Burnley",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Conor Coventry",
+    "team": "West Ham",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Cristian Romero",
+    "team": "Spurs",
+    "position": "DEF",
+    "predicted_points": 0.68,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Daiki Hashioka",
+    "team": "Luton",
+    "position": "DEF",
+    "predicted_points": 1.29,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Dan Potts",
+    "team": "Luton",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Dane Scarlett",
+    "team": "Spurs",
+    "position": "FWD",
+    "predicted_points": 1.46,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Danilo dos Santos de Oliveira",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 1.68,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Danny Ings",
+    "team": "West Ham",
+    "position": "FWD",
+    "predicted_points": 2.88,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Dara Costelloe",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Dara O'Shea",
+    "team": "Burnley",
+    "position": "DEF",
+    "predicted_points": 0.37,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Darko Churlinov",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "David Datro Fofana",
+    "team": "Burnley",
+    "position": "FWD",
+    "predicted_points": 0.81,
+    "actual_points": 8.0
+  },
+  {
+    "name": "Davinson Sánchez",
+    "team": "Spurs",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Dejan Kulusevski",
+    "team": "Spurs",
+    "position": "MID",
+    "predicted_points": 2.35,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Denis Franchi",
+    "team": "Burnley",
+    "position": "GK",
+    "predicted_points": 0.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Destiny Udogie",
+    "team": "Spurs",
+    "position": "DEF",
+    "predicted_points": 1.97,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Detlef Esapa Osong",
+    "team": "Nott'm Forest",
+    "position": "FWD",
+    "predicted_points": 1.48,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Devan Tanton",
+    "team": "Fulham",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Diego Carlos Santos Silva",
+    "team": "Aston Villa",
+    "position": "DEF",
+    "predicted_points": 1.17,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Dion Pereira",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Divin Mubama",
+    "team": "West Ham",
+    "position": "FWD",
+    "predicted_points": 1.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Divock Origi",
+    "team": "Nott'm Forest",
+    "position": "FWD",
+    "predicted_points": 1.77,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Djed Spence",
+    "team": "Spurs",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Dominic Dos Santos Martins",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Douglas Luiz Soares de Paulo",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 3.34,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Edson Álvarez Velázquez",
+    "team": "West Ham",
+    "position": "MID",
+    "predicted_points": 1.86,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Elijah Adebayo",
+    "team": "Luton",
+    "position": "FWD",
+    "predicted_points": 1.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Ellery Balcombe",
+    "team": "Brentford",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Elliot Thorpe",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Emerson Leite de Souza Junior",
+    "team": "Spurs",
+    "position": "DEF",
+    "predicted_points": 0.66,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Emerson Palmieri dos Santos",
+    "team": "West Ham",
+    "position": "DEF",
+    "predicted_points": 0.92,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Emiliano Buendía Stati",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Emiliano Martínez Romero",
+    "team": "Aston Villa",
+    "position": "GK",
+    "predicted_points": 0.25,
+    "actual_points": 5.0
+  },
+  {
+    "name": "Emmanuel Dennis",
+    "team": "Nott'm Forest",
+    "position": "FWD",
+    "predicted_points": 1.48,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Enock Agyei",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Eric Dier",
+    "team": "Spurs",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Ethan Brierley",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Ethan Horvath",
+    "team": "Nott'm Forest",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Ethan Pinnock",
+    "team": "Brentford",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Ezri Konsa Ngoyo",
+    "team": "Aston Villa",
+    "position": "DEF",
+    "predicted_points": 1.66,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Felipe Augusto de Almeida Monteiro",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 0.85,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Filip Marschall",
+    "team": "Aston Villa",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Flynn Downes",
+    "team": "West Ham",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Fodé Ballo-Touré",
+    "team": "Fulham",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Frank Onyeka",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 1.34,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Fraser Forster",
+    "team": "Spurs",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Fred Onyedinma",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Gabriel Osho",
+    "team": "Luton",
+    "position": "DEF",
+    "predicted_points": 1.16,
+    "actual_points": 0.0
+  },
+  {
+    "name": "George Earthy",
+    "team": "West Ham",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "George Shelvey",
+    "team": "Nott'm Forest",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Gianluca Scamacca",
+    "team": "West Ham",
+    "position": "FWD",
+    "predicted_points": 1.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Giovani Lo Celso",
+    "team": "Spurs",
+    "position": "MID",
+    "predicted_points": 2.89,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Giovanni Reyna",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 2.15,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Giulian Biancone",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Glen Rea",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Gonzalo Montiel",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Guglielmo Vicario",
+    "team": "Spurs",
+    "position": "GK",
+    "predicted_points": 0.26,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Gustavo Henrique Furtado Scarpa",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Halil Dervişoğlu",
+    "team": "Brentford",
+    "position": "FWD",
+    "predicted_points": 1.48,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Han-Noah Massengo",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Hannes Delcroix",
+    "team": "Burnley",
+    "position": "DEF",
+    "predicted_points": 0.71,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Harrison Reed",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 0.83,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Harry Arter",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Harry Kane",
+    "team": "Spurs",
+    "position": "FWD",
+    "predicted_points": 1.48,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Harry Toffolo",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 1.09,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Harry Wilson",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 1.08,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Hjalmar Ekdal",
+    "team": "Burnley",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Hugo Lloris",
+    "team": "Spurs",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Hwang Ui-jo",
+    "team": "Nott'm Forest",
+    "position": "FWD",
+    "predicted_points": 1.48,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Hákon Valdimarsson",
+    "team": "Brentford",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Ibrahim Sangaré",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 2.45,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Issa Diop",
+    "team": "Fulham",
+    "position": "DEF",
+    "predicted_points": 0.84,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Issa Kaboré",
+    "team": "Luton",
+    "position": "DEF",
+    "predicted_points": 5.3,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Ivan Neves Abreu Cavaleiro",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Ivan Perišić",
+    "team": "Spurs",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Ivan Toney",
+    "team": "Brentford",
+    "position": "FWD",
+    "predicted_points": 1.11,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Jack Cork",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 1.37,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Jack Walton",
+    "team": "Luton",
+    "position": "GK",
+    "predicted_points": 0.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Jacob Brown",
+    "team": "Luton",
+    "position": "FWD",
+    "predicted_points": 1.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Jacob Bruun Larsen",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 1.15,
+    "actual_points": 11.0
+  },
+  {
+    "name": "Jacob Ramsey",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 1.26,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Jaden Philogene-Bidace",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "James Maddison",
+    "team": "Spurs",
+    "position": "MID",
+    "predicted_points": 1.95,
+    "actual_points": 2.0
+  },
+  {
+    "name": "James Shea",
+    "team": "Luton",
+    "position": "GK",
+    "predicted_points": 0.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "James Trafford",
+    "team": "Burnley",
+    "position": "GK",
+    "predicted_points": 0.25,
+    "actual_points": 0.0
+  },
+  {
+    "name": "James Ward-Prowse",
+    "team": "West Ham",
+    "position": "MID",
+    "predicted_points": 1.62,
+    "actual_points": 1.0
+  },
+  {
+    "name": "James Wright",
+    "team": "Aston Villa",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Jamie Donley",
+    "team": "Spurs",
+    "position": "FWD",
+    "predicted_points": 1.48,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Jamie McDonnell",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Japhet Tanganga",
+    "team": "Spurs",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Jarrod Bowen",
+    "team": "West Ham",
+    "position": "MID",
+    "predicted_points": 1.6,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Jay Rodriguez",
+    "team": "Burnley",
+    "position": "FWD",
+    "predicted_points": 1.71,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Jay Stansfield",
+    "team": "Fulham",
+    "position": "FWD",
+    "predicted_points": 1.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Jayden Luker",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Jhon Durán",
+    "team": "Aston Villa",
+    "position": "FWD",
+    "predicted_points": 1.48,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Ji-Soo Kim",
+    "team": "Brentford",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Joe Gardner",
+    "team": "Nott'm Forest",
+    "position": "FWD",
+    "predicted_points": 1.48,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Joe Gauci",
+    "team": "Aston Villa",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Joe Rodon",
+    "team": "Spurs",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Joe Taylor",
+    "team": "Luton",
+    "position": "FWD",
+    "predicted_points": 1.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Joe Worrall",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "John McAtee",
+    "team": "Luton",
+    "position": "FWD",
+    "predicted_points": 1.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "John McGinn",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 2.79,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Jonathan Panzo",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Jonjo Shelvey",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Jordan Beyer",
+    "team": "Burnley",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Jordan Clark",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 0.64,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Joseph Anang",
+    "team": "West Ham",
+    "position": "GK",
+    "predicted_points": 0.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Joseph Johnson",
+    "team": "Luton",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Josh Bowler",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Josh Brownhill",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 0.91,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Josh Cullen",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 1.39,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Josh Dasilva",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Josh Powell",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Joshua King",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "João Palhinha Gonçalves",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 2.56,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Jóhann Berg Gudmundsson",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 1.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Kaelan Casey",
+    "team": "West Ham",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Kaine Kesler-Hayden",
+    "team": "Aston Villa",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Kalvin Phillips",
+    "team": "West Ham",
+    "position": "MID",
+    "predicted_points": 1.57,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Keane Lewis-Potter",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 2.81,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Keinan Davis",
+    "team": "Aston Villa",
+    "position": "FWD",
+    "predicted_points": 1.48,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Kenny Tete",
+    "team": "Fulham",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Kevin Mbabu",
+    "team": "Fulham",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Kevin Schade",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Konstantinos Mavropanos",
+    "team": "West Ham",
+    "position": "DEF",
+    "predicted_points": 3.18,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Kortney Hause",
+    "team": "Aston Villa",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Kristian Sekularac",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Kristoffer Ajer",
+    "team": "Brentford",
+    "position": "DEF",
+    "predicted_points": 5.21,
+    "actual_points": 7.0
+  },
+  {
+    "name": "Kurt Zouma",
+    "team": "West Ham",
+    "position": "DEF",
+    "predicted_points": 2.01,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Lawrence Vigouroux",
+    "team": "Burnley",
+    "position": "GK",
+    "predicted_points": 0.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Leander Dendoncker",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Leon Bailey",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 3.25,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Lewis O'Brien",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Lewis Orford",
+    "team": "West Ham",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Lorenz Assignon",
+    "team": "Burnley",
+    "position": "DEF",
+    "predicted_points": 4.36,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Louie Watson",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Loïc Mbe Soh",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Luc De Fougerolles",
+    "team": "Fulham",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Luca Koleosho",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Lucas Digne",
+    "team": "Aston Villa",
+    "position": "DEF",
+    "predicted_points": 1.07,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Lucas Tolentino Coelho de Lima",
+    "team": "West Ham",
+    "position": "MID",
+    "predicted_points": 1.76,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Lukasz Fabianski",
+    "team": "West Ham",
+    "position": "GK",
+    "predicted_points": 0.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Luke Berry",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 1.51,
+    "actual_points": 6.0
+  },
+  {
+    "name": "Luke Freeman",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Luke Harris",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Luke McNally",
+    "team": "Burnley",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Lyle Foster",
+    "team": "Burnley",
+    "position": "FWD",
+    "predicted_points": 1.67,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Mads Bech Sørensen",
+    "team": "Brentford",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Mads Bidstrup",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Mads Juel Andersen",
+    "team": "Luton",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Mads Roerslev Rasmussen",
+    "team": "Brentford",
+    "position": "DEF",
+    "predicted_points": 0.55,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Manor Solomon",
+    "team": "Spurs",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Manuel Benson Hedilazio",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 2.76,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Marek Rodák",
+    "team": "Fulham",
+    "position": "GK",
+    "predicted_points": 0.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Mark Flekken",
+    "team": "Brentford",
+    "position": "GK",
+    "predicted_points": 0.28,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Marvelous Nakamba",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Mathias Jensen",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 1.43,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Mathias Jorgensen",
+    "team": "Brentford",
+    "position": "DEF",
+    "predicted_points": 0.45,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Matt Macey",
+    "team": "Luton",
+    "position": "GK",
+    "predicted_points": 0.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Matt Turner",
+    "team": "Nott'm Forest",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Matthew Cox",
+    "team": "Brentford",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Matthew Dibley-Dias",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Matty Cash",
+    "team": "Aston Villa",
+    "position": "DEF",
+    "predicted_points": 0.62,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Matz Sels",
+    "team": "Nott'm Forest",
+    "position": "GK",
+    "predicted_points": 0.25,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Maxime Esteve",
+    "team": "Burnley",
+    "position": "DEF",
+    "predicted_points": 1.5,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Maxwel Cornet",
+    "team": "West Ham",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Michael Obafemi",
+    "team": "Burnley",
+    "position": "FWD",
+    "predicted_points": 1.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Michael Olakigbe",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Michail Antonio",
+    "team": "West Ham",
+    "position": "FWD",
+    "predicted_points": 3.05,
+    "actual_points": 9.0
+  },
+  {
+    "name": "Micky van de Ven",
+    "team": "Spurs",
+    "position": "DEF",
+    "predicted_points": 3.74,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Mike Trésor",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Mikkel Damsgaard",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 2.2,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Mohamed Dräger",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Mohammed Kudus",
+    "team": "West Ham",
+    "position": "MID",
+    "predicted_points": 2.89,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Morgan Gibbs-White",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 1.17,
+    "actual_points": 7.0
+  },
+  {
+    "name": "Morgan Rogers",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 1.02,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Morgan Sanson",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Moussa Diaby",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 1.6,
+    "actual_points": 4.0
+  },
+  {
+    "name": "Moussa Niakhaté",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 0.52,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Murillo Santiago Costa dos Santos",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 0.35,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Myles Peart-Harris",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Nathan Collins",
+    "team": "Brentford",
+    "position": "DEF",
+    "predicted_points": 0.51,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Nathan Redmond",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Nayef Aguerd",
+    "team": "West Ham",
+    "position": "DEF",
+    "predicted_points": 0.94,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Neal Maupay",
+    "team": "Brentford",
+    "position": "FWD",
+    "predicted_points": 2.96,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Neco Williams",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 3.19,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Nicolás Domínguez",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 1.06,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Nicolò Zaniolo",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 1.13,
+    "actual_points": 5.0
+  },
+  {
+    "name": "Nikola Vlašić",
+    "team": "West Ham",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Nuno Varela Tavares",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Odysseas Vlachodimos",
+    "team": "Nott'm Forest",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Oliver Scarles",
+    "team": "West Ham",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Oliver Skipp",
+    "team": "Spurs",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Oliwier Zych",
+    "team": "Aston Villa",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Ollie Watkins",
+    "team": "Aston Villa",
+    "position": "FWD",
+    "predicted_points": 1.02,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Olu Aina",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Omar Richards",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Omari Kellyman",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Orel Mangala",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Owen Dodgson",
+    "team": "Burnley",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Pablo Fornals Malla",
+    "team": "West Ham",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Pape Matar Sarr",
+    "team": "Spurs",
+    "position": "MID",
+    "predicted_points": 0.91,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Pau Torres",
+    "team": "Aston Villa",
+    "position": "DEF",
+    "predicted_points": 1.03,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Pedro Porro",
+    "team": "Spurs",
+    "position": "DEF",
+    "predicted_points": 1.49,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Pelly Ruddock Mpanzu",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 1.21,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Philippe Coutinho Correia",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Pierre-Emile Højbjerg",
+    "team": "Spurs",
+    "position": "MID",
+    "predicted_points": 2.87,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Radu Dragusin",
+    "team": "Spurs",
+    "position": "DEF",
+    "predicted_points": 0.84,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Raúl Jiménez",
+    "team": "Fulham",
+    "position": "FWD",
+    "predicted_points": 1.67,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Reece Burke",
+    "team": "Luton",
+    "position": "DEF",
+    "predicted_points": 0.96,
+    "actual_points": 7.0
+  },
+  {
+    "name": "Remo Freuler",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Richarlison de Andrade",
+    "team": "Spurs",
+    "position": "MID",
+    "predicted_points": 1.03,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Richie Laryea",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Rico Henry",
+    "team": "Brentford",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Robin Olsen",
+    "team": "Aston Villa",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Rodrigo Bentancur",
+    "team": "Spurs",
+    "position": "MID",
+    "predicted_points": 0.71,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Rodrigo Duarte Ribeiro",
+    "team": "Nott'm Forest",
+    "position": "FWD",
+    "predicted_points": 1.48,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Rodrigo Muniz Carvalho",
+    "team": "Fulham",
+    "position": "FWD",
+    "predicted_points": 0.97,
+    "actual_points": 13.0
+  },
+  {
+    "name": "Ross Barkley",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 1.45,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Ryan Giles",
+    "team": "Luton",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Ryan Sessegnon",
+    "team": "Spurs",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Ryan Trevitt",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Ryan Yates",
+    "team": "Nott'm Forest",
+    "position": "MID",
+    "predicted_points": 2.0,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Sam Proctor",
+    "team": "Aston Villa",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Sam Surridge",
+    "team": "Nott'm Forest",
+    "position": "FWD",
+    "predicted_points": 1.48,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Saman Ghoddos",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 1.22,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Samuel Bastien",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Sander Berge",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 2.62,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Saïd Benrahma",
+    "team": "West Ham",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Saša Lukić",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 0.98,
+    "actual_points": 8.0
+  },
+  {
+    "name": "Scott McKenna",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Scott Twine",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Serge Aurier",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Sergi Canós Tenés",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Sergio Reguilón",
+    "team": "Brentford",
+    "position": "DEF",
+    "predicted_points": 0.61,
+    "actual_points": -3.0
+  },
+  {
+    "name": "Shandon Baptiste",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 3.0
+  },
+  {
+    "name": "Son Heung-min",
+    "team": "Spurs",
+    "position": "MID",
+    "predicted_points": 2.31,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Steve Cook",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Steven Benda",
+    "team": "Fulham",
+    "position": "GK",
+    "predicted_points": 0.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Tahith Chong",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 2.53,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Taiwo Awoniyi",
+    "team": "Nott'm Forest",
+    "position": "FWD",
+    "predicted_points": 3.03,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Tanguy Ndombélé Alvaro",
+    "team": "Spurs",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Teden Mengi",
+    "team": "Luton",
+    "position": "DEF",
+    "predicted_points": 2.74,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Terence Kongolo",
+    "team": "Fulham",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Thilo Kehrer",
+    "team": "West Ham",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Thomas Kaminski",
+    "team": "Luton",
+    "position": "GK",
+    "predicted_points": 0.79,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Thomas Strakosha",
+    "team": "Brentford",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Tim Iroegbunam",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 1.49,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Tim Krul",
+    "team": "Luton",
+    "position": "GK",
+    "predicted_points": 0.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Tim Ream",
+    "team": "Fulham",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Timo Werner",
+    "team": "Spurs",
+    "position": "FWD",
+    "predicted_points": 1.19,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Timothy Castagne",
+    "team": "Fulham",
+    "position": "DEF",
+    "predicted_points": 3.06,
+    "actual_points": 10.0
+  },
+  {
+    "name": "Tom Cairney",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 1.59,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Tom Lockyer",
+    "team": "Luton",
+    "position": "DEF",
+    "predicted_points": 1.1,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Tommi O'Reilly",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Tomáš Souček",
+    "team": "West Ham",
+    "position": "MID",
+    "predicted_points": 1.63,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Tosin Adarabioyo",
+    "team": "Fulham",
+    "position": "DEF",
+    "predicted_points": 0.41,
+    "actual_points": 6.0
+  },
+  {
+    "name": "Tyrese Francois",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 0.86,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Tyrone Mings",
+    "team": "Aston Villa",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Valintino Adedokun",
+    "team": "Brentford",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Victor da Silva",
+    "team": "Burnley",
+    "position": "DEF",
+    "predicted_points": 1.22,
+    "actual_points": 5.0
+  },
+  {
+    "name": "Viljami Sinisalo",
+    "team": "Aston Villa",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Vincent Angelini",
+    "team": "Brentford",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Vitaly Janelt",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 1.27,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Vladimír Coufal",
+    "team": "West Ham",
+    "position": "DEF",
+    "predicted_points": 2.72,
+    "actual_points": 7.0
+  },
+  {
+    "name": "Wayne Hennessey",
+    "team": "Nott'm Forest",
+    "position": "GK",
+    "predicted_points": 0.92,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Wesley Moraes Ferreira da Silva",
+    "team": "Aston Villa",
+    "position": "FWD",
+    "predicted_points": 1.48,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Willian Borges da Silva",
+    "team": "Fulham",
+    "position": "MID",
+    "predicted_points": 1.07,
+    "actual_points": 3.0
+  },
+  {
+    "name": "Willy Boly",
+    "team": "Nott'm Forest",
+    "position": "DEF",
+    "predicted_points": 1.23,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Wilson Odobert",
+    "team": "Burnley",
+    "position": "MID",
+    "predicted_points": 1.21,
+    "actual_points": 5.0
+  },
+  {
+    "name": "Wout Weghorst",
+    "team": "Burnley",
+    "position": "FWD",
+    "predicted_points": 1.67,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Yago de Santiago Alonso",
+    "team": "Spurs",
+    "position": "MID",
+    "predicted_points": 1.3,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Yegor Yarmoliuk",
+    "team": "Brentford",
+    "position": "MID",
+    "predicted_points": 1.77,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Yoane Wissa",
+    "team": "Brentford",
+    "position": "FWD",
+    "predicted_points": 1.22,
+    "actual_points": 2.0
+  },
+  {
+    "name": "Youri Tielemans",
+    "team": "Aston Villa",
+    "position": "MID",
+    "predicted_points": 0.8,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Yves Bissouma",
+    "team": "Spurs",
+    "position": "MID",
+    "predicted_points": 2.72,
+    "actual_points": 1.0
+  },
+  {
+    "name": "Zack Nelson",
+    "team": "Luton",
+    "position": "MID",
+    "predicted_points": 0.7,
+    "actual_points": 0.0
+  },
+  {
+    "name": "Zeki Amdouni",
+    "team": "Burnley",
+    "position": "FWD",
+    "predicted_points": 3.13,
+    "actual_points": 0.0
+  }
+]

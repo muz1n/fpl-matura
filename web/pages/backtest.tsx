@@ -9,6 +9,7 @@ import { tooltips } from '../src/data/tooltips'
 import { getUsableSeasons } from '../lib/seasonQuality'
 import { BarChart3, Download, TrendingUp, Activity, Target, Filter, Table, ArrowUpDown } from 'lucide-react'
 import { Navbar } from '../src/components/Navbar'
+import { Card, SummaryCard, SectionHeader, InfoBox, ControlPanel } from '../src/components/ui'
 
 interface BacktestDetailRow {
     method: string
@@ -72,7 +73,7 @@ export default function BacktestPage() {
             } catch (err) {
                 console.error('Fehler beim Laden der Seasons:', err)
                 setAvailableSeasons(['2020-21', '2021-22', '2022-23', '2023-24'])
-            } finally {
+                setAvailableSeasons(['2020-21', '2021-22', '2022-23', '2023-24'])
                 setSeasonsLoading(false)
             }
         }
@@ -105,7 +106,7 @@ export default function BacktestPage() {
                 setSelectedRange(null)
             }
         }
-
+        setError('Fehler – Keine Backtest-Daten gefunden')
         fetchRanges()
     }, [selectedSeason])
 
@@ -127,10 +128,10 @@ export default function BacktestPage() {
                     throw new Error(errorMsg + suggestion)
                 }
 
-                const data: BacktestData = await res.json()
+                const data: BacktestData = await res.json();
                 setBacktestData(data)
                 // Alle Methoden initial selektiert
-                const allMethods = Array.from(new Set(data.detail.map(r => r.method)))
+                const allMethods: string[] = Array.from(new Set(data.detail.map((r: BacktestDetailRow) => r.method)))
                 setSelectedMethods(allMethods)
                 setState('success')
             } catch (err) {
@@ -213,12 +214,14 @@ export default function BacktestPage() {
     }, [pivotRows])
 
     const METHOD_COLORS: Record<string, string> = {
-        rf: '#3b82f6',
-        rf_rank: '#8b5cf6',
-        rf_pos: '#6366f1',
-        ma3: '#10b981',
-        pos: '#f59e0b',
-        legacy: '#6b7280'
+        rf: '#3b82f6',           // Blau
+        rf_relaxed: '#8b5cf6',   // Violett
+        rf_optfill: '#06b6d4',   // Cyan
+        rf_pos: '#6366f1',       // Indigo
+        rf_rank: '#a855f7',      // Lila
+        ma3: '#10b981',          // Grün
+        pos: '#f59e0b',          // Orange
+        legacy: '#6b7280'        // Grau
     }
 
     const toggleMethod = (m: string) => {
@@ -247,25 +250,23 @@ export default function BacktestPage() {
                 <meta name="description" content="Multi-GW Team Backtest: Vergleich verschiedener Prognosemethoden" />
             </Head>
 
-            <Navbar />
-
-            <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-800">
-                <div className="container mx-auto px-4 py-8">
+            <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
                     {/* Header */}
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="text-center mb-12"
+                        className="text-center"
                     >
-                        <div className="flex items-center justify-center gap-3 mb-4">
+                        <div className="flex items-center justify-center gap-3 mb-3">
                             <BarChart3 className="w-10 h-10 text-blue-600 dark:text-blue-400" />
-                            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-                                Team Backtest
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                                Historischer Backtest
                             </h1>
                         </div>
-                        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                            Multi-GW Vergleich: Wie gut hätten verschiedene Prognosemethoden über mehrere Gameweeks performt?
+                        <p className="text-base text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                            Vergleich der Prognosemethoden über mehrere Gameweeks
                         </p>
                     </motion.div>
 
@@ -274,22 +275,21 @@ export default function BacktestPage() {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.1 }}
-                        className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 mb-8"
                     >
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <ControlPanel>
                             <Select
-                                label="Season"
+                                label="Saison"
                                 value={selectedSeason}
                                 onChange={(val) => setSelectedSeason(val as string)}
                                 options={availableSeasons.map(s => ({
                                     value: s,
-                                    label: `Season ${s}`
+                                    label: s
                                 }))}
                                 disabled={seasonsLoading || availableSeasons.length === 0}
                             />
 
                             <Select
-                                label="GW Range"
+                                label="Spieltag-Bereich"
                                 value={selectedRange || ''}
                                 onChange={(val) => setSelectedRange(val as string)}
                                 options={availableRanges.map(r => ({
@@ -298,11 +298,32 @@ export default function BacktestPage() {
                                 }))}
                                 disabled={availableRanges.length === 0}
                             />
-                        </div>
+
+                            <div className="flex items-end">
+                                <div className="w-full">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Methoden filtern
+                                    </label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {backtestData && Array.from(new Set(backtestData.detail.map(r => r.method))).map(m => (
+                                            <button
+                                                key={m}
+                                                onClick={() => toggleMethod(m)}
+                                                className={`px-3 py-1.5 rounded-md border text-xs font-medium flex items-center gap-2 transition-colors ${selectedMethods.includes(m) ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
+                                            >
+                                                <span className="inline-block w-2 h-2 rounded-full" style={{ background: METHOD_COLORS[m] || '#6b7280' }} /> {m.toUpperCase()}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </ControlPanel>
 
                         {availableRanges.length === 0 && !seasonsLoading && (
-                            <div className="text-sm text-amber-600 dark:text-amber-400 mt-4">
-                                Keine Backtest-Daten für Season {selectedSeason} verfügbar. Führe zuerst `team_backtest.py` aus.
+                            <div className="mt-4">
+                                <InfoBox variant="warning">
+                                    Keine Backtest-Daten für Saison {selectedSeason} verfügbar. Führe zuerst <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">team_backtest.py</code> aus.
+                                </InfoBox>
                             </div>
                         )}
                     </motion.div>
@@ -317,129 +338,47 @@ export default function BacktestPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
-                            className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8"
                         >
-                            {backtestData.summary.map((row, idx) => (
-                                <div
-                                    key={row.method}
-                                    className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700"
-                                >
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                            {row.method.toUpperCase()}
-                                        </h3>
-                                        <Activity className="w-5 h-5 text-blue-500" />
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                                                <TrendingUp className="w-4 h-4" />
-                                                <Tooltip content={tooltips.predicted_points}>
-                                                    <span className="border-b border-dotted border-gray-400 cursor-help">Ø Punkte</span>
-                                                </Tooltip>
-                                            </span>
-                                            <span className="text-xl font-bold text-gray-900 dark:text-white">
-                                                {row.avg_xi_points.toFixed(1)}
-                                            </span>
-                                        </div>
-
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                                                <Target className="w-4 h-4" />
-                                                Max
-                                            </span>
-                                            <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">
-                                                {getMaxPoints(row.method)}
-                                            </span>
-                                        </div>
-
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600 dark:text-gray-400">
-                                                Std. Abw.
-                                            </span>
-                                            <span className="text-sm text-gray-700 dark:text-gray-300">
-                                                ± {row.std_xi_points.toFixed(1)}
-                                            </span>
-                                        </div>
-
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                                                <Activity className="w-4 h-4" />
-                                                <Tooltip content={tooltips.effizienz}>
-                                                    <span className="border-b border-dotted border-gray-400 cursor-help">Ø Effizienz</span>
-                                                </Tooltip>
-                                            </span>
-                                            <span className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                {formatEff(row.avg_efficiency ?? null)}
-                                            </span>
-                                        </div>
-
-                                        <div className="flex items-center justify-between pt-2 border-t border-gray-200 dark:border-gray-700">
-                                            <span className="text-xs text-gray-500 dark:text-gray-500">
-                                                Gameweeks
-                                            </span>
-                                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                                                {row.n_gw} GWs
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                            <SectionHeader
+                                title="Übersicht"
+                                subtitle="Durchschnittswerte für alle Methoden"
+                                className="mb-4"
+                            />
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {backtestData.summary.map((row) => (
+                                    <SummaryCard
+                                        key={row.method}
+                                        title={row.method.toUpperCase()}
+                                        value={`${row.avg_xi_points.toFixed(1)} Pkt`}
+                                        subtitle={`${row.n_gw} GWs • Ø ${formatEff(row.avg_efficiency)}`}
+                                        icon={<Activity className="w-5 h-5" />}
+                                    />
+                                ))}
+                            </div>
                         </motion.div>
                     )}
 
-                    {/* Erklärbox & Filter */}
+                    {/* Info Box */}
                     {state === 'success' && backtestData && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.25 }}
-                            className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 mb-8"
                         >
-                            <div className="flex flex-col md:flex-row md:items-start gap-6">
-                                <div className="flex-1 space-y-3 text-sm text-gray-600 dark:text-gray-400">
-                                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2"><BarChart3 className="w-5 h-5" /> Was zeigt der Backtest?</h2>
-                                    <p>Für jede Gameweek wird rückblickend ein optimales Team anhand der Prognosen der jeweiligen Methode gebaut (Budget & max 3 pro Klub gelten). Die angezeigten Punkte enthalten Captain-Bonus. Fehlgeschlagene Selektionsversuche (xi_points = 0) werden ausgefiltert.</p>
-                                    <p className="mt-2"><strong>Effizienz</strong>: Verhältnis aus erzielten XI-Punkten (inkl. Captain) zur hypothetisch perfekten Auswahl auf Basis der echten Punkte (Hindsight-Optimum). 100&nbsp;% = identische Punkte wie theoretisches Maximum. Werte unter 100&nbsp;% zeigen Spielraum für Verbesserung der Prognose oder Auswahlstrategie.</p>
-                                    <ul className="list-disc pl-5 space-y-1">
-                                        <li><strong>RF</strong>: Random Forest Modell mit engineered Features.</li>
-                                        <li><strong>MA3</strong>: Gleitender 3er Mittelwert der Punkte (Form-Proxi).</li>
-                                        <li><strong>POS</strong>: Positionsbasierter Durchschnitt (einfache Baseline).</li>
-                                        <li><strong>rf_rank / rf_pos</strong>: Varianten, falls vorhanden (Ranking / Positionsmodellierung).</li>
-                                    </ul>
-                                    <p className="mt-2 text-xs">Interpretation: Stabil hohe Durchschnittswerte + geringe Streuung deuten auf robuste Methode hin. Einzelne Ausreisser können durch Captain-Wahl oder fehlende Verfügbarkeit echter Punkte entstehen.</p>
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className="text-sm font-semibold mb-2 flex items-center gap-2"><Filter className="w-4 h-4" /> Methoden filtern</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                        {Array.from(new Set(backtestData.detail.map(r => r.method))).map(m => (
-                                            <button
-                                                key={m}
-                                                onClick={() => toggleMethod(m)}
-                                                className={`px-3 py-1.5 rounded-md border text-xs font-medium flex items-center gap-2 transition-colors ${selectedMethods.includes(m) ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'}`}
-                                                title={`Toggle ${m}`}
-                                            >
-                                                <span className="inline-block w-2 h-2 rounded-full" style={{ background: METHOD_COLORS[m] || '#6b7280' }} /> {m.toUpperCase()}
-                                            </button>
-                                        ))}
-                                        <button
-                                            onClick={toggleAll}
-                                            className="px-3 py-1.5 rounded-md border text-xs font-semibold bg-indigo-600 text-white border-indigo-600"
-                                        >{allSelected ? 'Alle aus' : 'Alle an'}</button>
-                                    </div>
-                                    <div className="mt-4 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                                        <Table className="w-4 h-4" />
-                                        <button
-                                            onClick={() => setShowTable(t => !t)}
-                                            className="underline decoration-dotted hover:text-gray-700 dark:hover:text-gray-200"
-                                        >{showTable ? 'GW-Tabelle ausblenden' : 'GW-Tabelle anzeigen'}</button>
-                                        {pivotCsvUrl && (
-                                            <a href={pivotCsvUrl} download={`backtest_pivot_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.csv`} className="text-blue-600 dark:text-blue-400 hover:text-blue-700 ml-2">Pivot CSV exportieren</a>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
+                            <InfoBox>
+                                <p className="font-semibold mb-2">Was zeigt der Backtest?</p>
+                                <p className="mb-2">
+                                    In diesem Diagramm sieht man die durchschnittlichen Team-Punkte pro Spieltag.
+                                    Jede Linie steht für eine Methode. Ein Punkt bedeutet, dass das Modell ein gültiges
+                                    Team innerhalb der FPL-Regeln gefunden hat. Fehlen Punkte, konnte kein Team gebildet werden
+                                    (z. B. wegen Datenlücken oder zu strengen Constraints).
+                                </p>
+                                <p className="text-sm">
+                                    <strong>Effizienz:</strong> Verhältnis aus erzielten XI-Punkten (inkl. Captain) zur hypothetisch
+                                    perfekten Auswahl auf Basis der echten Punkte (Hindsight-Optimum). 100&nbsp;% = identische Punkte
+                                    wie theoretisches Maximum.
+                                </p>
+                            </InfoBox>
                         </motion.div>
                     )}
 
@@ -449,13 +388,28 @@ export default function BacktestPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.3 }}
-                            className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700"
                         >
-                            <TeamBacktestChart
-                                data={filteredDetail}
-                                title={`Team Backtest: ${backtestData.season}, GW ${backtestData.gw_start}-${backtestData.gw_end}`}
-                                height="600px"
-                            />
+                            <Card>
+                                <SectionHeader
+                                    title="Punkteverlauf"
+                                    subtitle={`${backtestData.season}, GW ${backtestData.gw_start}-${backtestData.gw_end}`}
+                                    action={
+                                        <button
+                                            onClick={() => setShowTable(t => !t)}
+                                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors"
+                                        >
+                                            <Table className="w-4 h-4" />
+                                            {showTable ? 'Tabelle ausblenden' : 'Tabelle anzeigen'}
+                                        </button>
+                                    }
+                                    className="mb-4"
+                                />
+                                <TeamBacktestChart
+                                    data={filteredDetail}
+                                    title=""
+                                    height="500px"
+                                />
+                            </Card>
                         </motion.div>
                     )}
 
@@ -465,85 +419,83 @@ export default function BacktestPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.35 }}
-                            className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 mt-8"
                         >
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                                GW Punkte Vergleich (beste Methode hervorgehoben)
-                                <Tooltip content={tooltips.gw_range}>
-                                    <span className="text-sm text-gray-500 dark:text-gray-400 cursor-help">ℹ</span>
-                                </Tooltip>
-                            </h3>
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full text-sm">
-                                    <thead className="sticky top-0 bg-gray-100 dark:bg-gray-700">
-                                        <tr className="text-gray-700 dark:text-gray-200">
-                                            <th
-                                                className="px-3 py-2 text-left cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                                                onClick={() => {
-                                                    if (sortColumn === 'gw') setSortDirection(d => d === 'asc' ? 'desc' : 'asc')
-                                                    else { setSortColumn('gw'); setSortDirection('asc') }
-                                                }}
+                            <Card>
+                                <SectionHeader
+                                    title="Detaillierte Daten pro Gameweek"
+                                    action={
+                                        pivotCsvUrl && (
+                                            <a
+                                                href={pivotCsvUrl}
+                                                download={`backtest_pivot_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.csv`}
+                                                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
                                             >
-                                                <span className="flex items-center gap-1">
-                                                    GW <ArrowUpDown className="w-3 h-3" />
-                                                </span>
-                                            </th>
-                                            {Array.from(new Set(backtestData.detail.map(r => r.method))).map(m => (
+                                                <Download className="w-4 h-4" />
+                                                CSV Export
+                                            </a>
+                                        )
+                                    }
+                                    className="mb-4"
+                                />
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full text-sm">
+                                        <thead className="sticky top-0 bg-gray-100 dark:bg-gray-700">
+                                            <tr className="text-gray-700 dark:text-gray-200">
                                                 <th
-                                                    key={m}
                                                     className="px-3 py-2 text-left cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                                     onClick={() => {
-                                                        if (sortColumn === m) setSortDirection(d => d === 'asc' ? 'desc' : 'asc')
-                                                        else { setSortColumn(m); setSortDirection('desc') }
+                                                        if (sortColumn === 'gw') setSortDirection(d => d === 'asc' ? 'desc' : 'asc')
+                                                        else { setSortColumn('gw'); setSortDirection('asc') }
                                                     }}
                                                 >
                                                     <span className="flex items-center gap-1">
-                                                        {m.toUpperCase()} <ArrowUpDown className="w-3 h-3" />
+                                                        GW <ArrowUpDown className="w-3 h-3" />
                                                     </span>
                                                 </th>
-                                            ))}
-                                            <th className="px-3 py-2 text-left">
-                                                <Tooltip content={tooltips.hindsight_optimum}>
-                                                    <span className="border-b border-dotted border-gray-400 cursor-help">Optimum</span>
-                                                </Tooltip>
-                                            </th>
-                                            <th className="px-3 py-2 text-left">
-                                                <Tooltip content={tooltips.effizienz}>
-                                                    <span className="border-b border-dotted border-gray-400 cursor-help">Effizienz RF</span>
-                                                </Tooltip>
-                                            </th>
-                                            <th className="px-3 py-2 text-left">Beste</th>
-                                            <th className="px-3 py-2 text-left">Diff RF→Best</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {pivotRows.map((row, idx) => {
-                                            const methods = Array.from(new Set(backtestData.detail.map(r => r.method)))
-                                            const best = row.best_method
-                                            const rfVal = row['rf'] ?? null
-                                            const diff = rfVal !== null ? (row.best_points - rfVal) : ''
-                                            return (
-                                                <tr
-                                                    key={row.gw}
-                                                    className={`border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${idx % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800/50'}`}
-                                                >
-                                                    <td className="px-3 py-1.5 font-medium text-gray-900 dark:text-gray-100">{row.gw}</td>
-                                                    {methods.map(m => (
-                                                        <td key={m} className={`px-3 py-1.5 ${best === m ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
-                                                            {row[m] !== undefined ? row[m].toFixed(1) : '-'}
+                                                {Array.from(new Set(backtestData.detail.map(r => r.method))).map(m => (
+                                                    <th
+                                                        key={m}
+                                                        className="px-3 py-2 text-left cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                                        onClick={() => {
+                                                            if (sortColumn === m) setSortDirection(d => d === 'asc' ? 'desc' : 'asc')
+                                                            else { setSortColumn(m); setSortDirection('desc') }
+                                                        }}
+                                                    >
+                                                        <span className="flex items-center gap-1">
+                                                            {m.toUpperCase()} <ArrowUpDown className="w-3 h-3" />
+                                                        </span>
+                                                    </th>
+                                                ))}
+                                                <th className="px-3 py-2 text-left">Effizienz RF</th>
+                                                <th className="px-3 py-2 text-left">Beste Methode</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {pivotRows.map((row, idx) => {
+                                                const methods = Array.from(new Set(backtestData.detail.map(r => r.method)))
+                                                const best = row.best_method
+                                                return (
+                                                    <tr
+                                                        key={row.gw}
+                                                        className={`border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${idx % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800/50'}`}
+                                                    >
+                                                        <td className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100">{row.gw}</td>
+                                                        {methods.map(m => (
+                                                            <td key={m} className={`px-3 py-2 ${best === m ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                                                                {row[m] !== undefined ? row[m].toFixed(1) : '-'}
+                                                            </td>
+                                                        ))}
+                                                        <td className="px-3 py-2 text-gray-700 dark:text-gray-300">{formatEff(row.efficiency_rf)}</td>
+                                                        <td className="px-3 py-2 font-semibold text-gray-900 dark:text-gray-100">
+                                                            {best.toUpperCase()} ({row.best_points.toFixed(1)})
                                                         </td>
-                                                    ))}
-                                                    <td className="px-3 py-1.5 text-gray-700 dark:text-gray-300">{row.optimum ? row.optimum.toFixed(1) : '-'}</td>
-                                                    <td className="px-3 py-1.5 text-gray-700 dark:text-gray-300">{formatEff(row.efficiency_rf)}</td>
-                                                    <td className="px-3 py-1.5 font-semibold text-gray-900 dark:text-gray-100">{best.toUpperCase()} ({row.best_points.toFixed(1)})</td>
-                                                    <td className="px-3 py-1.5 text-gray-700 dark:text-gray-300">{typeof diff === 'number' ? diff.toFixed(1) : '-'}</td>
-                                                </tr>
-                                            )
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                            <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">Diff RF→Best zeigt wie viele Punkte RF gegenüber der jeweils besten Methode verloren hat (negativ = RF schlechter). Effizienz RF bezieht sich auf das Hindsight-Optimum (theoretisches Maximum für diese GW). Nur informative Kennzahlen – Captain-Volatilität beachten. Klicke auf Spaltenüberschriften zum Sortieren.</p>
+                                                    </tr>
+                                                )
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </Card>
                         </motion.div>
                     )}
 
@@ -553,37 +505,41 @@ export default function BacktestPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5, delay: 0.4 }}
-                            className="mt-8 flex flex-wrap gap-4 justify-center"
                         >
-                            <a
-                                href={`/api/files?name=team_backtest_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.csv`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                            >
-                                <Download className="w-4 h-4" />
-                                Detail CSV
-                            </a>
+                            <Card>
+                                <SectionHeader title="Daten exportieren" className="mb-4" />
+                                <div className="flex flex-wrap gap-3">
+                                    <a
+                                        href={`/api/files?name=team_backtest_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.csv`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                        Detail CSV
+                                    </a>
 
-                            <a
-                                href={`/api/files?name=team_backtest_summary_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.csv`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
-                            >
-                                <Download className="w-4 h-4" />
-                                Summary CSV
-                            </a>
+                                    <a
+                                        href={`/api/files?name=team_backtest_summary_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.csv`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors text-sm font-medium"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                        Summary CSV
+                                    </a>
 
-                            <a
-                                href={`/api/files?name=team_backtest_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.png`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors"
-                            >
-                                <Download className="w-4 h-4" />
-                                PNG Plot
-                            </a>
+                                    <a
+                                        href={`/api/files?name=team_backtest_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.png`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors text-sm font-medium"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                        PNG Plot
+                                    </a>
+                                </div>
+                            </Card>
                         </motion.div>
                     )}
                 </div>

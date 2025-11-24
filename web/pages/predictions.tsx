@@ -516,8 +516,6 @@ export default function PredictionsPage() {
                 <title>Prognosen GW{selectedGW ?? ''} — FPL Assistent</title>
             </Head>
 
-            <Navbar />
-
             <div className="space-y-6 container mx-auto px-4 py-8">
                 {/* Toolbar mit Auswahl */}
                 <motion.div

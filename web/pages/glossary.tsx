@@ -62,29 +62,11 @@ export default function GlossaryPage() {
                 <title>Glossar — FPL Assistent</title>
                 <meta name="description" content="Alle FPL-Begriffe einfach erklärt" />
             </Head>
-
-            <div className="space-y-8">
-                {/* Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="text-center space-y-4"
-                >
-                    <div className="flex justify-center">
-                        <div className="p-4 bg-gradient-to-br from-green-500 to-blue-600 rounded-full">
-                            <BookOpen className="h-12 w-12 text-white" />
-                        </div>
-                    </div>
-                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
-                        Glossar
-                    </h1>
-                    <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                        Alle FPL-Begriffe einfach erklärt
-                    </p>
-                </motion.div>
-
-                {/* Glossary Groups */}
+            <div className="max-w-5xl mx-auto px-4 space-y-6 mt-6">
+                <div className="bg-blue-100 border border-blue-400 text-blue-800 px-6 py-4 rounded-lg mb-8 text-center font-bold text-xl">
+                    Das Glossar ist Teil der Dokumentation und unter <a href="/info" className="underline text-blue-700">Info</a> verlinkt.
+                </div>
+                {/* Glossar bleibt für die Dokumentation erhalten */}
                 <div className="space-y-8">
                     {glossaryGroups.map((group, groupIndex) => (
                         <motion.section
@@ -118,22 +100,6 @@ export default function GlossaryPage() {
                         </motion.section>
                     ))}
                 </div>
-
-                {/* Info Box */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.5 }}
-                    className="p-6 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg"
-                >
-                    <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                        Tipp
-                    </h3>
-                    <p className="text-blue-800 dark:text-blue-200">
-                        Alle diese Begriffe findest du auch in der App mit einem kleinen <strong>?</strong>-Symbol.
-                        Fahre einfach mit der Maus darüber, um eine kurze Erklärung zu sehen.
-                    </p>
-                </motion.div>
             </div>
         </>
     )
