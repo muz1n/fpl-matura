@@ -73,7 +73,6 @@ export default function BacktestPage() {
             } catch (err) {
                 console.error('Fehler beim Laden der Seasons:', err)
                 setAvailableSeasons(['2020-21', '2021-22', '2022-23', '2023-24'])
-                setAvailableSeasons(['2020-21', '2021-22', '2022-23', '2023-24'])
                 setSeasonsLoading(false)
             }
         }
@@ -106,7 +105,6 @@ export default function BacktestPage() {
                 setSelectedRange(null)
             }
         }
-        setError('Fehler – Keine Backtest-Daten gefunden')
         fetchRanges()
     }, [selectedSeason])
 
