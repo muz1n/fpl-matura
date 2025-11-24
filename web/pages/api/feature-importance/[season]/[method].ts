@@ -2,7 +2,9 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
+// Basis-Ausgabeordner + neuer Unterordner fuer Feature Importances
 const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
+const FI_DIR = join(OUT_DIR, 'feature_importance')
 
 interface FeatureImportanceRow {
     feature: string
@@ -54,7 +56,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // Datei-Pfad zusammensetzen (mit optionalem Positionssuffix)
         const fileName = pos ? `feature_importance_${season}_${method}_${pos}.json` : `feature_importance_${season}_${method}.json`
-        const filePath = join(OUT_DIR, fileName)
+        // Neuer Pfad im Unterordner
+        const filePath = join(FI_DIR, fileName)
 
         let raw: string
         try {
@@ -64,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 // Falls Positionsdatei fehlt: Fallback auf globale Datei versuchen
                 if (pos) {
                     const fallbackName = `feature_importance_${season}_${method}.json`
-                    const fallbackPath = join(OUT_DIR, fallbackName)
+                    const fallbackPath = join(FI_DIR, fallbackName)
                     try {
                         const rawFallback = await readFile(fallbackPath, 'utf8')
                         const parsedFallback: FeatureImportanceResponse = JSON.parse(rawFallback)

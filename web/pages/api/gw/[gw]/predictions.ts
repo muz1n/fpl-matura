@@ -4,7 +4,10 @@ import { join } from 'node:path'
 import { PredictionsPayloadSchema } from '@/src/types/fpl.schema'
 import { z } from 'zod'
 
+// Basis-Ausgabeordner (ein Verzeichnis über dem Web Root)
 const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
+// Neuer Unterordner für Prognosedateien gemäss Pipeline
+const PRED_DIR = join(OUT_DIR, 'predictions')
 
 // Unterstützte Methoden
 type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank' | 'rf_pos'
@@ -13,16 +16,35 @@ type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank' | 'rf_pos'
  * Scannt das OUT_DIR und gibt alle verfügbaren GW-Nummern zurück
  * + optional ein Map mit verfügbaren Methoden pro GW
  */
+/**
+ * Ermittelt verfügbare Gameweeks & Methoden aus neuer (mit Season & Unterordner) oder alter Struktur.
+ */
 async function getAvailableGWs(): Promise<{ available: number[]; methodsByGw: Record<number, string[]> }> {
     try {
-        const files = await readdir(OUT_DIR)
+        let files: string[] = []
+        try {
+            files = await readdir(PRED_DIR)
+        } catch {
+            files = await readdir(OUT_DIR)
+        }
         const gwSet = new Set<number>()
         const methodsByGw: Record<number, string[]> = {}
 
         // Suche nach predictions_gw{N}.json (legacy) und predictions_gw{N}_{method}.json
         for (const file of files) {
-            // Method-specific: predictions_gw30_rf.json
-            const matchMethod = file.match(/^predictions_gw(\d+)_([a-z0-9]+)\.json$/)
+            // Neue Struktur: predictions_2023-24_gw30_rf.json
+            const matchSeasonMethod = file.match(/^predictions_[0-9]{4}-[0-9]{2}_gw(\d+)_([a-z0-9_]+)\.json$/)
+            if (matchSeasonMethod) {
+                const gw = Number.parseInt(matchSeasonMethod[1], 10)
+                const method = matchSeasonMethod[2]
+                gwSet.add(gw)
+                if (!methodsByGw[gw]) methodsByGw[gw] = []
+                if (!methodsByGw[gw].includes(method)) methodsByGw[gw].push(method)
+                continue
+            }
+
+            // Alte Struktur: predictions_gw30_rf.json
+            const matchMethod = file.match(/^predictions_gw(\d+)_([a-z0-9_]+)\.json$/)
             if (matchMethod) {
                 const gw = Number.parseInt(matchMethod[1], 10)
                 const method = matchMethod[2]
@@ -87,24 +109,41 @@ export default async function handler(
 
         const candidatePaths: Array<{ path: string; method: string; description: string }> = []
 
+        // Neue Struktur (Unterordner + Season-Präfix)
         if (seasonStr) {
             candidatePaths.push({
-                path: join(OUT_DIR, `predictions_${seasonStr}_gw${gwNum}_${method}.json`),
+                path: join(PRED_DIR, `predictions_${seasonStr}_gw${gwNum}_${method}.json`),
                 method,
                 description: `season-specific (${seasonStr})`
             })
         }
-
+        candidatePaths.push({
+            path: join(PRED_DIR, `predictions_gw${gwNum}_${method}.json`),
+            method,
+            description: 'method-specific (subdir)'
+        })
+        candidatePaths.push({
+            path: join(PRED_DIR, `predictions_gw${gwNum}.json`),
+            method: 'legacy',
+            description: 'legacy (subdir)'
+        })
+        // Fallback: alte Root-Struktur falls Unterordner fehlt
+        if (seasonStr) {
+            candidatePaths.push({
+                path: join(OUT_DIR, `predictions_${seasonStr}_gw${gwNum}_${method}.json`),
+                method,
+                description: `season-specific (fallback root)`
+            })
+        }
         candidatePaths.push({
             path: join(OUT_DIR, `predictions_gw${gwNum}_${method}.json`),
             method,
-            description: 'method-specific'
+            description: 'method-specific (fallback root)'
         })
-
         candidatePaths.push({
             path: join(OUT_DIR, `predictions_gw${gwNum}.json`),
             method: 'legacy',
-            description: 'legacy'
+            description: 'legacy (fallback root)'
         })
 
         let raw: string | null = null

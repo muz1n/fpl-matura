@@ -2,7 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 
+// Basis-Ausgabeordner (root der generierten Artefakte ausserhalb des Web-Verzeichnisses)
 const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
+// Unterordner für Prognosen gemäss aktueller Pipeline-Struktur
+const PRED_DIR = join(OUT_DIR, 'predictions')
 
 /**
  * Response-Typ für verfügbare Gameweeks
@@ -25,16 +28,37 @@ interface AvailableGWsResponse {
 /**
  * Scannt das OUT_DIR und gibt alle verfügbaren GW-Nummern zurück
  */
+/**
+ * Liest den Prognose-Unterordner und extrahiert verfügbare Gameweeks + Methoden.
+ * Berücksichtigt neue Dateistruktur: out/predictions/predictions_{season}_gw{N}_{method}.json
+ */
 async function getAvailableGWs(): Promise<{ available: number[]; methodsByGw: Record<number, string[]> }> {
     try {
-        const files = await readdir(OUT_DIR)
+        // Versuche zuerst den neuen Unterordner, falle bei Fehler auf das alte Root zurück
+        let files: string[] = []
+        try {
+            files = await readdir(PRED_DIR)
+        } catch {
+            files = await readdir(OUT_DIR)
+        }
         const gwSet = new Set<number>()
         const methodsByGw: Record<number, string[]> = {}
 
         // Suche nach methodenspezifischen Dateien und Legacy-Dateien
         for (const file of files) {
-            // z.B. predictions_gw30_rf.json
-            const matchMethod = file.match(/^predictions_gw(\d+)_([a-z0-9]+)\.json$/)
+            // Neue Struktur mit Season: predictions_2022-23_gw30_rf.json
+            const matchSeasonMethod = file.match(/^predictions_[0-9]{4}-[0-9]{2}_gw(\d+)_([a-z0-9_]+)\.json$/)
+            if (matchSeasonMethod) {
+                const gw = Number.parseInt(matchSeasonMethod[1], 10)
+                const method = matchSeasonMethod[2]
+                gwSet.add(gw)
+                if (!methodsByGw[gw]) methodsByGw[gw] = []
+                if (!methodsByGw[gw].includes(method)) methodsByGw[gw].push(method)
+                continue
+            }
+
+            // Alte Struktur ohne Season: predictions_gw30_rf.json
+            const matchMethod = file.match(/^predictions_gw(\d+)_([a-z0-9_]+)\.json$/)
             if (matchMethod) {
                 const gw = Number.parseInt(matchMethod[1], 10)
                 const method = matchMethod[2]

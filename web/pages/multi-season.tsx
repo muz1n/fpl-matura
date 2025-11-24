@@ -102,11 +102,29 @@ export default function MultiSeasonBacktestPage() {
         loadAllBacktests()
     }, [])
 
+    /**
+     * Lädt kombinierte Backtest-Daten für alle Seasons (Standard-Range GW2-38)
+     * und setzt den State für Darstellung und Methodenselektion.
+     */
     const loadAllBacktests = async () => {
         setState('loading')
         setError('')
         try {
-            // ...fetch logic...
+            const gwRange = '2-38'
+            const seasonsParam = ALL_SEASONS.join(',')
+            const res = await fetch(`/api/backtest/multi?seasons=${seasonsParam}&gwRange=${gwRange}`)
+            if (!res.ok) {
+                const errJson = await res.json().catch(() => ({}))
+                throw new Error(errJson.error || 'Fehler beim Laden der Multi-Season Backtests')
+            }
+            const json: MultiSeasonResponse = await res.json()
+            setBacktestData(json.data || [])
+            // Falls noch keine Methoden ausgewählt: alle aus erster Season nehmen
+            if (json.data && json.data.length > 0) {
+                const first = json.data[0]
+                const methods = Array.from(new Set(first.detail.map(d => d.method)))
+                if (methods.length) setSelectedMethods(methods)
+            }
             setState('success')
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Fehler beim Laden der Backtest-Daten')
@@ -327,13 +345,18 @@ export default function MultiSeasonBacktestPage() {
 
             <main className="max-w-5xl mx-auto px-4 space-y-6 mt-6">
                 <h1 className="text-3xl font-bold">Multi-Season Backtest</h1>
-                <p className="text-lg text-gray-600 dark:text-gray-400">Vergleich der Modellperformance über 4 Saisons (2020-21 bis 2023-24)</p>
+                <p className="text-lg text-gray-600 dark:text-gray-400">Vergleich der Modellperformance über 4 Saisons (2020-21 bis 2023-24), Range GW2-38</p>
 
                 {/* Loading/Error States */}
                 {state === 'loading' && <LoadingState message="Lade Multi-Season Backtest-Daten..." />}
                 {state === 'error' && (
-                    <div className="bg-red-100 border border-red-400 text-red-800 px-6 py-4 rounded-lg text-center font-bold text-xl">
-                        Fehler – Keine Multi-Season-Backtest-Daten gefunden
+                    <div className="bg-red-100 border border-red-400 text-red-800 px-6 py-4 rounded-lg text-center space-y-2">
+                        <div className="font-bold text-xl">Fehler – Multi-Season-Backtest nicht geladen</div>
+                        <div className="text-sm">{error}</div>
+                        <button
+                            onClick={loadAllBacktests}
+                            className="px-4 py-2 rounded bg-red-600 text-white text-sm font-semibold hover:bg-red-700"
+                        >Erneut versuchen</button>
                     </div>
                 )}
 
@@ -584,7 +607,7 @@ export default function MultiSeasonBacktestPage() {
                 )}
 
                 {/* Empty State */}
-                {state === 'success' && selectedMethods.length === 0 && (
+                {state === 'success' && backtestData.length > 0 && selectedMethods.length === 0 && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -593,6 +616,11 @@ export default function MultiSeasonBacktestPage() {
                         <Filter className="w-12 h-12 mx-auto mb-3 opacity-50" />
                         <p>Keine Methoden ausgewählt. Bitte wähle mindestens eine Methode zum Vergleich.</p>
                     </motion.div>
+                )}
+                {state === 'success' && backtestData.length === 0 && (
+                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                        Keine kombinierten Backtest-Daten gefunden (GW2-38). Erzeuge zuerst Dateien in <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">out/backtests/</code>.
+                    </div>
                 )}
             </main>
         </>

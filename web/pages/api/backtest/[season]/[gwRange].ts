@@ -2,7 +2,10 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { readFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 
+// Basis-Ausgabeordner (ein Verzeichnis über dem Web Root)
 const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
+// Neuer Unterordner für Backtests gemäss aktueller Pipeline-Struktur
+const BACKTEST_DIR = join(OUT_DIR, 'backtests')
 
 interface BacktestDetailRow {
     method: string
@@ -38,16 +41,18 @@ interface BacktestResponse {
 }
 
 /**
- * Scannt OUT_DIR nach verfügbaren Backtest GW-Ranges für eine Season
+ * Ermittelt verfügbare GW-Ranges aus neuer Unterordner-Struktur (backtests/) oder fällt auf alte Root-Struktur zurück.
  */
 async function getAvailableRanges(season: string): Promise<string[]> {
     try {
-        const files = await readdir(OUT_DIR)
+        let files: string[] = []
+        try {
+            files = await readdir(BACKTEST_DIR)
+        } catch {
+            files = await readdir(OUT_DIR) // Fallback: alte Struktur ohne Unterordner
+        }
         const ranges = new Set<string>()
-
-        // Pattern: team_backtest_{season}_gw{start}-{end}.csv
-        const pattern = new RegExp(`^team_backtest_${season.replace(/[-]/g, '-')}_gw(\\d+)-(\\d+)\\.csv$`)
-
+        const pattern = new RegExp(`^team_backtest_${season}_gw(\d+)-(\d+)\.csv$`)
         for (const file of files) {
             const match = file.match(pattern)
             if (match) {
@@ -55,7 +60,6 @@ async function getAvailableRanges(season: string): Promise<string[]> {
                 ranges.add(`${start}-${end}`)
             }
         }
-
         return Array.from(ranges).sort()
     } catch {
         return []
@@ -126,7 +130,8 @@ export default async function handler(
         }
 
         // Load detail CSV
-        const detailFile = join(OUT_DIR, `team_backtest_${season}_gw${gwStart}-${gwEnd}.csv`)
+        // Neuer Pfad im Unterordner (Fallback auf Root bei ENOENT weiter unten durch try/catch)
+        const detailFile = join(BACKTEST_DIR, `team_backtest_${season}_gw${gwStart}-${gwEnd}.csv`)
         let detailData: BacktestDetailRow[] = []
 
         try {
@@ -145,7 +150,7 @@ export default async function handler(
         }
 
         // Load summary CSV
-        const summaryFile = join(OUT_DIR, `team_backtest_summary_${season}_gw${gwStart}-${gwEnd}.csv`)
+        const summaryFile = join(BACKTEST_DIR, `team_backtest_summary_${season}_gw${gwStart}-${gwEnd}.csv`)
         let summaryData: BacktestSummaryRow[] = []
 
         try {
