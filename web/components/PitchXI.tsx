@@ -40,12 +40,10 @@ interface PitchXIProps {
 }
 
 /**
- * Kleine FIFA-artige Spielerkarte für den Pitch.
- * Kompakt, damit 11 Karten sauber Platz haben.
+ * Hilfsfunktion: PitchPlayer zu PlayerCardData konvertieren
  */
-// Reine Pitch-spezifische Wrapper-Karte: nutzt globale PlayerCard ohne Positionsanzeige
-const PitchPlayerCard: React.FC<{ player: PitchPlayer }> = ({ player }) => {
-    const data: PlayerCardData = {
+function toPlayerCardData(player: PitchPlayer): PlayerCardData {
+    return {
         name: player.name,
         team: player.teamShort,
         position: player.position,
@@ -54,7 +52,6 @@ const PitchPlayerCard: React.FC<{ player: PitchPlayer }> = ({ player }) => {
         image: player.photoUrl || null,
         clubImage: player.clubImage || null
     }
-    return <PlayerCard player={data} compact showPosition={false} />
 }
 
 /**
@@ -209,11 +206,12 @@ export const PitchXI: React.FC<PitchXIProps> = ({ formation, players, bench = []
                         </div>
                     )}
                     {!empty && (
-                        <div className="relative z-10 flex h-full flex-col justify-between px-4 py-6">
-                            <div ref={fwdDrop.setNodeRef} id="row_fwd" className="flex flex-1 items-start justify-center gap-4">
+                        <div className="relative z-10 flex h-full flex-col justify-evenly px-4 py-6 gap-2">
+                            <div ref={fwdDrop.setNodeRef} id="row_fwd" className="flex flex-row justify-center gap-4">
                                 {fwds.map((p) => (
                                     <DraggablePlayer key={p.id} p={p}>
                                         <div
+                                            className="relative"
                                             onDoubleClick={() => {
                                                 if (!onCaptainChange) return
                                                 if (captainId === p.id) {
@@ -229,17 +227,18 @@ export const PitchXI: React.FC<PitchXIProps> = ({ formation, players, bench = []
                                                 }
                                             }}
                                         >
-                                            <PitchPlayerCard player={p} />
-                                            {captainId === p.id && <span className="absolute -top-2 -right-2 bg-amber-400 text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full text-slate-900 shadow">C</span>}
-                                            {viceCaptainId === p.id && captainId !== p.id && <span className="absolute -top-2 -right-2 bg-blue-400 text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full text-slate-900 shadow">VC</span>}
+                                            <PlayerCard player={toPlayerCardData(p)} mode="pitch" showPosition={false} />
+                                            {captainId === p.id && <div className="absolute -top-1 -right-1 w-[26px] h-[26px] rounded-full flex items-center justify-center text-[11px] font-bold shadow-lg" style={{ backgroundColor: '#FDD835', color: '#000' }}>C</div>}
+                                            {viceCaptainId === p.id && captainId !== p.id && <div className="absolute -top-1 -right-1 w-[26px] h-[26px] rounded-full flex items-center justify-center text-[11px] font-bold shadow-lg" style={{ backgroundColor: '#42A5F5', color: '#fff' }}>VC</div>}
                                         </div>
                                     </DraggablePlayer>
                                 ))}
                             </div>
-                            <div ref={midDrop.setNodeRef} id="row_mid" className="flex flex-1 items-center justify-center gap-4">
+                            <div ref={midDrop.setNodeRef} id="row_mid" className="flex flex-row justify-center gap-4">
                                 {mids.map((p) => (
                                     <DraggablePlayer key={p.id} p={p}>
                                         <div
+                                            className="relative"
                                             onDoubleClick={() => {
                                                 if (!onCaptainChange) return
                                                 if (captainId === p.id) {
@@ -255,17 +254,18 @@ export const PitchXI: React.FC<PitchXIProps> = ({ formation, players, bench = []
                                                 }
                                             }}
                                         >
-                                            <PitchPlayerCard player={p} />
-                                            {captainId === p.id && <span className="absolute -top-2 -right-2 bg-amber-400 text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full text-slate-900 shadow">C</span>}
-                                            {viceCaptainId === p.id && captainId !== p.id && <span className="absolute -top-2 -right-2 bg-blue-400 text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full text-slate-900 shadow">VC</span>}
+                                            <PlayerCard player={toPlayerCardData(p)} mode="pitch" showPosition={false} />
+                                            {captainId === p.id && <div className="absolute -top-1 -right-1 w-[26px] h-[26px] rounded-full flex items-center justify-center text-[11px] font-bold shadow-lg" style={{ backgroundColor: '#FDD835', color: '#000' }}>C</div>}
+                                            {viceCaptainId === p.id && captainId !== p.id && <div className="absolute -top-1 -right-1 w-[26px] h-[26px] rounded-full flex items-center justify-center text-[11px] font-bold shadow-lg" style={{ backgroundColor: '#42A5F5', color: '#fff' }}>VC</div>}
                                         </div>
                                     </DraggablePlayer>
                                 ))}
                             </div>
-                            <div ref={defDrop.setNodeRef} id="row_def" className="flex flex-1 items-center justify-center gap-4">
+                            <div ref={defDrop.setNodeRef} id="row_def" className="flex flex-row justify-center gap-4">
                                 {defs.map((p) => (
                                     <DraggablePlayer key={p.id} p={p}>
                                         <div
+                                            className="relative"
                                             onDoubleClick={() => {
                                                 if (!onCaptainChange) return
                                                 if (captainId === p.id) {
@@ -281,17 +281,18 @@ export const PitchXI: React.FC<PitchXIProps> = ({ formation, players, bench = []
                                                 }
                                             }}
                                         >
-                                            <PitchPlayerCard player={p} />
-                                            {captainId === p.id && <span className="absolute -top-2 -right-2 bg-amber-400 text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full text-slate-900 shadow">C</span>}
-                                            {viceCaptainId === p.id && captainId !== p.id && <span className="absolute -top-2 -right-2 bg-blue-400 text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full text-slate-900 shadow">VC</span>}
+                                            <PlayerCard player={toPlayerCardData(p)} mode="pitch" showPosition={false} />
+                                            {captainId === p.id && <div className="absolute -top-1 -right-1 w-[26px] h-[26px] rounded-full flex items-center justify-center text-[11px] font-bold shadow-lg" style={{ backgroundColor: '#FDD835', color: '#000' }}>C</div>}
+                                            {viceCaptainId === p.id && captainId !== p.id && <div className="absolute -top-1 -right-1 w-[26px] h-[26px] rounded-full flex items-center justify-center text-[11px] font-bold shadow-lg" style={{ backgroundColor: '#42A5F5', color: '#fff' }}>VC</div>}
                                         </div>
                                     </DraggablePlayer>
                                 ))}
                             </div>
-                            <div ref={gkDrop.setNodeRef} id="row_gk" className="flex flex-1 items-end justify-center gap-4">
+                            <div ref={gkDrop.setNodeRef} id="row_gk" className="flex flex-row justify-center gap-4">
                                 {gks.map((p) => (
                                     <DraggablePlayer key={p.id} p={p}>
                                         <div
+                                            className="relative"
                                             onDoubleClick={() => {
                                                 if (!onCaptainChange) return
                                                 if (captainId === p.id) {
@@ -307,9 +308,9 @@ export const PitchXI: React.FC<PitchXIProps> = ({ formation, players, bench = []
                                                 }
                                             }}
                                         >
-                                            <PitchPlayerCard player={p} />
-                                            {captainId === p.id && <span className="absolute -top-2 -right-2 bg-amber-400 text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full text-slate-900 shadow">C</span>}
-                                            {viceCaptainId === p.id && captainId !== p.id && <span className="absolute -top-2 -right-2 bg-blue-400 text-[0.6rem] font-bold px-1.5 py-0.5 rounded-full text-slate-900 shadow">VC</span>}
+                                            <PlayerCard player={toPlayerCardData(p)} mode="pitch" showPosition={false} />
+                                            {captainId === p.id && <div className="absolute -top-1 -right-1 w-[26px] h-[26px] rounded-full flex items-center justify-center text-[11px] font-bold shadow-lg" style={{ backgroundColor: '#FDD835', color: '#000' }}>C</div>}
+                                            {viceCaptainId === p.id && captainId !== p.id && <div className="absolute -top-1 -right-1 w-[26px] h-[26px] rounded-full flex items-center justify-center text-[11px] font-bold shadow-lg" style={{ backgroundColor: '#42A5F5', color: '#fff' }}>VC</div>}
                                         </div>
                                     </DraggablePlayer>
                                 ))}
@@ -322,7 +323,7 @@ export const PitchXI: React.FC<PitchXIProps> = ({ formation, players, bench = []
             <div ref={benchDrop.setNodeRef} id="row_bench" className="mt-4 flex justify-center gap-3 flex-wrap">
                 {benchLocal.map(b => (
                     <DraggablePlayer key={b.id} p={b}>
-                        <PitchPlayerCard player={b} />
+                        <PlayerCard player={toPlayerCardData(b)} mode="bench" showPosition={false} />
                     </DraggablePlayer>
                 ))}
                 {benchLocal.length === 0 && <div className="text-xs text-slate-400">Bench leer</div>}

@@ -91,14 +91,20 @@ function crestUrlFromTeam(team: string | null, season: string): string | null {
     return svgDataUrl(initialsFromName(team), '#111827', '#f9fafb')
 }
 
+/**
+ * Generiert die FPL Photo URL für ein gegebenes photo_code.
+ * Standard Format: 250x250 für bessere Qualität.
+ * Rückgabe: null falls photo ungültig, sonst URL String.
+ */
+export function getFplPhotoUrl(photo: number | null | undefined): string | null {
+    if (!photo || Number.isNaN(photo)) return null
+    return `https://resources.premierleague.com/premierleague/photos/players/250x250/p${photo}.png`
+}
+
 // Liefert Headshot URL. Verwendet Standard 110x140 Format, da dieses stabiler ist.
 // Falls kein photo_code vorhanden: Inline SVG Placeholder mit Initialen.
 function headshotUrlFromPlayer(p: PlayerRow): string | null {
-    if (p.photo_code && !Number.isNaN(p.photo_code)) {
-        // Standard FPL Pfad (110x140). Falls Bild 404 liefert, Client wechselt via onError auf Platzhalter.
-        return `https://resources.premierleague.com/premierleague/photos/players/110x140/p${p.photo_code}.png`
-    }
-    return svgDataUrl(initialsFromName(p.name), '#0f766e', '#ecfeff')
+    return getFplPhotoUrl(p.photo_code) || svgDataUrl(initialsFromName(p.name), '#0f766e', '#ecfeff')
 }
 
 function resolveDataPathForSeason(season: string): { type: 'merged' | 'cleaned' | 'none'; filePath: string | null } {
