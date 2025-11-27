@@ -248,24 +248,27 @@ export default function BacktestPage() {
                 <meta name="description" content="Multi-GW Team Backtest: Vergleich verschiedener Prognosemethoden" />
             </Head>
 
-            <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+            <main className="min-h-screen bg-slate-900 text-slate-100">
+                <Navbar />
+                <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
                     {/* Header */}
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="text-center"
+                        className="text-center md:text-left"
                     >
-                        <div className="flex items-center justify-center gap-3 mb-3">
-                            <BarChart3 className="w-10 h-10 text-blue-600 dark:text-blue-400" />
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                                Historischer Backtest
-                            </h1>
+                        <div className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-6">
+                            <div className="flex items-center gap-3 mb-3">
+                                <BarChart3 className="w-10 h-10 text-emerald-400" />
+                                <h1 className="text-2xl md:text-3xl font-bold text-slate-100">
+                                    Historischer Backtest
+                                </h1>
+                            </div>
+                            <p className="text-sm text-slate-400 max-w-2xl mx-auto md:mx-0">
+                                Vergleich der Prognosemethoden über mehrere Gameweeks
+                            </p>
                         </div>
-                        <p className="text-base text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                            Vergleich der Prognosemethoden über mehrere Gameweeks
-                        </p>
                     </motion.div>
 
                     {/* Controls */}
@@ -275,52 +278,57 @@ export default function BacktestPage() {
                         transition={{ duration: 0.4, delay: 0.1 }}
                     >
                         <ControlPanel>
-                            <Select
-                                label="Saison"
-                                value={selectedSeason}
-                                onChange={(val) => setSelectedSeason(val as string)}
-                                options={availableSeasons.map(s => ({
-                                    value: s,
-                                    label: s
-                                }))}
-                                disabled={seasonsLoading || availableSeasons.length === 0}
-                            />
+                            <ControlPanel className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-6">
+                                <Select
+                                    label="Saison"
+                                    value={selectedSeason}
+                                    onChange={(val) => setSelectedSeason(val as string)}
+                                    options={availableSeasons.map(s => ({
+                                        value: s,
+                                        label: s
+                                    }))}
+                                    disabled={seasonsLoading || availableSeasons.length === 0}
+                                />
 
-                            <Select
-                                label="Spieltag-Bereich"
-                                value={selectedRange || ''}
-                                onChange={(val) => setSelectedRange(val as string)}
-                                options={availableRanges.map(r => ({
-                                    value: r,
-                                    label: `GW ${r}`
-                                }))}
-                                disabled={availableRanges.length === 0}
-                            />
+                                <Select
+                                    label="Spieltag-Bereich"
+                                    value={selectedRange || ''}
+                                    onChange={(val) => setSelectedRange(val as string)}
+                                    options={availableRanges.map(r => ({
+                                        value: r,
+                                        label: `GW ${r}`
+                                    }))}
+                                    disabled={availableRanges.length === 0}
+                                />
 
-                            <div className="flex items-end">
-                                <div className="w-full">
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Methoden filtern
-                                    </label>
-                                    <div className="flex flex-wrap gap-2">
-                                        {backtestData && Array.from(new Set(backtestData.detail.map(r => r.method))).map(m => (
-                                            <button
-                                                key={m}
-                                                onClick={() => toggleMethod(m)}
-                                                className={`px-3 py-1.5 rounded-md border text-xs font-medium flex items-center gap-2 transition-colors ${selectedMethods.includes(m) ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-600'}`}
-                                            >
-                                                <span className="inline-block w-2 h-2 rounded-full" style={{ background: METHOD_COLORS[m] || '#6b7280' }} /> {m.toUpperCase()}
-                                            </button>
-                                        ))}
+                                <div className="flex items-end">
+                                    <div className="w-full">
+                                        <label className="block text-sm font-medium text-slate-200 mb-2">
+                                            Methoden filtern
+                                        </label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {backtestData && Array.from(new Set(backtestData.detail.map(r => r.method))).map(m => (
+                                                <button
+                                                    key={m}
+                                                    onClick={() => toggleMethod(m)}
+                                                    className={`px-3 py-1.5 rounded-md border text-xs font-medium flex items-center gap-2 transition-colors ${selectedMethods.includes(m)
+                                                        ? 'bg-emerald-600 text-white border-emerald-500'
+                                                        : 'bg-slate-900/60 text-slate-200 border-slate-700 hover:bg-slate-800'}
+                                                    `}
+                                                >
+                                                    <span className="inline-block w-2 h-2 rounded-full" style={{ background: METHOD_COLORS[m] || '#6b7280' }} /> {m.toUpperCase()}
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </ControlPanel>
                         </ControlPanel>
 
                         {availableRanges.length === 0 && !seasonsLoading && (
                             <div className="mt-4">
                                 <InfoBox variant="warning">
-                                    Keine Backtest-Daten für Saison {selectedSeason} verfügbar. Führe zuerst <code className="bg-gray-100 dark:bg-gray-700 px-1 rounded">team_backtest.py</code> aus.
+                                    Keine Backtest-Daten für Saison {selectedSeason} verfügbar. Führe zuerst <code className="bg-slate-900/60 border border-slate-700 px-1 rounded text-xs text-slate-100">team_backtest.py</code> aus.
                                 </InfoBox>
                             </div>
                         )}
@@ -340,7 +348,6 @@ export default function BacktestPage() {
                             <SectionHeader
                                 title="Übersicht"
                                 subtitle="Durchschnittswerte für alle Methoden"
-                                className="mb-4"
                             />
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {backtestData.summary.map((row) => (
@@ -350,6 +357,7 @@ export default function BacktestPage() {
                                         value={`${row.avg_xi_points.toFixed(1)} Pkt`}
                                         subtitle={`${row.n_gw} GWs • Ø ${formatEff(row.avg_efficiency)}`}
                                         icon={<Activity className="w-5 h-5" />}
+                                        className="rounded-2xl shadow-lg p-5"
                                     />
                                 ))}
                             </div>
@@ -363,15 +371,15 @@ export default function BacktestPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.25 }}
                         >
-                            <InfoBox>
-                                <p className="font-semibold mb-2">Was zeigt der Backtest?</p>
-                                <p className="mb-2">
+                            <InfoBox className="rounded-2xl shadow-lg p-6">
+                                <p className="text-sm font-semibold text-slate-100">Was zeigt der Backtest?</p>
+                                <p className="text-sm text-slate-200">
                                     In diesem Diagramm sieht man die durchschnittlichen Team-Punkte pro Spieltag.
                                     Jede Linie steht für eine Methode. Ein Punkt bedeutet, dass das Modell ein gültiges
                                     Team innerhalb der FPL-Regeln gefunden hat. Fehlen Punkte, konnte kein Team gebildet werden
                                     (z. B. wegen Datenlücken oder zu strengen Constraints).
                                 </p>
-                                <p className="text-sm">
+                                <p className="text-sm text-slate-200">
                                     <strong>Effizienz:</strong> Verhältnis aus erzielten XI-Punkten (inkl. Captain) zur hypothetisch
                                     perfekten Auswahl auf Basis der echten Punkte (Hindsight-Optimum). 100&nbsp;% = identische Punkte
                                     wie theoretisches Maximum.
@@ -387,20 +395,19 @@ export default function BacktestPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.3 }}
                         >
-                            <Card>
+                            <Card className="rounded-2xl shadow-lg p-6">
                                 <SectionHeader
                                     title="Punkteverlauf"
                                     subtitle={`${backtestData.season}, GW ${backtestData.gw_start}-${backtestData.gw_end}`}
                                     action={
                                         <button
                                             onClick={() => setShowTable(t => !t)}
-                                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors"
+                                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md bg-slate-700 hover:bg-slate-600 text-slate-100 border border-slate-600 transition-colors"
                                         >
                                             <Table className="w-4 h-4" />
                                             {showTable ? 'Tabelle ausblenden' : 'Tabelle anzeigen'}
                                         </button>
                                     }
-                                    className="mb-4"
                                 />
                                 <TeamBacktestChart
                                     data={filteredDetail}
@@ -418,7 +425,7 @@ export default function BacktestPage() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.35 }}
                         >
-                            <Card>
+                            <Card className="rounded-2xl shadow-lg p-6">
                                 <SectionHeader
                                     title="Detaillierte Daten pro Gameweek"
                                     action={
@@ -426,21 +433,20 @@ export default function BacktestPage() {
                                             <a
                                                 href={pivotCsvUrl}
                                                 download={`backtest_pivot_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.csv`}
-                                                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                                                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-white rounded-md transition-colors"
                                             >
                                                 <Download className="w-4 h-4" />
                                                 CSV Export
                                             </a>
                                         )
                                     }
-                                    className="mb-4"
                                 />
                                 <div className="overflow-x-auto">
                                     <table className="min-w-full text-sm">
-                                        <thead className="sticky top-0 bg-gray-100 dark:bg-gray-700">
-                                            <tr className="text-gray-700 dark:text-gray-200">
+                                        <thead className="sticky top-0 bg-slate-900/90 border-b border-slate-700">
+                                            <tr className="text-[11px] uppercase tracking-wide text-slate-300">
                                                 <th
-                                                    className="px-3 py-2 text-left cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                                    className="px-3 py-2 text-left cursor-pointer hover:bg-slate-800 transition-colors"
                                                     onClick={() => {
                                                         if (sortColumn === 'gw') setSortDirection(d => d === 'asc' ? 'desc' : 'asc')
                                                         else { setSortColumn('gw'); setSortDirection('asc') }
@@ -453,7 +459,7 @@ export default function BacktestPage() {
                                                 {Array.from(new Set(backtestData.detail.map(r => r.method))).map(m => (
                                                     <th
                                                         key={m}
-                                                        className="px-3 py-2 text-left cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                                                        className="px-3 py-2 text-left cursor-pointer hover:bg-slate-800 transition-colors"
                                                         onClick={() => {
                                                             if (sortColumn === m) setSortDirection(d => d === 'asc' ? 'desc' : 'asc')
                                                             else { setSortColumn(m); setSortDirection('desc') }
@@ -464,8 +470,8 @@ export default function BacktestPage() {
                                                         </span>
                                                     </th>
                                                 ))}
-                                                <th className="px-3 py-2 text-left">Effizienz RF</th>
-                                                <th className="px-3 py-2 text-left">Beste Methode</th>
+                                                <th className="px-3 py-2 text-left cursor-pointer hover:bg-slate-800 transition-colors">Effizienz RF</th>
+                                                <th className="px-3 py-2 text-left cursor-pointer hover:bg-slate-800 transition-colors">Beste Methode</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -475,16 +481,16 @@ export default function BacktestPage() {
                                                 return (
                                                     <tr
                                                         key={row.gw}
-                                                        className={`border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${idx % 2 === 0 ? 'bg-white dark:bg-gray-800' : 'bg-gray-50 dark:bg-gray-800/50'}`}
+                                                        className="border-b border-slate-700 hover:bg-slate-800/60 transition-colors"
                                                     >
-                                                        <td className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100">{row.gw}</td>
+                                                        <td className="px-3 py-2 text-slate-200 text-sm">{row.gw}</td>
                                                         {methods.map(m => (
-                                                            <td key={m} className={`px-3 py-2 ${best === m ? 'font-semibold text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>
+                                                            <td key={m} className={`px-3 py-2 text-slate-200 text-sm${best === m ? ' font-semibold text-emerald-400' : ''}`}>
                                                                 {row[m] !== undefined ? row[m].toFixed(1) : '-'}
                                                             </td>
                                                         ))}
-                                                        <td className="px-3 py-2 text-gray-700 dark:text-gray-300">{formatEff(row.efficiency_rf)}</td>
-                                                        <td className="px-3 py-2 font-semibold text-gray-900 dark:text-gray-100">
+                                                        <td className="px-3 py-2 text-slate-200 text-sm">{formatEff(row.efficiency_rf)}</td>
+                                                        <td className="px-3 py-2 font-semibold text-emerald-400">
                                                             {best.toUpperCase()} ({row.best_points.toFixed(1)})
                                                         </td>
                                                     </tr>
@@ -511,7 +517,7 @@ export default function BacktestPage() {
                                         href={`/api/files?name=team_backtest_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.csv`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
+                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors bg-emerald-600 hover:bg-emerald-700"
                                     >
                                         <Download className="w-4 h-4" />
                                         Detail CSV
@@ -521,7 +527,7 @@ export default function BacktestPage() {
                                         href={`/api/files?name=team_backtest_summary_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.csv`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors text-sm font-medium"
+                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors bg-slate-700 hover:bg-slate-600"
                                     >
                                         <Download className="w-4 h-4" />
                                         Summary CSV
@@ -531,7 +537,7 @@ export default function BacktestPage() {
                                         href={`/api/files?name=team_backtest_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.png`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white rounded-lg transition-colors text-sm font-medium"
+                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors bg-slate-700 hover:bg-slate-600"
                                     >
                                         <Download className="w-4 h-4" />
                                         PNG Plot

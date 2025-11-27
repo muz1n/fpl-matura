@@ -14,17 +14,17 @@ interface SummaryCardProps {
  */
 export function SummaryCard({ title, value, subtitle, icon, className = '' }: SummaryCardProps) {
     return (
-        <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 ${className}`}>
+        <div className={`bg-slate-800/90 border border-slate-700 rounded-lg shadow-sm p-4 ${className}`}>
             <div className="flex items-start justify-between">
                 <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
-                    <p className="mt-2 text-2xl font-semibold text-gray-900 dark:text-white">{value}</p>
+                    <p className="text-xs text-slate-400">{title}</p>
+                    <p className="mt-2 text-xl font-semibold text-slate-100">{value}</p>
                     {subtitle && (
-                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{subtitle}</p>
+                        <p className="mt-1 text-[11px] text-slate-400">{subtitle}</p>
                     )}
                 </div>
                 {icon && (
-                    <div className="text-gray-400 dark:text-gray-500">
+                    <div className="text-emerald-400">
                         {icon}
                     </div>
                 )}
