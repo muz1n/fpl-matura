@@ -607,7 +607,14 @@ export default function PredictionsPage() {
                                                             {player.team}
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap">
-                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-900/60 border border-slate-700 text-slate-200">
+                                                            <span
+                                                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium uppercase tracking-wide
+                                                                    ${player.pos === 'GK' ? 'bg-slate-800 border border-slate-600 text-slate-200' : ''}
+                                                                    ${player.pos === 'DEF' ? 'bg-sky-900/60 border border-sky-600/60 text-sky-200' : ''}
+                                                                    ${player.pos === 'MID' ? 'bg-emerald-900/60 border border-emerald-600/60 text-emerald-200' : ''}
+                                                                    ${player.pos === 'FWD' ? 'bg-rose-900/60 border border-rose-600/60 text-rose-200' : ''}
+                                                                `}
+                                                            >
                                                                 {player.pos}
                                                             </span>
                                                         </td>
@@ -618,8 +625,12 @@ export default function PredictionsPage() {
                                                             {player.predicted_points.toFixed(1)}
                                                         </td>
                                                         <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                                                            {isCaptain && <span className="inline-flex items-center px-2 py-1 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 font-semibold text-xs">K</span>}
-                                                            {isVice && <span className="inline-flex items-center px-2 py-1 rounded bg-sky-100 dark:bg-sky-900/30 text-sky-800 dark:text-sky-400 font-semibold text-xs">VK</span>}
+                                                            {isCaptain && (
+                                                                <span className="inline-flex items-center px-2 py-1 rounded-full bg-emerald-600/20 border border-emerald-400/70 text-emerald-200 font-semibold text-xs uppercase tracking-wide">K</span>
+                                                            )}
+                                                            {isVice && (
+                                                                <span className="inline-flex items-center px-2 py-1 rounded-full bg-sky-600/20 border border-sky-400/70 text-sky-200 font-semibold text-xs uppercase tracking-wide">VK</span>
+                                                            )}
                                                         </td>
                                                     </tr>
                                                 )

@@ -174,7 +174,7 @@ export default function MultiSeasonBacktestPage() {
             title: {
                 text: 'Durchschnittliche Punkte pro Season',
                 left: 'center',
-                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#374151' }
+                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#e2e8f0' }
             },
             tooltip: {
                 trigger: 'axis',
@@ -187,12 +187,12 @@ export default function MultiSeasonBacktestPage() {
                     return result;
                 }
             },
-            legend: { bottom: 10, textStyle: { color: '#6b7280' } },
+            legend: { bottom: 10, textStyle: { color: '#cbd5e1' } },
             grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
             xAxis: {
                 type: 'category',
                 data: backtestData.map(d => d.season),
-                axisLabel: { color: '#6b7280', fontSize: 12 }
+                axisLabel: { color: '#cbd5e1', fontSize: 12 }
             },
             yAxis: {
                 type: 'value'
@@ -218,18 +218,18 @@ export default function MultiSeasonBacktestPage() {
             title: {
                 text: 'Abgedeckte Spieltage pro Season',
                 left: 'center',
-                textStyle: { fontSize: 16, fontWeight: 'bold', color: '#374151' }
+                textStyle: { fontSize: 16, fontWeight: 'bold', color: '#e2e8f0' }
             },
             tooltip: {
                 trigger: 'axis',
                 axisPointer: { type: 'shadow' }
             },
-            legend: { bottom: 10, textStyle: { color: '#6b7280' } },
+            legend: { bottom: 10, textStyle: { color: '#cbd5e1' } },
             grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
             xAxis: {
                 type: 'category',
                 data: backtestData.map(d => d.season),
-                axisLabel: { color: '#6b7280', fontSize: 12 }
+                axisLabel: { color: '#cbd5e1', fontSize: 12 }
             },
             yAxis: {
                 type: 'value',
@@ -246,7 +246,7 @@ export default function MultiSeasonBacktestPage() {
             title: {
                 text: `Methoden-Vergleich: ${selectedSeason}`,
                 left: 'center',
-                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#374151' }
+                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#e2e8f0' }
             },
             tooltip: {
                 trigger: 'item',
@@ -254,7 +254,7 @@ export default function MultiSeasonBacktestPage() {
                     return `<strong>${params.name}</strong><br/>Ø Punkte: <strong>${params.value}</strong><br/>Anteil: ${params.percent}%`;
                 }
             },
-            legend: { bottom: 10, textStyle: { color: '#6b7280' } },
+            legend: { bottom: 10, textStyle: { color: '#cbd5e1' } },
             series: [
                 {
                     type: 'pie',
@@ -304,7 +304,7 @@ export default function MultiSeasonBacktestPage() {
             title: {
                 text: `Punkteverlauf GW-für-GW: ${selectedSeason}`,
                 left: 'center',
-                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#374151' }
+                textStyle: { fontSize: 18, fontWeight: 'bold', color: '#e2e8f0' }
             },
             tooltip: {
                 trigger: 'axis',
@@ -318,20 +318,20 @@ export default function MultiSeasonBacktestPage() {
                     return result
                 }
             },
-            legend: { bottom: 10, textStyle: { color: '#6b7280' } },
+            legend: { bottom: 10, textStyle: { color: '#cbd5e1' } },
             grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
             xAxis: {
                 type: 'category',
                 data: allGws,
                 name: 'Gameweek',
-                axisLabel: { color: '#6b7280', fontSize: 11 },
-                nameTextStyle: { color: '#374151' }
+                axisLabel: { color: '#cbd5e1', fontSize: 11 },
+                nameTextStyle: { color: '#e2e8f0' }
             },
             yAxis: {
                 type: 'value',
                 name: 'Punkte',
-                axisLabel: { color: '#6b7280' },
-                nameTextStyle: { color: '#374151' }
+                axisLabel: { color: '#cbd5e1' },
+                nameTextStyle: { color: '#e2e8f0' }
             },
             series
         }
@@ -343,19 +343,19 @@ export default function MultiSeasonBacktestPage() {
                 <title>Multi-Season Backtest | FPL Maturaarbeit</title>
             </Head>
 
-            <main className="max-w-5xl mx-auto px-4 space-y-6 mt-6">
-                <h1 className="text-3xl font-bold">Multi-Season Backtest</h1>
-                <p className="text-lg text-gray-600 dark:text-gray-400">Vergleich der Modellperformance über 4 Saisons (2020-21 bis 2023-24), Range GW2-38</p>
+            <main className="min-h-screen bg-slate-900 text-slate-100 px-4 py-8 max-w-7xl mx-auto space-y-8">
+                <h1 className="text-3xl font-bold mb-4">Multi-Season Backtest</h1>
+                <p className="text-lg mb-6">Vergleich der Modellperformance über 4 Saisons (2020-21 bis 2023-24), Range GW2-38</p>
 
                 {/* Loading/Error States */}
                 {state === 'loading' && <LoadingState message="Lade Multi-Season Backtest-Daten..." />}
                 {state === 'error' && (
-                    <div className="bg-red-100 border border-red-400 text-red-800 px-6 py-4 rounded-lg text-center space-y-2">
+                    <div className="bg-red-900/40 border border-red-700 text-red-100 rounded-2xl px-4 py-4 text-center space-y-2 max-w-xl mx-auto">
                         <div className="font-bold text-xl">Fehler – Multi-Season-Backtest nicht geladen</div>
                         <div className="text-sm">{error}</div>
                         <button
                             onClick={loadAllBacktests}
-                            className="px-4 py-2 rounded bg-red-600 text-white text-sm font-semibold hover:bg-red-700"
+                            className="px-4 py-2 bg-red-700 hover:bg-red-800 rounded-md text-white text-sm font-semibold"
                         >Erneut versuchen</button>
                     </div>
                 )}
@@ -366,19 +366,19 @@ export default function MultiSeasonBacktestPage() {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.1 }}
-                        className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 mb-8"
+                        className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-6 space-y-6 mb-8"
                     >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Season Selector */}
                             <div>
-                                <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                                <label className="text-slate-300 text-sm font-medium flex items-center gap-2 mb-3">
                                     <Activity className="w-4 h-4" />
                                     Season auswählen
                                 </label>
                                 <select
                                     value={selectedSeason}
                                     onChange={(e) => setSelectedSeason(e.target.value)}
-                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                    className="w-full bg-slate-900/60 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500"
                                 >
                                     {ALL_SEASONS.map(season => (
                                         <option key={season} value={season}>
@@ -391,20 +391,20 @@ export default function MultiSeasonBacktestPage() {
                             {/* Method Filter */}
                             <div>
                                 <div className="flex items-center justify-between mb-3">
-                                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    <label className="text-slate-300 text-sm font-medium flex items-center gap-2">
                                         <Filter className="w-4 h-4" />
                                         Methoden zum Vergleich
                                     </label>
                                     <div className="flex gap-2">
                                         <button
                                             onClick={selectAllMethods}
-                                            className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                                            className="text-xs text-emerald-400 hover:text-emerald-300"
                                         >
                                             Alle
                                         </button>
                                         <button
                                             onClick={deselectAllMethods}
-                                            className="text-xs text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-300"
+                                            className="text-xs text-slate-400 hover:text-slate-300"
                                         >
                                             Keine
                                         </button>
@@ -415,9 +415,9 @@ export default function MultiSeasonBacktestPage() {
                                         <button
                                             key={method}
                                             onClick={() => toggleMethod(method)}
-                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${selectedMethods.includes(method)
-                                                ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                                                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'
+                                            className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all ${selectedMethods.includes(method)
+                                                ? 'bg-emerald-600 text-white border-emerald-500'
+                                                : 'bg-slate-900/60 text-slate-200 border-slate-700 hover:bg-slate-800'
                                                 }`}
                                         >
                                             {selectedMethods.includes(method) ? (
@@ -425,7 +425,7 @@ export default function MultiSeasonBacktestPage() {
                                             ) : (
                                                 <Square className="w-4 h-4" />
                                             )}
-                                            <span className="text-sm font-medium">
+                                            <span>
                                                 {METHOD_NAMES[method] || method.toUpperCase()}
                                             </span>
                                         </button>
@@ -442,24 +442,24 @@ export default function MultiSeasonBacktestPage() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.2 }}
-                        className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-5 mb-8"
+                        className="bg-slate-900/70 border border-slate-700 rounded-2xl p-6 space-y-4 mb-8"
                     >
                         <div className="flex items-start gap-3">
-                            <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                            <div className="space-y-2">
-                                <h3 className="font-semibold text-blue-900 dark:text-blue-100">Methoden-Erklärung</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                            <TrendingUp className="w-5 h-5 text-emerald-300 mt-0.5 flex-shrink-0" />
+                            <div className="space-y-2 w-full">
+                                <h3 className="text-lg font-semibold text-emerald-300">Methoden-Erklärung</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-300">
                                     {Object.entries(METHOD_DESCRIPTIONS).map(([method, desc]) => (
-                                        <div key={method} className="flex gap-2">
+                                        <div key={method} className="flex gap-2 items-start">
                                             <div
                                                 className="w-3 h-3 rounded-full mt-1 flex-shrink-0"
                                                 style={{ backgroundColor: METHOD_COLORS[method] }}
                                             />
                                             <div>
-                                                <strong className="text-blue-900 dark:text-blue-100">
+                                                <strong className="text-slate-300">
                                                     {METHOD_NAMES[method]}:
                                                 </strong>
-                                                <span className="text-blue-800 dark:text-blue-200 ml-1">
+                                                <span className="ml-1">
                                                     {desc}
                                                 </span>
                                             </div>
@@ -477,79 +477,65 @@ export default function MultiSeasonBacktestPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.25 }}
-                        className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 mb-8"
+                        className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-6 overflow-x-auto mb-8"
                     >
                         <div className="flex items-center gap-2 mb-4">
-                            <BarChart3 className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                            <BarChart3 className="w-5 h-5 text-slate-100" />
+                            <h2 className="text-2xl font-bold text-slate-100">
                                 Gesamt-Übersicht: Alle Seasons
                             </h2>
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm">
-                                <thead className="bg-gray-100 dark:bg-gray-700">
-                                    <tr>
-                                        <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">Season</th>
-                                        <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">Methode</th>
-                                        <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">Ø Punkte</th>
-                                        <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">Std. Abw.</th>
-                                        <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">
-                                            # GWs
-                                            <Tooltip content="Anzahl erfolgreicher Gameweeks (Coverage)">
-                                                <span className="ml-1 text-gray-500 cursor-help">ℹ</span>
-                                            </Tooltip>
-                                        </th>
-                                        <th className="px-4 py-3 text-left text-gray-700 dark:text-gray-200 font-semibold">
-                                            Ø Effizienz
-                                            <Tooltip content={tooltips.effizienz || "Verhältnis zu optimalen Punkten"}>
-                                                <span className="ml-1 text-gray-500 cursor-help">ℹ</span>
-                                            </Tooltip>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {backtestData.map(seasonData =>
-                                        seasonData.summary
-                                            .filter(s => selectedMethods.includes(s.method))
-                                            .map((row) => (
-                                                <tr
-                                                    key={`${seasonData.season}-${row.method}`}
-                                                    className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                                                >
-                                                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
-                                                        {seasonData.season}
-                                                    </td>
-                                                    <td className="px-4 py-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <div
-                                                                className="w-3 h-3 rounded-full"
-                                                                style={{ backgroundColor: METHOD_COLORS[row.method] }}
-                                                            />
-                                                            <span className="text-gray-700 dark:text-gray-300 font-medium">
-                                                                {METHOD_NAMES[row.method] || row.method.toUpperCase()}
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-4 py-3 text-gray-900 dark:text-white font-bold text-base">
-                                                        {row.avg_xi_points.toFixed(2)}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                        ±{row.std_xi_points.toFixed(2)}
-                                                    </td>
-                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300 font-semibold">
-                                                        {row.n_gw} / 37
-                                                    </td>
-                                                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                                        {row.avg_efficiency != null
-                                                            ? `${(row.avg_efficiency * 100).toFixed(1)}%`
-                                                            : '-'}
-                                                    </td>
-                                                </tr>
-                                            ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                        <table className="w-full">
+                            <thead className="bg-slate-900/80 border-b border-slate-700">
+                                <tr>
+                                    <th className="px-4 py-2 text-[11px] uppercase tracking-wide font-medium text-slate-400">Season</th>
+                                    <th className="px-4 py-2 text-[11px] uppercase tracking-wide font-medium text-slate-400">Methode</th>
+                                    <th className="px-4 py-2 text-[11px] uppercase tracking-wide font-medium text-slate-400">Ø Punkte</th>
+                                    <th className="px-4 py-2 text-[11px] uppercase tracking-wide font-medium text-slate-400">Std. Abw.</th>
+                                    <th className="px-4 py-2 text-[11px] uppercase tracking-wide font-medium text-slate-400">
+                                        # GWs
+                                        <Tooltip content="Anzahl erfolgreicher Gameweeks (Coverage)">
+                                            <span className="ml-1 text-slate-400 cursor-help">ℹ</span>
+                                        </Tooltip>
+                                    </th>
+                                    <th className="px-4 py-2 text-[11px] uppercase tracking-wide font-medium text-slate-400">
+                                        Ø Effizienz
+                                        <Tooltip content={tooltips.effizienz || "Verhältnis zu optimalen Punkten"}>
+                                            <span className="ml-1 text-slate-400 cursor-help">ℹ</span>
+                                        </Tooltip>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-700 text-sm">
+                                {backtestData.map(seasonData =>
+                                    seasonData.summary
+                                        .filter(s => selectedMethods.includes(s.method))
+                                        .map((row) => (
+                                            <tr
+                                                key={`${seasonData.season}-${row.method}`}
+                                                className="hover:bg-slate-800/60 transition-colors"
+                                            >
+                                                <td className="px-4 py-2 text-slate-100 font-semibold">{seasonData.season}</td>
+                                                <td className="px-4 py-2">
+                                                    <div className="flex items-center gap-2">
+                                                        <div
+                                                            className="w-3 h-3 rounded-full"
+                                                            style={{ backgroundColor: METHOD_COLORS[row.method] }}
+                                                        />
+                                                        <span className="text-slate-100 font-medium">
+                                                            {METHOD_NAMES[row.method] || row.method.toUpperCase()}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-4 py-2 text-slate-100 font-semibold text-right">{row.avg_xi_points.toFixed(2)}</td>
+                                                <td className="px-4 py-2 text-slate-100 font-semibold text-right">±{row.std_xi_points.toFixed(2)}</td>
+                                                <td className="px-4 py-2 text-slate-100 font-semibold text-right">{row.n_gw} / 37</td>
+                                                <td className="px-4 py-2 text-slate-100 font-semibold text-right">{row.avg_efficiency != null ? `${(row.avg_efficiency * 100).toFixed(1)}%` : '-'}</td>
+                                            </tr>
+                                        ))
+                                )}
+                            </tbody>
+                        </table>
                     </motion.div>
                 )}
 
@@ -562,7 +548,7 @@ export default function MultiSeasonBacktestPage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.3 }}
-                                className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700"
+                                className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-6"
                             >
                                 <ReactECharts option={avgPointsChartOption} style={{ height: '400px' }} />
                             </motion.div>
@@ -574,7 +560,7 @@ export default function MultiSeasonBacktestPage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.35 }}
-                                className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700"
+                                className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-6"
                             >
                                 <ReactECharts option={coverageChartOption} style={{ height: '400px' }} />
                             </motion.div>
@@ -586,7 +572,7 @@ export default function MultiSeasonBacktestPage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.4 }}
-                                className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700"
+                                className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-6"
                             >
                                 <ReactECharts option={seasonComparisonOption} style={{ height: '400px' }} />
                             </motion.div>
@@ -598,7 +584,7 @@ export default function MultiSeasonBacktestPage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.5, delay: 0.45 }}
-                                className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700"
+                                className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-6"
                             >
                                 <ReactECharts option={seasonDetailOption} style={{ height: '400px' }} />
                             </motion.div>
@@ -611,15 +597,15 @@ export default function MultiSeasonBacktestPage() {
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="text-center py-12 text-gray-500 dark:text-gray-400"
+                        className="text-center py-12 text-slate-400"
                     >
                         <Filter className="w-12 h-12 mx-auto mb-3 opacity-50" />
                         <p>Keine Methoden ausgewählt. Bitte wähle mindestens eine Methode zum Vergleich.</p>
                     </motion.div>
                 )}
                 {state === 'success' && backtestData.length === 0 && (
-                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                        Keine kombinierten Backtest-Daten gefunden (GW2-38). Erzeuge zuerst Dateien in <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">out/backtests/</code>.
+                    <div className="text-center py-12 text-slate-400">
+                        Keine kombinierten Backtest-Daten gefunden (GW2-38). Erzeuge zuerst Dateien in <code className="bg-slate-800 px-1 rounded">out/backtests/</code>.
                     </div>
                 )}
             </main>

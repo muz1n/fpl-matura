@@ -67,7 +67,7 @@ export default function FeatureImportancePage() {
                 <title>Feature Importances – FPL Matura</title>
                 <meta name="description" content="Analyse der wichtigsten Einflussfaktoren des Random Forest Modells" />
             </Head>
-            <main className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <main className="min-h-screen bg-slate-900 text-slate-100">
                 <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
@@ -77,9 +77,9 @@ export default function FeatureImportancePage() {
                     >
                         <div className="flex items-center justify-center gap-3 mb-3">
                             <BrainCircuit className="w-10 h-10 text-indigo-600 dark:text-indigo-400" />
-                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Feature Importance</h1>
+                            <h1 className="text-2xl md:text-3xl font-bold text-slate-100">Feature Importance</h1>
                         </div>
-                        <p className="text-base text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                        <p className="text-sm md:text-base text-slate-300 max-w-2xl">
                             Welche Merkmale beeinflussen die Vorhersagen am stärksten?
                         </p>
                     </motion.div>
@@ -88,28 +88,40 @@ export default function FeatureImportancePage() {
                             title={`Wichtigste Merkmale für ${position === 'ALL' ? 'alle Positionen' : position}`}
                             subtitle={`Saison ${data?.season ?? selectedSeason}`}
                         />
-                        <div className="flex flex-col md:flex-row md:items-center gap-4">
+                        <div className="flex flex-wrap gap-2 items-center">
                             <Select
                                 label="Saison wählen"
                                 options={seasons.map(s => ({ value: s, label: s }))}
                                 value={selectedSeason}
                                 onChange={setSelectedSeason}
+                                className="px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-900/60 text-slate-200 border border-slate-700 hover:bg-slate-800"
                             />
-                            <Select
-                                label="Position wählen"
-                                options={[
-                                    { value: 'ALL', label: 'Alle' },
-                                    { value: 'DEF', label: 'Verteidiger' },
-                                    { value: 'MID', label: 'Mittelfeld' },
-                                    { value: 'FWD', label: 'Stürmer' },
-                                    { value: 'GK', label: 'Torwart' }
-                                ]}
-                                value={position}
-                                onChange={setPosition}
-                            />
+                            {[
+                                { value: 'ALL', label: 'Alle' },
+                                { value: 'DEF', label: 'Verteidiger' },
+                                { value: 'MID', label: 'Mittelfeld' },
+                                { value: 'FWD', label: 'Stürmer' },
+                                { value: 'GK', label: 'Torwart' }
+                            ].map(opt => (
+                                <button
+                                    key={opt.value}
+                                    onClick={() => setPosition(opt.value)}
+                                    className={
+                                        position === opt.value
+                                            ? "px-3 py-1.5 rounded-xl text-xs font-medium bg-emerald-600 text-white border border-emerald-500"
+                                            : "px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-900/60 text-slate-200 border border-slate-700 hover:bg-slate-800"
+                                    }
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
                             <button
                                 onClick={() => setShowCum(s => !s)}
-                                className="px-4 py-2 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white transition-colors"
+                                className={
+                                    showCum
+                                        ? "px-3 py-1.5 rounded-xl text-xs font-medium bg-emerald-600 text-white border border-emerald-500"
+                                        : "px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-900/60 text-slate-200 border border-slate-700 hover:bg-slate-800"
+                                }
                             >
                                 Kumulativ {showCum ? 'ausblenden' : 'einblenden'}
                             </button>
@@ -127,14 +139,28 @@ export default function FeatureImportancePage() {
                                         </InfoBox>
                                     </div>
                                 )}
-                                <Card className="mb-8">
-                                    <FeatureImportanceChart
-                                        data={data.features}
-                                        topN={topN}
-                                        showCumulative={showCum}
-                                        title=""
-                                    />
-                                </Card>
+                                <div className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-5 space-y-3 mb-8">
+                                    <div className="text-sm font-semibold text-slate-100 flex items-center justify-between gap-2">
+                                        <span>Feature Importance Plot</span>
+                                        <span className="text-xs text-slate-400">Wichtigkeit der Merkmale gemäss Modell</span>
+                                    </div>
+                                    <div className="w-full h-72 bg-slate-900/60 rounded-xl border border-slate-700 p-3">
+                                        <FeatureImportanceChart
+                                            data={data.features}
+                                            topN={topN}
+                                            showCumulative={showCum}
+                                            title=""
+                                        />
+                                    </div>
+                                    <div className="bg-slate-900/70 border border-slate-700 rounded-2xl p-4 text-xs md:text-sm text-slate-200 space-y-2 mt-3">
+                                        <div className="text-sm font-semibold text-emerald-300 uppercase tracking-wide">Interpretation</div>
+                                        <ul className="list-disc list-inside space-y-1">
+                                            <li>Hoher Wert = starker Einfluss auf die Prognose.</li>
+                                            <li>Werte sind relativ innerhalb eines Modells, nicht absolut zwischen Modellen.</li>
+                                            <li>Dient zur Einordnung, nicht als harte Regel.</li>
+                                        </ul>
+                                    </div>
+                                </div>
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
@@ -149,11 +175,11 @@ export default function FeatureImportancePage() {
                                     </InfoBox>
                                     <div className="grid md:grid-cols-2 gap-6">
                                         <Card>
-                                            <div className="flex items-center gap-2 mb-4 font-semibold text-gray-900 dark:text-white">
+                                            <div className="flex items-center gap-2 mb-4 font-semibold text-slate-100">
                                                 <Database className="w-5 h-5" />
                                                 Interpretation
                                             </div>
-                                            <ul className="list-disc pl-5 space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                                            <ul className="list-disc pl-5 space-y-2 text-sm text-slate-300">
                                                 <li><strong>Hohe Wichtigkeit</strong> → Modell trennt stark nach diesem Merkmal (z.B. Preis als Proxy für Qualität).</li>
                                                 <li><strong>Rolling Features</strong> (r3) bündeln Form ohne Leaks (Vergangenheit).</li>
                                                 <li><strong>Kumulativ</strong> zeigt wie schnell wenige Features den Grossteil der Erklärung liefern.</li>
@@ -162,11 +188,11 @@ export default function FeatureImportancePage() {
                                             </ul>
                                         </Card>
                                         <Card>
-                                            <div className="flex items-center gap-2 mb-4 font-semibold text-gray-900 dark:text-white">
+                                            <div className="flex items-center gap-2 mb-4 font-semibold text-slate-100">
                                                 <Info className="w-5 h-5" />
                                                 Limitationen
                                             </div>
-                                            <div className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
+                                            <div className="text-sm text-slate-400 space-y-2">
                                                 <p>
                                                     Random Forest Importances sind bias-anfällig bei hochkardinalen oder stark
                                                     skalierten Merkmalen. Für tiefergehende Analyse wären permutation importances

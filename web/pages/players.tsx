@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
+import { Navbar } from "../src/components/Navbar";
 
-export default function PlayersSearchPage() {
+export default function PlayersPage() {
     const [season, setSeason] = useState('2023-24')
     const [q, setQ] = useState('')
     const [loading, setLoading] = useState(false)
@@ -37,48 +38,63 @@ export default function PlayersSearchPage() {
     }, [q, season])
 
     return (
-        <>
+        <div className="min-h-screen bg-slate-900 text-slate-100">
             <Head>
-                <title>Spieler Suche</title>
+                <title>FPL Spielerübersicht</title>
             </Head>
-            <div className="min-h-screen p-4 max-w-4xl mx-auto">
-                <h1 className="text-2xl font-bold mb-4">Spieler Suche (Season-spezifisch)</h1>
-                <div className="flex gap-2 mb-4">
+            <Navbar />
+            <div className="max-w-5xl mx-auto px-4 py-10 space-y-8">
+                <div className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg px-6 py-5 space-y-2">
+                    <div className="space-y-2">
+                        <h1 className="text-2xl md:text-3xl font-bold text-slate-100">Spieler Suche (Season-spezifisch)</h1>
+                        <p className="text-sm md:text-base text-slate-300">Hier kannst du nach Spielern einer bestimmten Saison suchen und Details anzeigen lassen.</p>
+                    </div>
+                </div>
+                <div className="flex flex-wrap gap-3 bg-slate-800/90 border border-slate-700 rounded-2xl p-4 shadow-lg space-y-0">
                     <input
-                        className="border rounded px-3 py-2 w-40"
+                        className="bg-slate-900/60 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none placeholder:text-slate-500 w-full md:w-auto"
                         placeholder="Season z.B. 2020-21"
                         value={season}
                         onChange={(e) => setSeason(e.target.value)}
                     />
                     <input
-                        className="border rounded px-3 py-2 flex-1"
+                        className="bg-slate-900/60 border border-slate-700 text-slate-100 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none placeholder:text-slate-500 w-full md:w-auto"
                         placeholder="Spielernamen eingeben…"
                         value={q}
                         onChange={(e) => setQ(e.target.value)}
                     />
                     <button
-                        className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed w-full md:w-auto"
                         onClick={search}
                         disabled={!canSearch || loading}
                     >
                         {loading ? 'Suche…' : 'Suchen'}
                     </button>
                 </div>
-                {error && <div className="text-red-600 mb-3">{error}</div>}
-                <div className="grid md:grid-cols-2 gap-3">
+                {error && (
+                    <div className="rounded-xl bg-red-900/40 border border-red-700 text-red-200 px-4 py-3 text-sm">
+                        {error}
+                    </div>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
                     {results.map((r) => (
-                        <div key={`${r.playerId ?? r.name}`} className="border rounded p-3 flex gap-3 items-center">
-                            <img src={r.image || ''} alt={r.name} className="w-16 h-16 rounded-full object-cover bg-gray-100" />
+                        <div key={`${r.playerId ?? r.name}`} className="flex items-center gap-4 p-4 bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg hover:border-emerald-500/50 transition-colors">
+                            <img src={r.image || ''} alt={r.name} className="w-14 h-14 rounded-full object-cover bg-slate-900/60 border border-slate-700" />
                             <div className="flex-1">
-                                <div className="font-semibold">{r.name}</div>
-                                <div className="text-sm text-gray-600">{r.position} · {r.team || 'Team unbekannt'}</div>
-                                <div className="text-sm">Preis: {r.price != null ? r.price.toFixed(1) : '—'}</div>
+                                <div className="text-sm font-semibold text-slate-100">{r.name}</div>
+                                <div className="text-xs text-slate-400">{r.position} · {r.team || 'Team unbekannt'}</div>
+                                <div className="text-xs text-emerald-400 font-medium">Preis: {r.price != null ? r.price.toFixed(1) : '—'}</div>
                             </div>
-                            <img src={r.clubImage || ''} alt={r.team || 'Club'} className="w-10 h-10 rounded object-contain bg-gray-50" />
+                            <img src={r.clubImage || ''} alt={r.team || 'Club'} className="w-8 h-8 rounded object-contain bg-slate-900/60 border border-slate-700" />
                         </div>
                     ))}
                 </div>
+                {results.length === 0 && !loading && !error && (
+                    <div className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 text-center text-sm text-slate-400">
+                        Keine Spieler gefunden.
+                    </div>
+                )}
             </div>
-        </>
+        </div>
     )
 }
