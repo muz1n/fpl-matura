@@ -411,7 +411,15 @@ export default function PredictionsPage() {
                 <Head>
                     <title>Prognosen — FPL Assistent</title>
                 </Head>
-                <ErrorState message={error} onRetry={handleRetry} />
+                <div className="rounded-2xl bg-red-900/40 border border-red-700 text-red-100 px-4 py-3 text-sm flex items-start gap-2 mb-6 max-w-2xl mx-auto mt-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mt-0.5 text-red-300 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M18 16a2 2 0 01-1.732 1H3.732A2 2 0 012 16c0-.386.11-.765.32-1.09l7-11a2 2 0 013.36 0l7 11A2 2 0 0118 16zm-8-4a1 1 0 112 0v2a1 1 0 11-2 0v-2zm1-6a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                        <div className="font-semibold mb-1">Prognosen konnten für diese Auswahl nicht geladen werden.</div>
+                        <div>Bitte Season oder Gameweek wechseln oder später erneut versuchen.</div>
+                    </div>
+                </div>
             </>
         )
     }
@@ -425,6 +433,21 @@ export default function PredictionsPage() {
                 <EmptyState />
             </>
         )
+    }
+
+    // Fall b: Response ok, aber keine Prognosedaten vorhanden
+    const isNoData = Array.isArray(predictions?.players) && predictions.players.length === 0;
+    if (isNoData) {
+        return (
+            <>
+                <Head>
+                    <title>Prognosen — FPL Assistent</title>
+                </Head>
+                <div className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-4 text-sm text-slate-200 max-w-2xl mx-auto mt-10 text-center">
+                    Für diese Auswahl sind noch keine Prognosedaten vorhanden. Bitte eine andere Gameweek oder Methode wählen.
+                </div>
+            </>
+        );
     }
 
     const captainPlayer = lineup ? findPlayer(lineup.captain_id) : undefined

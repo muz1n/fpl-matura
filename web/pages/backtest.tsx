@@ -327,18 +327,33 @@ export default function BacktestPage() {
 
                         {availableRanges.length === 0 && !seasonsLoading && (
                             <div className="mt-4">
-                                <InfoBox variant="warning">
-                                    Keine Backtest-Daten für Saison {selectedSeason} verfügbar. Führe zuerst <code className="bg-slate-900/60 border border-slate-700 px-1 rounded text-xs text-slate-100">team_backtest.py</code> aus.
-                                </InfoBox>
+                                <div className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-4 text-sm text-slate-200 text-center">
+                                    Für die gewählte Season sind noch keine Backtest-Ergebnisse verfügbar. Bitte eine andere Season oder einen kleineren Zeitraum wählen.
+                                </div>
                             </div>
                         )}
                     </motion.div>
 
                     {/* Loading/Error States */}
                     {state === 'loading' && <LoadingState message="Lade Backtest-Daten..." />}
-                    {state === 'error' && <ErrorState message={error} />}
+                    {state === 'error' && (
+                        <div className="rounded-2xl bg-red-900/40 border border-red-700 px-4 py-3 text-sm text-red-100 flex items-start gap-2 mb-6">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mt-0.5 text-red-300 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M18 16a2 2 0 01-1.732 1H3.732A2 2 0 012 16c0-.386.11-.765.32-1.09l7-11a2 2 0 013.36 0l7 11A2 2 0 0118 16zm-8-4a1 1 0 112 0v2a1 1 0 11-2 0v-2zm1-6a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
+                            </svg>
+                            <div>
+                                <div className="font-semibold mb-1">Backtest-Daten konnten nicht geladen werden.</div>
+                                <div>Bitte Season oder GW-Bereich anpassen und erneut versuchen.</div>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Summary Cards */}
+                    {state === 'success' && backtestData && Array.isArray(backtestData.summary) && backtestData.summary.length === 0 && (
+                        <div className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-4 text-sm text-slate-200 text-center mb-6">
+                            Für diesen Zeitraum sind keine Backtest-Ergebnisse vorhanden.
+                        </div>
+                    )}
                     {state === 'success' && backtestData && backtestData.summary.length > 0 && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -389,6 +404,11 @@ export default function BacktestPage() {
                     )}
 
                     {/* Chart */}
+                    {state === 'success' && backtestData && Array.isArray(filteredDetail) && filteredDetail.length === 0 && (
+                        <div className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-4 text-sm text-slate-200 text-center mb-6">
+                            Für diesen Zeitraum sind keine Backtest-Daten zum Anzeigen vorhanden.
+                        </div>
+                    )}
                     {state === 'success' && backtestData && filteredDetail.length > 0 && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}

@@ -204,6 +204,18 @@ export default function LineupBuilderPage() {
             </Head>
             <div className="min-h-screen bg-slate-900 text-slate-100 p-6">
                 <div className="max-w-7xl mx-auto">
+                    {/* Globaler Loading-State */}
+                    {loading && (
+                        <div className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-5 text-sm text-slate-200 text-center mb-6">
+                            Daten werden geladen…
+                        </div>
+                    )}
+                    {/* Globaler Error-State */}
+                    {error && !loading && (
+                        <div className="rounded-2xl bg-red-900/40 border border-red-700 text-red-100 px-4 py-3 text-sm text-center mb-6">
+                            {error}
+                        </div>
+                    )}
                     {/* Responsive Header-Bar */}
                     <div className="mb-6 bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 shadow-lg
                 flex items-center justify-between
@@ -332,8 +344,8 @@ export default function LineupBuilderPage() {
                                     ) : (
                                         <div className='w-full rounded-2xl bg-slate-800/90 border border-slate-700 p-4 shadow-lg space-y-2 max-h-[480px] overflow-y-auto'>
                                             {xiPlayers.length === 0 ? (
-                                                <div className='text-sm text-slate-400 text-center py-8'>
-                                                    Noch keine Startelf ausgewählt
+                                                <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-3 text-xs text-slate-400 text-center my-6">
+                                                    Keine Startelf – ziehe Spieler in die Aufstellung.
                                                 </div>
                                             ) : (
                                                 xiPlayers.map((player, index) => {
@@ -363,7 +375,9 @@ export default function LineupBuilderPage() {
                                 <div className="mt-4 bg-slate-900/80 rounded-xl p-3">
                                     <h4 className="text-sm font-semibold mb-2">Bank ({benchPlayers.length})</h4>
                                     {benchPlayers.length === 0 ? (
-                                        <div className="text-xs text-slate-400">Keine Bankspieler</div>
+                                        <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-3 text-xs text-slate-400 text-center my-3">
+                                            Keine Bankspieler – weise Spieler der Bank zu.
+                                        </div>
                                     ) : (
                                         <div className="flex justify-center gap-2">
                                             {benchPlayers.map(b => {
@@ -416,12 +430,7 @@ export default function LineupBuilderPage() {
                                     />
                                 </div>
 
-                                {/* Error Message */}
-                                {error && (
-                                    <div className="bg-red-900/50 border border-red-700 text-red-300 px-3 py-2 rounded-lg text-sm mb-3">
-                                        {error}
-                                    </div>
-                                )}
+                                {/* Error Message (nur für Feld-Fehler, nicht global) */}
 
                                 {/* Autocomplete Liste */}
                                 {results.length > 0 && (
@@ -472,8 +481,8 @@ export default function LineupBuilderPage() {
                             <div className="bg-slate-800/80 border border-slate-700 rounded-xl p-4 shadow-lg">
                                 <h3 className="text-md font-semibold mb-3">Kompletter Kader</h3>
                                 {squad.length === 0 ? (
-                                    <div className="text-slate-400 text-sm text-center py-6">
-                                        Noch keine Spieler im Kader
+                                    <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-3 text-xs text-slate-400 text-center my-6">
+                                        Noch keine Spieler im Kader – füge rechts Spieler hinzu.
                                     </div>
                                 ) : (
                                     <div className="flex flex-col gap-2">
