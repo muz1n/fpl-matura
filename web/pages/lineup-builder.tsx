@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
 import { PitchXI, FormationStr, PitchPlayer } from '@/components/PitchXI'
+import PlayerCard, { PlayerCardData } from '@/components/PlayerCard'
+import { cn } from '@/lib/utils'
+
 const FORMATIONS: FormationStr[] = ['3-4-3', '3-5-2', '4-4-2', '4-3-3', '4-5-1', '5-3-2', '5-4-1']
 
 type Player = {
@@ -29,6 +32,7 @@ export default function LineupBuilderPage() {
     const [xiIds, setXiIds] = useState<Set<number>>(new Set())
     const [captainId, setCaptainId] = useState<number>(-1)
     const [viceCaptainId, setViceCaptainId] = useState<number>(-1)
+    const [viewMode, setViewMode] = useState<'pitch' | 'list'>('pitch')
 
     const totals = useMemo(() => {
         const byPos: Record<string, number> = { GK: 0, DEF: 0, MID: 0, FWD: 0 }
@@ -110,10 +114,7 @@ export default function LineupBuilderPage() {
     function removeFromSquad(idx: number) {
         setSquad(prev => {
             const removed = prev.filter((_, i) => i !== idx)
-            // Rebuild xi after removal
-            const newXiIds = new Set(Array.from(xiIds).filter(id => id !== idx))
-            setXiIds(newXiIds) // might be inconsistent due to index usage; we adjust below
-            // Re-autopopulate with formation
+            // XI nach Entfernen neu berechnen
             autopopulateXI(removed, formation)
             return removed
         })
@@ -188,243 +189,337 @@ export default function LineupBuilderPage() {
         setViceCaptainId(vId)
     }
 
+    const lineupState = { xi: squad.filter((_, i) => xiIds.has(i)) }
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.innerWidth < 640) {
+            setViewMode('list')
+        }
+    }, [])
+
     return (
-        <>
+        <div className="animate-fadeInSlow">
             <Head>
                 <title>Lineup Builder</title>
             </Head>
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
+            <div className="min-h-screen bg-slate-900 text-slate-100 p-6">
                 <div className="max-w-7xl mx-auto">
-                    <div className="mb-6">
-                        <h1 className="text-3xl font-bold text-slate-900 mb-2">Lineup Builder</h1>
-                        <p className="text-slate-600">Erstelle deinen FPL Kader für Saison {season}</p>
+                    {/* Responsive Header-Bar */}
+                    <div className="mb-6 bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-3 shadow-lg
+                flex items-center justify-between
+                lg:flex lg:items-center lg:justify-between
+                md:grid md:grid-cols-3 md:gap-2
+                sm:block">
+                        {/* Linker Bereich: Titel + Saison */}
+                        <div className="lg:text-left md:text-left sm:text-center">
+                            <div className="text-xl font-semibold text-slate-100">Lineup Builder</div>
+                            <div className="text-[12px] text-slate-400">Saison {season}</div>
+                        </div>
+                        {/* Mittlerer Bereich: Formation Dropdown */}
+                        <div className="flex flex-col gap-2 md:justify-center md:items-center sm:mt-2">
+                            <label className="text-[11px] uppercase tracking-wide text-slate-400 font-medium">Formation</label>
+                            <select
+                                className="rounded-lg bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:ring-2 focus:ring-emerald-500 shadow"
+                                value={formation}
+                                onChange={e => setFormation(e.target.value as FormationStr)}
+                            >
+                                {FORMATIONS.map(f => (
+                                    <option key={f} value={f}>{f}</option>
+                                ))}
+                            </select>
+                        </div>
+                        {/* Rechter Bereich: Buttons + Info */}
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-2 mt-2 md:mt-0">
+                            <div className="flex items-center gap-2">
+                                <button
+                                    className="px-2 py-1 lg:px-3 lg:py-1.5 rounded-md text-sm font-medium transition-all duration-150 shadow-md bg-emerald-600 hover:bg-emerald-700 text-white hover:-translate-y-[1px] active:translate-y-[1px] active:brightness-90 hover:shadow-emerald-700/30 hover:shadow-lg"
+                                    onClick={() => autopopulateXI(squad, formation)}
+                                >
+                                    Auto Pick
+                                </button>
+                                <button
+                                    className="px-2 py-1 lg:px-3 lg:py-1.5 rounded-md text-sm font-medium transition-all duration-150 shadow-md bg-slate-700 hover:bg-slate-600 text-slate-100 hover:-translate-y-[1px] active:translate-y-[1px] active:brightness-90"
+                                    onClick={() => setXiIds(new Set<number>())}
+                                >
+                                    Reset XI
+                                </button>
+                                <button
+                                    className="px-2 py-1 lg:px-3 lg:py-1.5 rounded-md text-sm font-medium transition-all duration-150 shadow-md bg-red-600 hover:bg-red-700 text-white hover:-translate-y-[1px] active:translate-y-[1px] active:brightness-90 hover:shadow-red-700/30"
+                                    onClick={() => setSquad([])}
+                                >
+                                    Clear Squad
+                                </button>
+                            </div>
+                            <div className="flex flex-col items-end leading-tight ml-2">
+                                <div className="text-[12px] text-slate-300">Budget Left: £{(BUDGET - totals.budget).toFixed(1)}</div>
+                                <div className="text-[12px] text-slate-300">Squad: {squad.length}/15</div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Budget & Limits Bar */}
-                    <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-4 mb-6">
+                    <div className="bg-slate-800/90 border border-slate-700 rounded-xl shadow-lg p-4 mb-6">
                         <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-center">
                             <div>
-                                <div className="text-2xl font-bold text-slate-900">{squad.length}<span className="text-slate-400">/15</span></div>
-                                <div className="text-xs text-slate-600 uppercase tracking-wide">Kader</div>
+                                <div className="text-2xl font-bold">{squad.length}<span className="text-slate-500">/15</span></div>
+                                <div className="text-xs text-slate-400 uppercase tracking-wide">Kader</div>
                             </div>
                             <div>
-                                <div className="text-2xl font-bold text-emerald-600">{totals.budget.toFixed(1)}<span className="text-slate-400">/{BUDGET.toFixed(1)}</span></div>
-                                <div className="text-xs text-slate-600 uppercase tracking-wide">Budget (M)</div>
+                                <div className="text-2xl font-bold text-emerald-500">{totals.budget.toFixed(1)}<span className="text-slate-500">/{BUDGET.toFixed(1)}</span></div>
+                                <div className="text-xs text-slate-400 uppercase tracking-wide">Budget (M)</div>
                             </div>
                             <div className={totals.byPos.GK >= POS_LIMITS.GK ? 'opacity-50' : ''}>
-                                <div className="text-2xl font-bold text-slate-900">{totals.byPos.GK || 0}<span className="text-slate-400">/{POS_LIMITS.GK}</span></div>
-                                <div className="text-xs text-slate-600 uppercase tracking-wide">GK</div>
+                                <div className="text-2xl font-bold">{totals.byPos.GK || 0}<span className="text-slate-500">/{POS_LIMITS.GK}</span></div>
+                                <div className="text-xs text-slate-400 uppercase tracking-wide">GK</div>
                             </div>
                             <div className={totals.byPos.DEF >= POS_LIMITS.DEF ? 'opacity-50' : ''}>
-                                <div className="text-2xl font-bold text-slate-900">{totals.byPos.DEF || 0}<span className="text-slate-400">/{POS_LIMITS.DEF}</span></div>
-                                <div className="text-xs text-slate-600 uppercase tracking-wide">DEF</div>
+                                <div className="text-2xl font-bold">{totals.byPos.DEF || 0}<span className="text-slate-500">/{POS_LIMITS.DEF}</span></div>
+                                <div className="text-xs text-slate-400 uppercase tracking-wide">DEF</div>
                             </div>
                             <div className={totals.byPos.MID >= POS_LIMITS.MID ? 'opacity-50' : ''}>
-                                <div className="text-2xl font-bold text-slate-900">{totals.byPos.MID || 0}<span className="text-slate-400">/{POS_LIMITS.MID}</span></div>
-                                <div className="text-xs text-slate-600 uppercase tracking-wide">MID</div>
+                                <div className="text-2xl font-bold">{totals.byPos.MID || 0}<span className="text-slate-500">/{POS_LIMITS.MID}</span></div>
+                                <div className="text-xs text-slate-400 uppercase tracking-wide">MID</div>
                             </div>
                             <div className={totals.byPos.FWD >= POS_LIMITS.FWD ? 'opacity-50' : ''}>
-                                <div className="text-2xl font-bold text-slate-900">{totals.byPos.FWD || 0}<span className="text-slate-400">/{POS_LIMITS.FWD}</span></div>
-                                <div className="text-xs text-slate-600 uppercase tracking-wide">FWD</div>
+                                <div className="text-2xl font-bold">{totals.byPos.FWD || 0}<span className="text-slate-500">/{POS_LIMITS.FWD}</span></div>
+                                <div className="text-xs text-slate-400 uppercase tracking-wide">FWD</div>
                             </div>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {/* Pitch View */}
+                        {/* Linke Spalte: Pitch + Bench (2fr) */}
                         <div className="lg:col-span-2">
-                            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-5 mb-4">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h2 className="text-lg font-semibold text-slate-900">Aufstellung ({squad.length}/15)</h2>
-                                    <div className="flex items-center gap-2">
-                                        <label className="text-sm font-medium text-slate-700">Formation:</label>
-                                        <select
-                                            className="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-                                            value={formation}
-                                            onChange={(e) => setFormation(e.target.value as FormationStr)}
+                            <div className="bg-slate-800/80 rounded-2xl border border-slate-700 p-4 shadow-lg mb-4">
+                                <div className="flex items-center justify-between mb-3">
+                                    <span className="text-sm font-semibold text-slate-200">Aufstellung</span>
+                                    <div className="inline-flex rounded-full bg-slate-800/80 border border-slate-700 p-1">
+                                        <button
+                                            type="button"
+                                            onClick={() => setViewMode('pitch')}
+                                            className={cn(
+                                                'px-3 py-1 text-xs font-medium rounded-full transition',
+                                                viewMode === 'pitch'
+                                                    ? 'bg-emerald-600 text-white shadow'
+                                                    : 'text-slate-300 hover:text-slate-100 hover:bg-slate-700/70'
+                                            )}
                                         >
-                                            {FORMATIONS.map((f: FormationStr) => <option key={f} value={f}>{f}</option>)}
-                                        </select>
+                                            Pitch XI
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setViewMode('list')}
+                                            className={cn(
+                                                'px-3 py-1 text-xs font-medium rounded-full transition',
+                                                viewMode === 'list'
+                                                    ? 'bg-emerald-600 text-white shadow'
+                                                    : 'text-slate-300 hover:text-slate-100 hover:bg-slate-700/70'
+                                            )}
+                                        >
+                                            Liste
+                                        </button>
                                     </div>
                                 </div>
-                                <div className="aspect-[3/4] max-h-[600px]">
-                                    <PitchXI
-                                        formation={formation}
-                                        players={xiPlayers}
-                                        captainId={captainId}
-                                        viceCaptainId={viceCaptainId}
-                                        onCaptainChange={handleCaptainChange}
-                                    />
+                                <div className="aspect-[3/4] w-full">
+                                    {viewMode === 'pitch' ? (
+                                        <PitchXI
+                                            formation={formation}
+                                            players={xiPlayers}
+                                            captainId={captainId}
+                                            viceCaptainId={viceCaptainId}
+                                            onCaptainChange={handleCaptainChange}
+                                        />
+                                    ) : (
+                                        <div className='w-full rounded-2xl bg-slate-800/90 border border-slate-700 p-4 shadow-lg space-y-2 max-h-[480px] overflow-y-auto'>
+                                            {xiPlayers.length === 0 ? (
+                                                <div className='text-sm text-slate-400 text-center py-8'>
+                                                    Noch keine Startelf ausgewählt
+                                                </div>
+                                            ) : (
+                                                xiPlayers.map((player, index) => {
+                                                    const cardData: PlayerCardData = {
+                                                        name: player.name,
+                                                        team: player.teamShort ?? '',
+                                                        position: player.position,
+                                                        price: player.price ?? null,
+                                                        predicted_points: player.predictedPoints ?? null,
+                                                        image: player.photoUrl ?? null,
+                                                        clubImage: player.clubImage ?? null
+                                                    }
+                                                    return (
+                                                        <div key={player.id} className='flex items-center gap-3'>
+                                                            <span className='w-5 text-[11px] text-slate-400 text-right'>
+                                                                {index + 1}.
+                                                            </span>
+                                                            <PlayerCard mode='list' player={cardData} />
+                                                        </div>
+                                                    )
+                                                })
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
-                                {/* Bench Anzeige */}
-                                <div className="mt-4 bg-slate-900/80 rounded-xl p-3 text-slate-100">
+                                {/* Bench */}
+                                <div className="mt-4 bg-slate-900/80 rounded-xl p-3">
                                     <h4 className="text-sm font-semibold mb-2">Bank ({benchPlayers.length})</h4>
                                     {benchPlayers.length === 0 ? (
                                         <div className="text-xs text-slate-400">Keine Bankspieler</div>
                                     ) : (
-                                        <div className="flex flex-wrap gap-2">
-                                            {benchPlayers.map(b => (
-                                                <div key={b.id} className="relative">
-                                                    <div className="w-[90px]">
-                                                        <img src={b.photoUrl || '/images/player-placeholder.png'} alt={b.name} className="w-16 h-16 rounded-full object-cover mx-auto mb-1 border border-slate-700" />
-                                                        <div className="text-[11px] font-medium text-center truncate">{b.name}</div>
-                                                        <div className="text-[10px] text-center text-slate-400">{b.position}</div>
+                                        <div className="flex justify-center gap-2">
+                                            {benchPlayers.map(b => {
+                                                const cardData: PlayerCardData = {
+                                                    name: b.name,
+                                                    team: b.teamShort,
+                                                    position: b.position,
+                                                    price: b.price,
+                                                    predicted_points: b.predictedPoints ?? null,
+                                                    image: b.photoUrl ?? null,
+                                                    clubImage: b.clubImage ?? null
+                                                }
+                                                return (
+                                                    <div key={b.id} onClick={() => toggleXi(b.id)} className="cursor-pointer">
+                                                        <PlayerCard player={cardData} mode="bench" showPosition={false} />
                                                     </div>
-                                                    <button
-                                                        className="absolute -top-1 -right-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full w-6 h-6 text-[10px] font-bold"
-                                                        title="In XI verschieben"
-                                                        onClick={() => toggleXi(b.id)}
-                                                    >
-                                                        ↑
-                                                    </button>
-                                                </div>
-                                            ))}
+                                                )
+                                            })}
                                         </div>
                                     )}
                                 </div>
                             </div>
-
-                            {/* Squad List below pitch (refactored) */}
-                            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-5">
-                                <h3 className="text-md font-semibold text-slate-900 mb-3">Kompletter Kader</h3>
-                                {squad.length === 0 ? (
-                                    <div className="text-center py-8 text-slate-400 text-sm">
-                                        Kader ist leer
-                                    </div>
-                                ) : (
-                                    <ul className="divide-y divide-slate-200">
-                                        {squad.map((p, i) => (
-                                            <li key={`${p.name}-${p.team}-${p.position}-${i}`} className="relative flex items-center gap-3 py-2">
-                                                <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-200 border border-slate-300 shadow-sm">
-                                                    <img
-                                                        src={p.image || '/images/player-placeholder.png'}
-                                                        alt={p.name}
-                                                        className="w-full h-full object-cover"
-                                                        onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/player-placeholder.png' }}
-                                                    />
-                                                </div>
-                                                {p.clubImage && (
-                                                    <img src={p.clubImage} alt={p.team || ''} className="w-6 h-6 object-contain" />
-                                                )}
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="font-semibold text-slate-900 truncate text-sm">{p.name}</div>
-                                                    <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-600">
-                                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-slate-800 text-white font-medium">
-                                                            {p.position}
-                                                        </span>
-                                                        {p.team && <span className="truncate">{p.team}</span>}
-                                                        <span className="font-semibold text-emerald-600">£{p.price?.toFixed(1)}</span>
-                                                    </div>
-                                                </div>
-                                                <div className="flex flex-col items-end gap-1">
-                                                    <button
-                                                        className="text-xs px-2 py-1 font-medium rounded bg-slate-100 text-slate-700 hover:bg-slate-200"
-                                                        onClick={() => toggleXi(i)}
-                                                    >
-                                                        {xiIds.has(i) ? 'Von XI' : 'Zur XI'}
-                                                    </button>
-                                                    <button
-                                                        className="text-xs px-2 py-1 font-medium text-red-600 hover:bg-red-50 rounded"
-                                                        onClick={() => removeFromSquad(i)}
-                                                        title="Entfernen"
-                                                    >
-                                                        Entfernen
-                                                    </button>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                )}
-                            </div>
                         </div>
 
-                        {/* Search Panel */}
-                        <div className="lg:col-span-1">
-                            <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-5 sticky top-6">
-                                <h2 className="text-lg font-semibold text-slate-900 mb-4">Spieler suchen</h2>
-                                <div className="space-y-3 mb-4">
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-700 mb-1.5">Saison</label>
-                                        <select
-                                            className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
-                                            value={season}
-                                            onChange={(e) => setSeason(e.target.value)}
-                                        >
-                                            {SEASONS.map(s => <option key={s} value={s}>{s}</option>)}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-medium text-slate-700 mb-1.5">Spielername</label>
-                                        <input
-                                            className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                            placeholder="Name eingeben…"
-                                            value={q}
-                                            onChange={(e) => setQ(e.target.value)}
-                                        />
-                                    </div>
-                                    <button
-                                        className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white font-medium px-4 py-2.5 rounded-lg transition-colors"
-                                        disabled={!canSearch || loading}
-                                        onClick={search}
+                        {/* Rechte Spalte: Search + Squad List (1fr) */}
+                        <div className="lg:col-span-1 space-y-4">
+                            {/* Panel 1: Spieler-Suche */}
+                            <div className="bg-slate-800/80 border border-slate-700 rounded-xl p-4 shadow-lg">
+                                <h2 className="text-lg font-semibold mb-4">Spieler suchen</h2>
+
+                                {/* Saison Selector */}
+                                <div className="mb-3">
+                                    <label className="block text-xs font-medium text-slate-300 mb-1.5">Saison</label>
+                                    <select
+                                        className="w-full border border-slate-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-slate-700 text-slate-100"
+                                        value={season}
+                                        onChange={(e) => setSeason(e.target.value)}
                                     >
-                                        {loading ? 'Suche läuft…' : 'Suchen'}
-                                    </button>
+                                        {SEASONS.map(s => <option key={s} value={s}>{s}</option>)}
+                                    </select>
                                 </div>
 
+                                {/* Suchfeld */}
+                                <div className="mb-3">
+                                    <input
+                                        className="w-full rounded-lg bg-slate-900/60 border border-slate-700 px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none text-slate-100 placeholder-slate-400"
+                                        placeholder="Spieler suchen…"
+                                        value={q}
+                                        onChange={(e) => setQ(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Error Message */}
                                 {error && (
-                                    <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded-lg text-sm mb-3">
+                                    <div className="bg-red-900/50 border border-red-700 text-red-300 px-3 py-2 rounded-lg text-sm mb-3">
                                         {error}
                                     </div>
                                 )}
 
-                                <div className="space-y-2 max-h-96 overflow-y-auto">
-                                    {results.length === 0 && q.trim().length >= 3 && !loading && (
-                                        <div className="text-center py-6 text-slate-400 text-sm">
-                                            Keine Spieler gefunden
-                                        </div>
-                                    )}
-                                    {results.map((r, idx) => {
-                                        const check = canAdd(r)
-                                        return (
-                                            <div key={`${r.name}-${r.team}-${r.position}-${idx}`} className="border border-slate-200 rounded-lg p-3 hover:border-slate-300 transition-colors">
-                                                <div className="flex items-center gap-2 mb-2">
-                                                    <img src={r.image || ''} alt={r.name} className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm" />
+                                {/* Autocomplete Liste */}
+                                {results.length > 0 && (
+                                    <div className="max-h-64 overflow-y-auto bg-slate-900/40 border border-slate-700 rounded-lg">
+                                        {results.map((r, idx) => {
+                                            const check = canAdd(r)
+                                            return (
+                                                <div
+                                                    key={`${r.name}-${r.team}-${r.position}-${idx}`}
+                                                    className={`flex items-center gap-3 px-3 py-2 transition-all duration-100 hover:bg-slate-700/60 hover:shadow-md hover:-translate-y-[1px] ${check.ok ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'}`}
+                                                    onClick={() => check.ok && addToSquad(r)}
+                                                    title={check.ok ? 'Zum Kader hinzufügen' : (check.reason || '')}
+                                                >
+                                                    <img
+                                                        src={r.image || '/images/player-placeholder.png'}
+                                                        alt={r.name}
+                                                        className="w-10 h-10 rounded-full object-cover border border-slate-600"
+                                                    />
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="font-medium text-slate-900 text-sm truncate">{r.name}</div>
-                                                        <div className="flex items-center gap-1.5 mt-0.5">
-                                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-slate-700 text-white">
+                                                        <div className="font-semibold text-sm truncate">{r.name}</div>
+                                                        <div className="flex items-center gap-2 mt-0.5">
+                                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-900 text-slate-100 uppercase">
                                                                 {r.position}
                                                             </span>
-                                                            <img src={r.clubImage || ''} alt={r.team || 'Club'} className="w-4 h-4 object-contain" />
-                                                            <span className="text-xs text-slate-600 truncate">{r.team || '—'}</span>
+                                                            <span className="text-xs text-slate-400 truncate">{r.team || '—'}</span>
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-sm font-semibold text-emerald-700">
-                                                        £{r.price != null ? r.price.toFixed(1) : '—'}M
+                                                    {r.clubImage && (
+                                                        <img src={r.clubImage} alt={r.team || ''} className="w-5 h-5 object-contain" />
+                                                    )}
+                                                    <span className="text-sm font-semibold text-emerald-400">
+                                                        £{r.price != null ? r.price.toFixed(1) : '—'}
                                                     </span>
-                                                    <button
-                                                        className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-all ${check.ok
-                                                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'
-                                                            : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                                            }`}
-                                                        disabled={!check.ok}
-                                                        onClick={() => addToSquad(r)}
-                                                        title={check.ok ? 'Zum Kader hinzufügen' : (check.reason || '')}
-                                                    >
-                                                        {check.ok ? '+ Hinzufügen' : check.reason || 'Nicht verfügbar'}
-                                                    </button>
                                                 </div>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                )}
+
+                                {results.length === 0 && q.trim().length >= 3 && !loading && (
+                                    <div className="text-center py-4 text-slate-400 text-xs">
+                                        Keine Spieler gefunden
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Panel 2: Squad-Liste */}
+                            <div className="bg-slate-800/80 border border-slate-700 rounded-xl p-4 shadow-lg">
+                                <h3 className="text-md font-semibold mb-3">Kompletter Kader</h3>
+                                {squad.length === 0 ? (
+                                    <div className="text-slate-400 text-sm text-center py-6">
+                                        Noch keine Spieler im Kader
+                                    </div>
+                                ) : (
+                                    <div className="flex flex-col gap-2">
+                                        {/* Squad Panel Inhalt */}
+                                        <div className="shadow-md shadow-black/20 rounded-lg">
+                                            {squad.map((p, i) => {
+                                                const cardData: PlayerCardData = {
+                                                    name: p.name,
+                                                    team: p.team,
+                                                    position: p.position,
+                                                    price: p.price,
+                                                    predicted_points: p.predicted_points ?? null,
+                                                    image: p.image,
+                                                    clubImage: p.clubImage
+                                                }
+                                                return (
+                                                    <div key={`${p.name}-${p.team}-${p.position}-${i}`} className="flex items-center gap-2">
+                                                        <div className="flex-1">
+                                                            <PlayerCard player={cardData} mode="list" showPosition={true} />
+                                                        </div>
+                                                        <div className="flex flex-col gap-1">
+                                                            <button
+                                                                className="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded-md text-xs transition-colors whitespace-nowrap"
+                                                                onClick={() => toggleXi(i)}
+                                                            >
+                                                                {xiIds.has(i) ? 'Von XI' : 'Zur XI'}
+                                                            </button>
+                                                            <button
+                                                                className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded-md text-xs transition-colors"
+                                                                onClick={() => removeFromSquad(i)}
+                                                                title="Entfernen"
+                                                            >
+                                                                Entfernen
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     )
 }

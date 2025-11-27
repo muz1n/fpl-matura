@@ -1,0 +1,13 @@
+@keyframes settle {
+    0% {
+        transform: scale(1.02);
+    }
+
+    100% {
+        transform: scale(1.0);
+    }
+}
+
+.settleAnimation {
+    animation: settle 0.12s ease-out;
+}
