@@ -7,9 +7,16 @@ export default function HistorischPage() {
                 <title>Historisch – FPL Assistent</title>
                 <meta name="description" content="Historische Auswertungen" />
             </Head>
-            <div className="max-w-5xl mx-auto px-4 space-y-6 mt-6">
-                <div className="bg-red-100 border border-red-400 text-red-800 px-6 py-4 rounded-lg mb-8 text-center font-bold text-xl">
-                    Diese Funktion ist nicht Teil der Maturaarbeit und daher deaktiviert.
+            <div className="min-h-screen bg-slate-900 text-slate-100">
+                <div className="max-w-3xl mx-auto px-4 py-16">
+                    <div className="bg-slate-900/80 border border-amber-500/70 text-amber-100 px-6 py-5 rounded-2xl text-center shadow-lg mb-8">
+                        <div className="text-base md:text-lg font-semibold">
+                            Diese Funktion ist nicht Teil der Maturaarbeit und daher deaktiviert.
+                        </div>
+                        <div className="text-xs md:text-sm text-amber-200/90 mt-2">
+                            Diese Seite ist nur als Platzhalter sichtbar und wird in der Maturaarbeit nicht bewertet.
+                        </div>
+                    </div>
                 </div>
             </div>
         </>
