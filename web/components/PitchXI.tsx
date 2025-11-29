@@ -75,6 +75,54 @@ function groupPlayersByFormation(formation: FormationStr, players: PitchPlayer[]
  * Pitch Darstellung: Vier horizontale Reihen (FWD – MID – DEF – GK)
  */
 export const PitchXI: React.FC<PitchXIProps> = ({ formation, players, bench = [], onChange, captainId = -1, viceCaptainId = -1, onCaptainChange }) => {
+    // Hilfsfunktion für Reihen mit Slots
+    function renderRow(players: PitchPlayer[], expectedCount: number, drop: ReturnType<typeof useDroppable>, rowId: string) {
+        const slots = Array.from({ length: expectedCount })
+        return (
+            <div ref={drop.setNodeRef} id={rowId} className="flex flex-1 items-center justify-center gap-2 sm:gap-3 lg:gap-4">
+                {slots.map((_, idx) => {
+                    const p = players[idx]
+                    if (p) {
+                        return (
+                            <DraggablePlayer key={p.id} p={p}>
+                                <div
+                                    onDoubleClick={() => {
+                                        if (!onCaptainChange) return
+                                        if (captainId === p.id) {
+                                            onCaptainChange(-1, p.id)
+                                        } else if (viceCaptainId === p.id) {
+                                            onCaptainChange(p.id, -1)
+                                        } else if (captainId === -1) {
+                                            onCaptainChange(p.id, viceCaptainId)
+                                        } else if (viceCaptainId === -1) {
+                                            onCaptainChange(captainId, p.id)
+                                        } else {
+                                            onCaptainChange(p.id, viceCaptainId)
+                                        }
+                                    }}
+                                >
+                                    <PlayerCard
+                                        player={toPlayerCardData(p)}
+                                        mode="pitch"
+                                        showPosition={false}
+                                        isCaptain={captainId === p.id}
+                                        isVice={viceCaptainId === p.id && captainId !== p.id}
+                                    />
+                                </div>
+                            </DraggablePlayer>
+                        )
+                    } else {
+                        return (
+                            <div key={`empty-${rowId}-${idx}`}
+                                className="w-[110px] h-[150px] rounded-xl border-2 border-dashed border-emerald-500/40 bg-emerald-900/20 flex items-center justify-center text-[10px] text-emerald-300/70">
+                                Slot
+                            </div>
+                        )
+                    }
+                })}
+            </div>
+        )
+    }
     // Lokale Zustände für XI und Bench
     const [xiLocal, setXiLocal] = useState<PitchPlayer[]>(players)
     const [benchLocal, setBenchLocal] = useState<PitchPlayer[]>(bench)
@@ -236,137 +284,12 @@ export const PitchXI: React.FC<PitchXIProps> = ({ formation, players, bench = []
                     )}
 
                     {/* Players in Flex Rows */}
-                    {!empty && (
-                        <div className="relative z-10 flex h-full flex-col justify-between py-2">
-                            {/* FWD Row */}
-                            <div ref={fwdDrop.setNodeRef} id="row_fwd" className="flex flex-1 items-center justify-center gap-2 sm:gap-3 lg:gap-4">
-                                {fwds.map((p) => (
-                                    <DraggablePlayer key={p.id} p={p}>
-                                        <div
-                                            onDoubleClick={() => {
-                                                if (!onCaptainChange) return
-                                                if (captainId === p.id) {
-                                                    onCaptainChange(-1, p.id)
-                                                } else if (viceCaptainId === p.id) {
-                                                    onCaptainChange(p.id, -1)
-                                                } else if (captainId === -1) {
-                                                    onCaptainChange(p.id, viceCaptainId)
-                                                } else if (viceCaptainId === -1) {
-                                                    onCaptainChange(captainId, p.id)
-                                                } else {
-                                                    onCaptainChange(p.id, viceCaptainId)
-                                                }
-                                            }}
-                                        >
-                                            <PlayerCard
-                                                player={toPlayerCardData(p)}
-                                                mode="pitch"
-                                                showPosition={false}
-                                                isCaptain={captainId === p.id}
-                                                isVice={viceCaptainId === p.id && captainId !== p.id}
-                                            />
-                                        </div>
-                                    </DraggablePlayer>
-                                ))}
-                            </div>
-
-                            {/* MID Row */}
-                            <div ref={midDrop.setNodeRef} id="row_mid" className="flex flex-1 items-center justify-center gap-2 sm:gap-3 lg:gap-4">
-                                {mids.map((p) => (
-                                    <DraggablePlayer key={p.id} p={p}>
-                                        <div
-                                            onDoubleClick={() => {
-                                                if (!onCaptainChange) return
-                                                if (captainId === p.id) {
-                                                    onCaptainChange(-1, p.id)
-                                                } else if (viceCaptainId === p.id) {
-                                                    onCaptainChange(p.id, -1)
-                                                } else if (captainId === -1) {
-                                                    onCaptainChange(p.id, viceCaptainId)
-                                                } else if (viceCaptainId === -1) {
-                                                    onCaptainChange(captainId, p.id)
-                                                } else {
-                                                    onCaptainChange(p.id, viceCaptainId)
-                                                }
-                                            }}
-                                        >
-                                            <PlayerCard
-                                                player={toPlayerCardData(p)}
-                                                mode="pitch"
-                                                showPosition={false}
-                                                isCaptain={captainId === p.id}
-                                                isVice={viceCaptainId === p.id && captainId !== p.id}
-                                            />
-                                        </div>
-                                    </DraggablePlayer>
-                                ))}
-                            </div>
-
-                            {/* DEF Row */}
-                            <div ref={defDrop.setNodeRef} id="row_def" className="flex flex-1 items-center justify-center gap-2 sm:gap-3 lg:gap-4">
-                                {defs.map((p) => (
-                                    <DraggablePlayer key={p.id} p={p}>
-                                        <div
-                                            onDoubleClick={() => {
-                                                if (!onCaptainChange) return
-                                                if (captainId === p.id) {
-                                                    onCaptainChange(-1, p.id)
-                                                } else if (viceCaptainId === p.id) {
-                                                    onCaptainChange(p.id, -1)
-                                                } else if (captainId === -1) {
-                                                    onCaptainChange(p.id, viceCaptainId)
-                                                } else if (viceCaptainId === -1) {
-                                                    onCaptainChange(captainId, p.id)
-                                                } else {
-                                                    onCaptainChange(p.id, viceCaptainId)
-                                                }
-                                            }}
-                                        >
-                                            <PlayerCard
-                                                player={toPlayerCardData(p)}
-                                                mode="pitch"
-                                                showPosition={false}
-                                                isCaptain={captainId === p.id}
-                                                isVice={viceCaptainId === p.id && captainId !== p.id}
-                                            />
-                                        </div>
-                                    </DraggablePlayer>
-                                ))}
-                            </div>
-
-                            {/* GK Row */}
-                            <div ref={gkDrop.setNodeRef} id="row_gk" className="flex flex-1 items-center justify-center gap-2 sm:gap-3 lg:gap-4">
-                                {gks.map((p) => (
-                                    <DraggablePlayer key={p.id} p={p}>
-                                        <div
-                                            onDoubleClick={() => {
-                                                if (!onCaptainChange) return
-                                                if (captainId === p.id) {
-                                                    onCaptainChange(-1, p.id)
-                                                } else if (viceCaptainId === p.id) {
-                                                    onCaptainChange(p.id, -1)
-                                                } else if (captainId === -1) {
-                                                    onCaptainChange(p.id, viceCaptainId)
-                                                } else if (viceCaptainId === -1) {
-                                                    onCaptainChange(captainId, p.id)
-                                                } else {
-                                                    onCaptainChange(p.id, viceCaptainId)
-                                                }
-                                            }}
-                                        >
-                                            <PlayerCard
-                                                player={toPlayerCardData(p)}
-                                                mode="pitch"
-                                                showPosition={false}
-                                                isCaptain={captainId === p.id}
-                                                isVice={viceCaptainId === p.id && captainId !== p.id}
-                                            />
-                                        </div>
-                                    </DraggablePlayer>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                    <div className="relative z-10 flex h-full flex-col justify-between py-2">
+                        {renderRow(fwds, fwdCount, fwdDrop, 'row_fwd')}
+                        {renderRow(mids, midCount, midDrop, 'row_mid')}
+                        {renderRow(defs, defCount, defDrop, 'row_def')}
+                        {renderRow(gks, 1, gkDrop, 'row_gk')}
+                    </div>
                 </div>
             </DndContext>
 

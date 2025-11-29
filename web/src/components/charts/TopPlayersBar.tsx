@@ -1,7 +1,6 @@
 import dynamic from 'next/dynamic'
 import type { PredictionPlayer } from '@/src/types/fpl.schema'
 import React from 'react'
-import { useTheme } from 'next-themes'
 
 // ECharts Wrapper nur im Client rendern (SSR deaktiviert)
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
@@ -22,8 +21,7 @@ export interface TopPlayersBarProps {
  * - Hinweise: Rendert nur im Client (SSR=false). Alle Laufzeittexte auf Deutsch.
  */
 export function TopPlayersBar({ players, limit = 15, height = 360 }: TopPlayersBarProps) {
-    const { resolvedTheme } = useTheme()
-    const isDark = resolvedTheme === 'dark'
+    const isDark = true
 
     const top = [...players]
         .sort((a, b) => b.predicted_points - a.predicted_points)

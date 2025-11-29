@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
-import { Navbar } from "../src/components/Navbar";
 
 export default function PlayersPage() {
     const [season, setSeason] = useState('2023-24')
@@ -42,7 +41,6 @@ export default function PlayersPage() {
             <Head>
                 <title>FPL Spielerübersicht</title>
             </Head>
-            <Navbar />
             <div className="max-w-5xl mx-auto px-4 py-10 space-y-8">
                 <div className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg px-6 py-5 space-y-2">
                     <div className="space-y-2">

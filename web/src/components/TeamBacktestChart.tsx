@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import ReactECharts from 'echarts-for-react'
 import type { EChartsOption } from 'echarts'
-import { useTheme } from 'next-themes'
 
 interface BacktestDetailRow {
     method: string
@@ -48,8 +47,7 @@ export function TeamBacktestChart({
     height = '500px',
     showLegend = true
 }: TeamBacktestChartProps) {
-    const { theme } = useTheme()
-    const isDark = theme === 'dark'
+    const isDark = true
 
     const option: EChartsOption = useMemo(() => {
         // Gruppiere Daten nach Methode

@@ -48,6 +48,23 @@ export default function LineupBuilderPage() {
 
     const canSearch = useMemo(() => season.trim() && q.trim().length >= 2, [season, q])
 
+    type ApiPlayer = {
+        name: string
+        position?: string
+        pos?: string
+        team?: string
+        team_short?: string
+        price?: number
+        now_cost?: number
+        image?: string
+        photo?: string
+        photo_url?: string
+        photoUrl?: string
+        clubImage?: string
+        club_image?: string
+        predicted_points?: number | null
+    }
+
     async function search() {
         if (!canSearch) return
         setLoading(true)
@@ -57,8 +74,17 @@ export default function LineupBuilderPage() {
             const r = await fetch(`/api/players/search?${params.toString()}`)
             const data = await r.json()
             if (!r.ok) throw new Error(data?.error || 'Fehler bei der Suche')
-            console.log('API response:', data.results?.[0]) // Debug
-            setResults(data.results || [])
+            const apiPlayers = (data.results || []) as ApiPlayer[]
+            const mapped: Player[] = apiPlayers.map(p => ({
+                name: p.name,
+                position: p.position ?? p.pos ?? '',
+                team: p.team ?? p.team_short ?? null,
+                price: p.price ?? (typeof p.now_cost === 'number' ? p.now_cost / 10 : null),
+                image: p.image ?? p.photoUrl ?? p.photo_url ?? p.photo ?? null,
+                clubImage: p.clubImage ?? p.club_image ?? null,
+                predicted_points: p.predicted_points ?? null,
+            }))
+            setResults(mapped)
         } catch (e: any) {
             setError(e?.message || 'Unbekannter Fehler')
             setResults([])
@@ -123,7 +149,7 @@ export default function LineupBuilderPage() {
     function autopopulateXI(list: Player[], form: FormationStr) {
         // Wenn bereits manuell gewählt (xiIds nicht leer), nicht überschreiben
         if (xiIds.size > 0) return
-        const config = formation.split('-').map(n => parseInt(n, 10))
+        const config = form.split('-').map(n => parseInt(n, 10))
         const [defCount, midCount, fwdCount] = config.length === 3 ? config : [4, 4, 2]
         const gk = list.findIndex(p => p.position === 'GK')
         const defIdxs = list.map((p, i) => ({ p, i })).filter(x => x.p.position === 'DEF').slice(0, defCount).map(x => x.i)
@@ -189,7 +215,7 @@ export default function LineupBuilderPage() {
         setViceCaptainId(vId)
     }
 
-    const lineupState = { xi: squad.filter((_, i) => xiIds.has(i)) }
+    // lineupState entfernt, da ungenutzt
 
     useEffect(() => {
         if (typeof window !== 'undefined' && window.innerWidth < 640) {

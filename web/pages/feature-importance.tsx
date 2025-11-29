@@ -6,7 +6,6 @@ import { getUsableSeasons } from '../lib/seasonQuality'
 import { Select } from '../src/components/Select'
 import { LoadingState, ErrorState } from '../src/components/States'
 import { BarChart3, BrainCircuit, Info, Database } from 'lucide-react'
-import { Navbar } from '../src/components/Navbar'
 import { Card, SummaryCard, SectionHeader, InfoBox, ControlPanel } from '../src/components/ui'
 
 interface FIResponse {

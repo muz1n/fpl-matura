@@ -1,5 +1,4 @@
 import Head from 'next/head'
-import { Navbar } from '../src/components/Navbar'
 
 export default function NotFoundPage() {
     return (
@@ -7,7 +6,6 @@ export default function NotFoundPage() {
             <Head>
                 <title>404 – Seite nicht gefunden</title>
             </Head>
-            <Navbar />
             <div className="max-w-3xl mx-auto px-4 py-16 text-center space-y-4">
                 <div className="text-6xl md:text-7xl font-bold text-slate-600">404</div>
                 <h1 className="text-xl md:text-2xl font-semibold text-slate-100">Seite nicht gefunden</h1>

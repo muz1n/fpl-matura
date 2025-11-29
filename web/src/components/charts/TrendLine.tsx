@@ -1,6 +1,5 @@
 import dynamic from 'next/dynamic'
 import React from 'react'
-import { useTheme } from 'next-themes'
 
 // ECharts Wrapper nur im Client rendern (SSR deaktiviert)
 const ReactECharts = dynamic(() => import('echarts-for-react'), { ssr: false })
@@ -26,8 +25,7 @@ export interface TrendLineProps {
  * - Hinweise: Dark-Mode adaptive Farben; SSR=false; alle Texte auf Deutsch.
  */
 export function TrendLine({ data, yAxisName = 'Wert', height = 300, lineColor = '#10B981' }: TrendLineProps) {
-    const { resolvedTheme } = useTheme()
-    const isDark = resolvedTheme === 'dark'
+    const isDark = true
 
     const xData = data.map((d) => `GW${d.gw}`)
     const yData = data.map((d) => d.value)

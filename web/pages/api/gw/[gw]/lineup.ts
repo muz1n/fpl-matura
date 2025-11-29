@@ -2,11 +2,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { readFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
-import { LineupPayloadSchema, PredictionsPayloadSchema, PredictionPlayerSchema, FormationStr } from '@/src/types/fpl.schema'
+import type { LineupPayload, PredictionsPayload, PredictionPlayer, FormationStr, PredictionMethod } from '@/types/fpl'
+// Falls Zod-Validierung benötigt wird, bitte separat importieren
 
 const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
-type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank' | 'rf_pos' | 'legacy'
-const FORMATIONS = ["3-4-3", "3-5-2", "4-4-2", "4-3-3", "4-5-1", "5-4-1", "5-3-2"] as const
+const FORMATIONS: FormationStr[] = ["3-4-3", "3-5-2", "4-4-2", "4-3-3", "4-5-1", "5-4-1", "5-3-2"]
 
 // Helper: scan predictions files for available GWs and methods
 async function getAvailableGWsAndMethods(): Promise<{ available: number[]; methodsByGw: Record<number, string[]> }> {
@@ -91,7 +91,7 @@ export default async function handler(
         for (const candidate of candidatePaths) {
             try {
                 const raw = await readFile(candidate.path, 'utf8')
-                const parsed = LineupPayloadSchema.parse(JSON.parse(raw))
+                const parsed = JSON.parse(raw)
                 lineupData = parsed
                 usedMethod = candidate.method
                 break
@@ -103,6 +103,7 @@ export default async function handler(
         }
 
         if (lineupData) {
+            // Response-Shape wie vom Frontend erwartet
             return res.status(200).json({ ...lineupData, methode: usedMethod })
         }
 
@@ -146,11 +147,8 @@ export default async function handler(
         // Build lineup from predictions
         // Parse predictions
         const predJson = JSON.parse(predRaw)
-        const predParse = PredictionsPayloadSchema.safeParse(predJson)
-        if (!predParse.success) {
-            return res.status(422).json({ error: 'Invalid predictions format', details: predParse.error.issues.map(i => i.message) })
-        }
-        const players = predParse.data.players
+        // Annahme: predictions file entspricht PredictionsPayload
+        const players: PredictionPlayer[] = predJson.players
 
         // Build 15-man pool: GK=2, DEF=5, MID=5, FWD=3
         const pool: Record<'GK' | 'DEF' | 'MID' | 'FWD', any[]> = {

@@ -1,34 +1,15 @@
+import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { BarChart3, BrainCircuit, LineChart, Info, Moon, Sun } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { BarChart3, BrainCircuit, LineChart, Info } from 'lucide-react'
 
 export function Navbar() {
     const router = useRouter()
-    const [darkMode, setDarkMode] = useState(false)
-
-    // Dark Mode initialisieren und persistieren
-    useEffect(() => {
-        const savedMode = localStorage.getItem('darkMode') === 'true'
-        setDarkMode(savedMode)
-        if (savedMode) {
-            document.documentElement.classList.add('dark')
-        }
+    // Dark Mode dauerhaft aktivieren
+    React.useEffect(() => {
+        document.documentElement.classList.add('dark')
     }, [])
-
-    const toggleDarkMode = () => {
-        const newMode = !darkMode
-        setDarkMode(newMode)
-        localStorage.setItem('darkMode', String(newMode))
-        if (newMode) {
-            document.documentElement.classList.add('dark')
-        } else {
-            document.documentElement.classList.remove('dark')
-        }
-    }
-
     const isActive = (path: string) => router.pathname === path
-
     const links = [
         { href: '/prognosen', label: 'Prognosen', icon: LineChart },
         { href: '/backtest', label: 'Backtest', icon: BarChart3 },
@@ -52,7 +33,6 @@ export function Navbar() {
                         {links.map((link) => {
                             const Icon = link.icon
                             const active = isActive(link.href)
-
                             return (
                                 <Link
                                     key={link.href}
@@ -70,14 +50,6 @@ export function Navbar() {
                                 </Link>
                             )
                         })}
-                        {/* Dark Mode Toggle rechts */}
-                        <button
-                            onClick={toggleDarkMode}
-                            className="ml-4 p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                            aria-label="Dark Mode umschalten"
-                        >
-                            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                        </button>
                     </div>
                 </div>
             </div>

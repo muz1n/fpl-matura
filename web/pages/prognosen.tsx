@@ -10,7 +10,6 @@ import { LoadingState, ErrorState, EmptyState } from '../src/components/States'
 import { saveSquad, loadSquad } from '../src/lib/squad-storage'
 import { HistoricalEvaluation } from '../src/components/HistoricalEvaluation'
 import { getUsableSeasons } from '../lib/seasonQuality'
-import { Navbar } from '../src/components/Navbar'
 
 type LoadingStateType = 'idle' | 'loading' | 'success' | 'error'
 type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank' | 'rf_pos'
@@ -73,33 +72,85 @@ export default function PredictionsPage() {
     const [showDownloads, setShowDownloads] = useState<boolean>(true)
     const [availableDownloadLinks, setAvailableDownloadLinks] = useState<Array<{ href: string; label: string }>>([])
 
-    // Lade verfügbare Seasons on mount
+    // Echte Implementierung für das Laden der verfügbaren Gameweeks und Methoden
+    const fetchAvailableGWs = useCallback(async () => {
+        setGwLoadingState('loading');
+        setGwError('');
+
+        try {
+            // Passe den Pfad an deinen echten Endpoint an, falls er anders heisst
+            const res = await fetch('/api/gw/available');
+
+            if (!res.ok) {
+                throw new Error('Fehler beim Laden verfügbarer Gameweeks');
+            }
+
+            // Erwartete Struktur:
+            // { gameweeks: number[], methods_by_gw?: { [gw: string]: string[] } }
+            const data = await res.json() as {
+                gameweeks: number[];
+                methods_by_gw?: Record<string, string[]>;
+            };
+
+            const gws = data.gameweeks ?? [];
+            setAvailableGWs(gws);
+
+            // Methoden pro Gameweek setzen
+            if (data.methods_by_gw) {
+                const mapped: Record<number, string[]> = {};
+                for (const [key, value] of Object.entries(data.methods_by_gw)) {
+                    mapped[Number(key)] = value;
+                }
+                setMethodsByGw(mapped);
+            } else {
+                // Fallback: alle Methoden für alle Gameweeks erlauben
+                const allMethods = methodOptions.map(m => m.value);
+                const mapped: Record<number, string[]> = {};
+                gws.forEach(gw => {
+                    mapped[gw] = allMethods;
+                });
+                setMethodsByGw(mapped);
+            }
+
+            // Default-GW setzen (z.B. letzte verfügbare)
+            if (gws.length > 0 && selectedGW === null) {
+                setSelectedGW(gws[gws.length - 1]);
+            }
+
+            setGwLoadingState('loaded');
+        } catch (err) {
+            setGwError(
+                err instanceof Error
+                    ? err.message
+                    : 'Fehler beim Laden verfügbarer Gameweeks'
+            );
+            setGwLoadingState('error');
+        }
+    }, [selectedGW]);
+
+    // Lade verfügbare Seasons und Gameweeks on mount
     useEffect(() => {
         async function loadSeasons() {
             try {
-                const seasons = await getUsableSeasons()
-                setAvailableSeasons(seasons)
-                // Setze default auf neueste Season falls nicht schon gesetzt
+                const seasons = await getUsableSeasons();
+                setAvailableSeasons(seasons);
                 if (seasons.length > 0 && !selectedSeason) {
-                    setSelectedSeason(seasons[seasons.length - 1])
+                    setSelectedSeason(seasons[seasons.length - 1]);
                 }
             } catch (err) {
-                // Fehlerbehandlung für Season-Laden
+                // Fehlerbehandlung
+            } finally {
+                setSeasonsLoading(false);
             }
         }
+
         loadSeasons();
         fetchAvailableGWs();
-    }, [])
+    }, [fetchAvailableGWs, selectedSeason]);
 
     // Derive availableMethods for selectedGW
     const availableMethods: string[] = selectedGW !== null ? (methodsByGw[selectedGW] ?? []) : [];
 
-    // Dummy-Implementierung, falls fetchAvailableGWs fehlt
-    function fetchAvailableGWs() {
-        // Hier sollte die echte Logik stehen, z.B. API-Call
-        // Für Fehlerbehebung: Setze leeres Array
-        setAvailableGWs([]);
-    }
 
     // Ensure selectedMethod is valid for selectedGW
     useEffect(() => {
@@ -746,10 +797,10 @@ export default function PredictionsPage() {
                     </div>
                 )}
 
-                // ...zweite Aufstellungs-Übersicht entfernt...
+                {/* ...zweite Aufstellungs-Übersicht entfernt... */}
 
                 {/* Starting XI Table */}
-                // ...alte Startelf-Tabelle entfernt...
+                {/* ...alte Startelf-Tabelle entfernt... */}
 
                 {/* Bench */}
                 {lineup && (
@@ -787,9 +838,9 @@ export default function PredictionsPage() {
                 )}
 
                 {/* Top 15 Predictions */}
-                // ...alte Bank-Sektion entfernt...
+                {/* ...alte Bank-Sektion entfernt... */}
 
-                // ...zweite ungestylte HistoricalEvaluation entfernt...
+                {/* ...zweite ungestylte HistoricalEvaluation entfernt... */}
 
                 {/* Hinweis: Downloads-Panel entfernt. Downloads werden zukünftig als 'Materialien'-Sektion dargestellt. */}
             </div>

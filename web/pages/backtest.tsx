@@ -8,7 +8,6 @@ import { Tooltip } from '../src/components/Tooltip'
 import { tooltips } from '../src/data/tooltips'
 import { getUsableSeasons } from '../lib/seasonQuality'
 import { BarChart3, Download, TrendingUp, Activity, Target, Filter, Table, ArrowUpDown } from 'lucide-react'
-import { Navbar } from '../src/components/Navbar'
 import { Card, SummaryCard, SectionHeader, InfoBox, ControlPanel } from '../src/components/ui'
 
 interface BacktestDetailRow {
@@ -249,7 +248,6 @@ export default function BacktestPage() {
             </Head>
 
             <main className="min-h-screen bg-slate-900 text-slate-100">
-                <Navbar />
                 <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
                     {/* Header */}
                     <motion.div

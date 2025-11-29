@@ -1,0 +1,18 @@
+{
+    "2020-21": {
+        "quality": "hoch",
+        "notes": "Daten vollständig, keine Lücken."
+    },
+    "2021-22": {
+        "quality": "mittel",
+        "notes": "Einige Spieltage mit fehlenden Spielerwerten."
+    },
+    "2022-23": {
+        "quality": "hoch",
+        "notes": "Sehr gute Datenlage, alle Spieler und Spieltage vorhanden."
+    },
+    "2023-24": {
+        "quality": "niedrig",
+        "notes": "Viele Lücken, insbesondere bei Ersatzspielern."
+    }
+}

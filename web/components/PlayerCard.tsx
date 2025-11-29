@@ -134,7 +134,13 @@ export function PlayerCard({ player, mode = 'pitch', footer, showPosition = true
                 <span className="text-[10px] font-medium text-emerald-400">{priceStr}</span>
                 <span className="text-[10px] font-medium text-blue-400">{ptsStr} Pts</span>
             </div>
-            // ...Logo-Rendering nur im jeweiligen Modus-Block...
+            {/* Club-Logo unten rechts, falls vorhanden */}
+            {player.clubImage && (
+                <img
+                    src={player.clubImage}
+                    alt={player.team || ''}
+                    className="absolute bottom-1.5 right-1.5 w-5 h-5 object-contain drop-shadow-[0_0_5px_rgba(0,0,0,0.4)] z-20" />
+            )}
             {footer && (
                 <div className="mt-1 w-full">{footer}</div>
             )}

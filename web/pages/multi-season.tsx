@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
 import { motion } from 'framer-motion'
@@ -6,7 +5,6 @@ import { LoadingState, ErrorState } from '../src/components/States'
 import { Tooltip } from '../src/components/Tooltip'
 import { tooltips } from '../src/data/tooltips'
 import { Layers, Filter, CheckSquare, Square, TrendingUp, Activity, BarChart3, Info } from 'lucide-react'
-import { Navbar } from '../src/components/Navbar'
 import ReactECharts from 'echarts-for-react'
 
 interface BacktestDetailRow {

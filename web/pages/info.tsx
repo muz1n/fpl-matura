@@ -1,6 +1,5 @@
 import Head from 'next/head'
 import { Info, Database, BarChart3, BrainCircuit, TrendingUp, AlertCircle } from 'lucide-react'
-import { Navbar } from '../src/components/Navbar'
 
 export default function InfoPage() {
     return (
@@ -11,7 +10,6 @@ export default function InfoPage() {
             </Head>
 
             <main className="min-h-screen bg-slate-900 text-slate-100">
-                <Navbar />
                 <div className="max-w-7xl mx-auto px-4 py-10 space-y-8">
                     {/* Header */}
                     <div className="text-center mb-10">
@@ -168,12 +166,6 @@ export default function InfoPage() {
                                 </p>
                             </div>
                         </section>
-
-                        {/* Footer / Credit */}
-                        <div className="text-center text-xs md:text-sm text-slate-500 pt-6 border-t border-slate-700">
-                            <p>Maturaarbeit 2024/25 – Kantonsschule Zug</p>
-                            <p className="mt-1 text-slate-400">Entwickelt als Demonstration von maschinellem Lernen im Sport-Kontext</p>
-                        </div>
                     </div>
                 </div>
             </main>
