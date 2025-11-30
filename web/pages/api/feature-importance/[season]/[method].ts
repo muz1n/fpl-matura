@@ -2,16 +2,27 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-// Basis-Ausgabeordner + neuer Unterordner fuer Feature Importances
-const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
-const FI_DIR = join(OUT_DIR, 'feature_importance')
+const OUT_ROOT = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
+
+interface RawFeatureRow {
+    feature: string
+    importance: number
+}
+
+interface RawFIFile {
+    season: string
+    method?: string
+    n_features?: number
+    generated_at?: string
+    features: RawFeatureRow[]
+}
 
 interface FeatureImportanceRow {
     feature: string
     importance: number
-    rank: number
-    cumulative: number
     normalized: number
+    cumulative: number
+    rank: number
 }
 
 interface FeatureImportanceResponse {
@@ -19,86 +30,119 @@ interface FeatureImportanceResponse {
     method: string
     n_features: number
     generated_at: string
+    position: string | null
     features: FeatureImportanceRow[]
-    position?: string | null
+    file?: string
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (req.method !== 'GET') {
-        return res.status(405).json({ error: 'Method not allowed' })
+async function loadFileForSeason(
+    season: string
+): Promise<{ path: string; text: string }> {
+    const candidates = [
+        // Variante 1: out/rf_2023-24.json
+        join(OUT_ROOT, `rf_${season}.json`),
+        // Variante 2: out/feature_importance/rf_2023-24.json
+        join(OUT_ROOT, 'feature_importance', `rf_${season}.json`)
+    ]
+
+    let lastError: any = null
+
+    for (const path of candidates) {
+        try {
+            const buf = await readFile(path) // Buffer, keine Encoding-Angabe
+
+            let encoding: BufferEncoding = 'utf8'
+            if (buf.length >= 2 && buf[0] === 0xff && buf[1] === 0xfe) {
+                // UTF-16 LE BOM
+                encoding = 'utf16le'
+            }
+
+            let text = buf.toString(encoding)
+
+            // BOM entfernen, falls vorhanden
+            if (text.charCodeAt(0) === 0xfeff) {
+                text = text.slice(1)
+            }
+
+            return { path, text }
+        } catch (err) {
+            lastError = err
+        }
+    }
+
+    const error: any = new Error(
+        `Keine rf_${season}.json Datei in out/ oder out/feature_importance/ gefunden`
+    )
+    error.cause = lastError
+    throw error
+}
+
+export default async function handler(
+    req: NextApiRequest,
+    res: NextApiResponse
+) {
+    const { season, method } = req.query
+
+    if (!season || typeof season !== 'string') {
+        return res.status(400).json({ error: 'Season Parameter fehlt' })
     }
 
     try {
-        const { season, method, position } = req.query
-        if (!season || typeof season !== 'string') {
-            return res.status(400).json({ error: 'Season parameter required' })
-        }
-        if (!method || typeof method !== 'string') {
-            return res.status(400).json({ error: 'Method parameter required' })
+        const { path: filePath, text } = await loadFileForSeason(season)
+        const parsed: RawFIFile = JSON.parse(text)
+
+        if (!parsed.features || parsed.features.length === 0) {
+            return res
+                .status(404)
+                .json({ error: 'Keine Features in der Feature-Importance-Datei gefunden' })
         }
 
-        // Aktuell nur rf implementiert
-        if (method !== 'rf') {
-            return res.status(400).json({ error: 'Nur rf unterstützt (Random Forest)' })
-        }
+        const sorted = [...parsed.features].sort(
+            (a, b) => b.importance - a.importance
+        )
 
-        const allowedPositions = ['GK', 'DEF', 'MID', 'FWD']
-        let pos: string | undefined
-        if (position) {
-            if (typeof position !== 'string') {
-                return res.status(400).json({ error: 'Position parameter invalid' })
+        const totalImportance = sorted.reduce(
+            (sum, f) => sum + (f.importance ?? 0),
+            0
+        )
+
+        let cumulative = 0
+        const features: FeatureImportanceRow[] = sorted.map((f, idx) => {
+            const norm = totalImportance > 0 ? f.importance / totalImportance : 0
+            cumulative += norm
+
+            return {
+                feature: f.feature,
+                importance: f.importance,
+                normalized: norm,
+                cumulative,
+                rank: idx + 1
             }
-            if (!allowedPositions.includes(position)) {
-                return res.status(400).json({ error: 'Ungültige Position (GK, DEF, MID, FWD erlaubt)' })
-            }
-            pos = position
+        })
+
+        const response: FeatureImportanceResponse = {
+            season: parsed.season ?? season,
+            method:
+                parsed.method ??
+                (typeof method === 'string' ? method : 'rf'),
+            n_features: parsed.n_features ?? features.length,
+            generated_at:
+                parsed.generated_at ?? new Date().toISOString().slice(0, 10),
+            position: null,
+            features,
+            file: filePath
         }
 
-        // Datei-Pfad zusammensetzen (mit optionalem Positionssuffix)
-        const fileName = pos ? `feature_importance_${season}_${method}_${pos}.json` : `feature_importance_${season}_${method}.json`
-        // Neuer Pfad im Unterordner
-        const filePath = join(FI_DIR, fileName)
-
-        let raw: string
-        try {
-            raw = await readFile(filePath, 'utf8')
-        } catch (e: any) {
-            if (e.code === 'ENOENT') {
-                // Falls Positionsdatei fehlt: Fallback auf globale Datei versuchen
-                if (pos) {
-                    const fallbackName = `feature_importance_${season}_${method}.json`
-                    const fallbackPath = join(FI_DIR, fallbackName)
-                    try {
-                        const rawFallback = await readFile(fallbackPath, 'utf8')
-                        const parsedFallback: FeatureImportanceResponse = JSON.parse(rawFallback)
-                        return res.status(200).json({ ...parsedFallback, position: null, fallback: true })
-                    } catch (inner: any) {
-                        return res.status(404).json({
-                            error: 'Positionsspezifische und globale Datei fehlen',
-                            suggestion: `Erzeuge mit: python code/compute_feature_importance.py --season ${season} [--position GK|DEF|MID|FWD]`,
-                            expected_file: fileName
-                        })
-                    }
-                }
-                return res.status(404).json({
-                    error: 'Keine Feature Importance Datei gefunden',
-                    suggestion: `Erzeuge zuerst die Datei mit: python code/compute_feature_importance.py --season ${season}`,
-                    expected_file: fileName
-                })
-            }
-            throw e
-        }
-
-        let parsed: FeatureImportanceResponse
-        try {
-            parsed = JSON.parse(raw)
-        } catch {
-            return res.status(422).json({ error: 'Ungültiges JSON Format in Importance Datei' })
-        }
-
-        return res.status(200).json({ ...parsed, position: parsed.position ?? pos ?? null })
+        return res.status(200).json(response)
     } catch (err: any) {
         console.error('Feature Importance API Fehler:', err)
-        return res.status(500).json({ error: err?.message ?? 'Interner Fehler' })
+        if (err.code === 'ENOENT') {
+            return res.status(404).json({
+                error: `Datei rf_${season}.json nicht gefunden`
+            })
+        }
+        return res.status(500).json({
+            error: err?.message ?? 'Interner Fehler beim Laden der FI-Daten'
+        })
     }
 }

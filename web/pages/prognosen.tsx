@@ -73,48 +73,49 @@ export default function PredictionsPage() {
     const [availableDownloadLinks, setAvailableDownloadLinks] = useState<Array<{ href: string; label: string }>>([])
 
     // Echte Implementierung für das Laden der verfügbaren Gameweeks und Methoden
+    // Echte Implementierung für das Laden der verfügbaren Gameweeks und Methoden
     const fetchAvailableGWs = useCallback(async () => {
         setGwLoadingState('loading');
         setGwError('');
 
         try {
-            // Passe den Pfad an deinen echten Endpoint an, falls er anders heisst
             const res = await fetch('/api/gw/available');
 
             if (!res.ok) {
-                throw new Error('Fehler beim Laden verfügbarer Gameweeks');
+                throw new Error('Fehler beim Laden verfuegbarer Gameweeks');
             }
 
-            // Erwartete Struktur:
-            // { gameweeks: number[], methods_by_gw?: { [gw: string]: string[] } }
-            const data = await res.json() as {
-                gameweeks: number[];
-                methods_by_gw?: Record<string, string[]>;
+            type ApiResponse = {
+                available: number[];
+                methodsByGw?: Record<string, string[]>;
+                latest?: number | null;
             };
 
-            const gws = data.gameweeks ?? [];
+            const data: ApiResponse = await res.json();
+
+            const gws = data.available ?? [];
             setAvailableGWs(gws);
 
-            // Methoden pro Gameweek setzen
-            if (data.methods_by_gw) {
-                const mapped: Record<number, string[]> = {};
-                for (const [key, value] of Object.entries(data.methods_by_gw)) {
+            const allMethods = methodOptions.map(m => m.value);
+            const mapped: Record<number, string[]> = {};
+
+            if (data.methodsByGw) {
+                for (const [key, value] of Object.entries(data.methodsByGw)) {
                     mapped[Number(key)] = value;
                 }
-                setMethodsByGw(mapped);
             } else {
-                // Fallback: alle Methoden für alle Gameweeks erlauben
-                const allMethods = methodOptions.map(m => m.value);
-                const mapped: Record<number, string[]> = {};
+                // Fallback: alle Methoden fuer alle Gameweeks erlauben
                 gws.forEach(gw => {
                     mapped[gw] = allMethods;
                 });
-                setMethodsByGw(mapped);
             }
+            setMethodsByGw(mapped);
 
-            // Default-GW setzen (z.B. letzte verfügbare)
+            // Default-GW: bevorzugt latest aus der API, sonst letzte Zahl in der Liste
             if (gws.length > 0 && selectedGW === null) {
-                setSelectedGW(gws[gws.length - 1]);
+                const fallback = gws[gws.length - 1];
+                const latest = data.latest ?? fallback;
+                setSelectedGW(latest);
             }
 
             setGwLoadingState('loaded');
@@ -122,11 +123,13 @@ export default function PredictionsPage() {
             setGwError(
                 err instanceof Error
                     ? err.message
-                    : 'Fehler beim Laden verfügbarer Gameweeks'
+                    : 'Fehler beim Laden verfuegbarer Gameweeks'
             );
             setGwLoadingState('error');
+            setAvailableGWs([]);
+            setMethodsByGw({});
         }
-    }, [selectedGW]);
+    }, [selectedGW, methodOptions]);
 
     // Lade verfügbare Seasons und Gameweeks on mount
     useEffect(() => {

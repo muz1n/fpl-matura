@@ -46,10 +46,13 @@ type LoadingStateType = 'idle' | 'loading' | 'success' | 'error'
 export default function BacktestPage() {
     const [availableSeasons, setAvailableSeasons] = useState<string[]>([])
     const [seasonsLoading, setSeasonsLoading] = useState<boolean>(true)
+    const [seasonsError, setSeasonsError] = useState<string | null>(null)
     const [selectedSeason, setSelectedSeason] = useState<string>('2022-23')
 
     const [availableRanges, setAvailableRanges] = useState<string[]>([])
     const [selectedRange, setSelectedRange] = useState<string | null>(null)
+    const [rangesLoading, setRangesLoading] = useState<boolean>(false)
+    const [rangesError, setRangesError] = useState<string | null>(null)
 
     const [backtestData, setBacktestData] = useState<BacktestData | null>(null)
     const [state, setState] = useState<LoadingStateType>('idle')
@@ -64,46 +67,72 @@ export default function BacktestPage() {
     useEffect(() => {
         async function loadSeasons() {
             try {
-                const seasons = await getUsableSeasons()
-                setAvailableSeasons(seasons)
-                if (seasons.length > 0 && !selectedSeason) {
-                    setSelectedSeason(seasons[seasons.length - 1])
+                setSeasonsLoading(true);
+                const seasons = await getUsableSeasons();
+                setAvailableSeasons(seasons);
+
+                if (!selectedSeason && seasons.length > 0) {
+                    // Standard: letzte Saison wählen
+                    setSelectedSeason(seasons[seasons.length - 1]);
                 }
             } catch (err) {
-                console.error('Fehler beim Laden der Seasons:', err)
-                setAvailableSeasons(['2020-21', '2021-22', '2022-23', '2023-24'])
-                setSeasonsLoading(false)
+                console.error('Fehler beim Laden der Saisons', err);
+                setSeasonsError('Fehler beim Laden der verfügbaren Saisons');
+                // Fallback – damit die UI trotzdem funktioniert
+                setAvailableSeasons(['2020-21', '2021-22', '2022-23', '2023-24']);
+            } finally {
+                setSeasonsLoading(false);
             }
         }
-        loadSeasons()
-    }, [])
+
+        loadSeasons();
+    }, []); // nur beim ersten Render ausführen
 
     // Lade verfügbare GW-Ranges für ausgewählte Season
+    // Lade verfügbare GW-Ranges fuer ausgewaehlte Season
     useEffect(() => {
         if (!selectedSeason) return
 
         async function fetchRanges() {
             try {
-                const res = await fetch(`/api/backtest/${selectedSeason}`)
+                const res = await fetch(`/api/backtests/${selectedSeason}`)
+
                 if (!res.ok) {
-                    throw new Error('Fehler beim Laden der verfügbaren Ranges')
+                    console.error(
+                        'Backtest Season API Fehler:',
+                        res.status,
+                        res.statusText
+                    )
+                    setAvailableRanges([])
+                    setSelectedRange(null)
+                    return
                 }
 
-                const data = await res.json()
-                setAvailableRanges(data.available_ranges || [])
+                type SeasonResponse = {
+                    season: string
+                    available_ranges?: string[]
+                }
 
-                // Setze default Range (neueste/letzte)
-                if (data.available_ranges && data.available_ranges.length > 0) {
-                    setSelectedRange(data.available_ranges[data.available_ranges.length - 1])
+                const data: SeasonResponse = await res.json()
+                const ranges = data.available_ranges ?? []
+
+                setAvailableRanges(ranges)
+
+                if (ranges.length > 0) {
+                    // Standard: neuester / letzter Range
+                    setSelectedRange(ranges[ranges.length - 1])
                 } else {
                     setSelectedRange(null)
                 }
             } catch (err) {
-                console.error('Error fetching ranges:', err)
-                setAvailableRanges([])
-                setSelectedRange(null)
+                console.error('Fehler beim Laden der verfügbaren Ranges', err);
+                setRangesError('Fehler beim Laden der verfügbaren Ranges');
+                setAvailableRanges([]);
+            } finally {
+                setRangesLoading(false);
             }
         }
+
         fetchRanges()
     }, [selectedSeason])
 
@@ -142,11 +171,16 @@ export default function BacktestPage() {
     }, [selectedSeason, selectedRange])
 
     // Helper: Berechne Max-Punkte pro Methode
+    // Helper: Berechne Max-Punkte pro Methode
     const getMaxPoints = (method: string): number => {
-        if (!backtestData) return 0
-        const methodData = backtestData.detail.filter(r => r.method === method && r.xi_points > 0)
-        return methodData.length > 0 ? Math.max(...methodData.map(r => r.xi_points)) : 0
-    }
+        if (!backtestData) return 0;
+        const methodData = backtestData.detail.filter(
+            r => r.method === method && r.xi_points > 0
+        );
+        return methodData.length > 0
+            ? Math.max(...methodData.map(r => r.xi_points))
+            : 0;
+    };
 
     // Gefilterte Detail-Daten für Chart
     const filteredDetail = useMemo(() => {
@@ -222,7 +256,9 @@ export default function BacktestPage() {
     }
 
     const toggleMethod = (m: string) => {
-        setSelectedMethods(prev => prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m])
+        setSelectedMethods(prev =>
+            prev.includes(m) ? prev.filter(x => x !== m) : [...prev, m]
+        );
     }
 
     const allSelected = backtestData && selectedMethods.length === Array.from(new Set(backtestData.detail.map(r => r.method))).length
