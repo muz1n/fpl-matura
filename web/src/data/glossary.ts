@@ -19,10 +19,10 @@ export const glossary = {
     methodePos: "Positionsmittel - Durchschnittspunkte pro Position als Baseline-Vorhersage.",
 
     // FPL-spezifische Begriffe
-    gameweek: "Eine Spielrunde in der Premier League. Die Saison hat 38 Gameweeks.",
-
+    seasonSelect: "Welche FPL Saison angezeigt wird, zum Beispiel 2022 23.",
+    gameweek: "Welche Spielwoche innerhalb der Saison angezeigt wird.",
+    methodSelect: "Welches Modell für die Punktprognose verwendet wird.",
     captain: "Der Kapitän deines Teams erhält doppelte Punkte für diese Gameweek.",
-
     viceCaptain: "Der Vize-Kapitän wird automatisch zum Kapitän, falls dein Kapitän nicht spielt.",
 
     startelf: "Die 11 Spieler, die in dieser Gameweek Punkte sammeln. Du hast auch eine Bank mit 4 Ersatzspielern.",
@@ -37,6 +37,7 @@ export const glossary = {
     erwartePunkte: "Die prognostizierten Punkte basierend auf Form, Gegner und historischen Daten.",
 
     prognose: "Eine KI-gestützte Vorhersage, wie viele Punkte ein Spieler voraussichtlich erzielen wird.",
+    istPunkte: "Tatsächliche FPL Punkte in dieser Spielwoche.",
 
     heimspiel: "Wenn ein Team zuhause spielt (meist mit 'vs' gekennzeichnet).",
 
@@ -46,7 +47,7 @@ export const glossary = {
     modellVersion: "Die Version des KI-Modells, das für die Prognosen verwendet wurde.",
 
     regelPruefung: "Prüfung, ob die Aufstellung alle FPL-Regeln einhält (Budget, Spieleranzahl, max. 3 Spieler pro Team).",
-
+    prognose: "Erwartete Punkte des Spielers in dieser Spielwoche.",
     // Positionen
     torwart: "Torwart (GK) - erhält Punkte für gehaltene Bälle und Clean Sheets.",
 
@@ -61,7 +62,9 @@ export const glossary = {
     // Weitere wichtige Begriffe
     budget: "Du hast 100 Millionen £, um dein 15-Spieler-Team zusammenzustellen.",
 
-    preis: "Der Preis eines Spielers in Millionen £. Der Preis ändert sich basierend auf Nachfrage.",
+
+    preis: "FPL Preis des Spielers in Millionen Pfund.",
+    top15: "Die 15 Spieler mit den höchsten prognostizierten Punkten in dieser Spielwoche. Schnelle Übersicht für die besten Picks."
 } as const
 
 export type GlossaryKey = keyof typeof glossary

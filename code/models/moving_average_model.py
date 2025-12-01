@@ -267,7 +267,13 @@ def main():
         with open(
             f"{out_dir}/predictions_{season}_gw{gw}_rf_rank.json", "w", encoding="utf-8"
         ) as f:
-            json.dump(pred_json, f, ensure_ascii=False, indent=2)
+            rf_rank_obj = {
+                "season": season,
+                "gameweek": gw,
+                "method": "rf_rank",
+                "players": pred_json,
+            }
+            json.dump(rf_rank_obj, f, ensure_ascii=False, indent=2)
         preds_list.append(gw_df)
     # Alle Prognosen zusammenfuehren
     all_preds = pd.concat(preds_list, ignore_index=True)

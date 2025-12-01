@@ -12,6 +12,7 @@ export function Navbar() {
     const isActive = (path: string) => router.pathname === path
     const links = [
         { href: '/prognosen', label: 'Prognosen', icon: LineChart },
+        { href: '/lineup-builder', label: 'Lineup-Builder', icon: BrainCircuit },
         { href: '/backtest', label: 'Backtest', icon: BarChart3 },
         { href: '/multi-season', label: 'Multi-Season', icon: BarChart3 },
         { href: '/feature-importance', label: 'Feature Importance', icon: BrainCircuit },
@@ -23,7 +24,7 @@ export function Navbar() {
             <div className="container mx-auto px-4">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo / Titel */}
-                    <Link href="/info" className="flex items-center gap-2 font-bold text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                    <Link href="/" className="flex items-center gap-2 font-bold text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                         <BarChart3 className="w-6 h-6" />
                         <span>FPL Maturaarbeit</span>
                     </Link>
