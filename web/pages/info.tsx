@@ -1,174 +1,303 @@
 import Head from 'next/head'
-import { Info, Database, BarChart3, BrainCircuit, TrendingUp, AlertCircle } from 'lucide-react'
+import {
+    InformationCircleIcon,
+    Squares2X2Icon,
+    ServerStackIcon,
+    BeakerIcon,
+    ExclamationTriangleIcon,
+} from '@heroicons/react/24/outline'
 
 export default function InfoPage() {
     return (
-        <>
+        <div className="min-h-screen bg-slate-900 text-slate-100">
             <Head>
-                <title>Info – FPL Maturaarbeit</title>
-                <meta name="description" content="Informationen über die FPL Vorhersage-WebApp" />
+                <title>Informationen zur WebApp – FPL Assistent</title>
+                <meta
+                    name="description"
+                    content="Überblick über die FPL WebApp, verwendete Daten, Prognosemethoden und Grenzen des Modells."
+                />
             </Head>
 
-            <main className="min-h-screen bg-slate-900 text-slate-100">
-                <div className="max-w-7xl mx-auto px-4 py-10 space-y-8">
-                    {/* Header */}
-                    <div className="text-center mb-10">
-                        <div className="flex items-center justify-center gap-3 mb-4">
-                            <Info className="w-10 h-10 text-blue-600" />
-                            <h1 className="text-4xl font-bold text-slate-100">
-                                Informationen zur WebApp
+            <div className="max-w-6xl mx-auto px-4 py-10 space-y-10">
+                {/* Hero / Einordnung */}
+                <section className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-7 md:p-8">
+                    <div className="grid gap-6 md:grid-cols-[minmax(0,2fr),minmax(0,1.3fr),minmax(0,1.3fr)] items-start">
+                        {/* Linke Spalte */}
+                        <div className="space-y-3">
+                            <div className="inline-flex items-center gap-2 text-emerald-300">
+                                <InformationCircleIcon className="h-6 w-6" />
+                                <span className="text-sm font-medium tracking-wide uppercase">
+                                    Informationen zur WebApp
+                                </span>
+                            </div>
+                            <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+                                FPL Assistent – KI-gestützte Teamoptimierung
                             </h1>
+                            <p className="text-sm md:text-base text-slate-200 max-w-xl">
+                                Diese WebApp gehört zu einer Maturaarbeit und zeigt,
+                                wie gut verschiedene Prognosemethoden im Fantasy Premier
+                                League funktionieren. Sie richtet sich an Lehrpersonen,
+                                Schülerinnen und Schüler sowie FPL-Interessierte.
+                            </p>
                         </div>
-                        <p className="text-lg text-slate-300">
-                            Ein Überblick für Lehrpersonen und Interessierte
+
+                        {/* Kernfrage */}
+                        <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4 md:p-5 space-y-1">
+                            <p className="text-xs font-semibold text-emerald-300 tracking-wide uppercase">
+                                Kernfrage
+                            </p>
+                            <p className="text-sm md:text-base text-slate-100 font-medium">
+                                Wie gut kann ein KI-Modell FPL-Punkte im Voraus schätzen?
+                            </p>
+                            <p className="text-xs md:text-sm text-slate-300">
+                                Ziel ist ein nachvollziehbares Beispiel, wie Machine Learning
+                                in einem klar abgegrenzten Szenario eingesetzt und beurteilt werden kann.
+                            </p>
+                        </div>
+
+                        {/* Rahmen */}
+                        <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4 md:p-5 space-y-1">
+                            <p className="text-xs font-semibold text-emerald-300 tracking-wide uppercase">
+                                Rahmen
+                            </p>
+                            <p className="text-sm md:text-base text-slate-100 font-medium">
+                                Mehrere Saisons – pro Saison ein eigenes Modell.
+                            </p>
+                            <p className="text-xs md:text-sm text-slate-300">
+                                Für jede Saison wird ein separates Modell trainiert und
+                                innerhalb derselben Saison getestet. Es findet keine
+                                echte Cross-Season-Validierung statt, die Modelle werden aber
+                                für mehrere Saisons parallel ausgewertet.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Überblick Seiten */}
+                <section className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-7 md:p-8 space-y-5">
+                    <div className="flex items-center gap-3">
+                        <Squares2X2Icon className="h-6 w-6 text-sky-300" />
+                        <h2 className="text-xl font-semibold tracking-tight">
+                            Überblick: Welche Seiten gibt es?
+                        </h2>
+                    </div>
+
+                    <div className="grid gap-5 md:grid-cols-3">
+                        {/* Lineup-Builder */}
+                        <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4 space-y-2">
+                            <h3 className="text-base font-semibold">Lineup-Builder</h3>
+                            <p className="text-sm text-slate-200">
+                                Interaktiver Pitch im FPL-Stil: Spieler per Drag-and-Drop auf
+                                Startelf und Bank setzen, Captain und Vice-Captain markieren
+                                und sehen, wie viele Punkte die Aufstellung laut Modell
+                                erwarten lässt.
+                            </p>
+                        </div>
+
+                        {/* Prognosen */}
+                        <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4 space-y-2">
+                            <h3 className="text-base font-semibold">Prognosen</h3>
+                            <p className="text-sm text-slate-200">
+                                Zeigt erwartete Punkte für alle Spieler in einer gewählten
+                                Spielwoche. Filter nach Saison, Spielwoche, Position und
+                                Prognosemethode. Dient als Beispiel, wie ein FPL-Manager das
+                                Modell nutzen könnte.
+                            </p>
+                        </div>
+
+                        {/* Backtest */}
+                        <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4 space-y-2">
+                            <h3 className="text-base font-semibold">Backtest</h3>
+                            <p className="text-sm text-slate-200">
+                                Vergleicht die Methoden über mehrere Spielwochen rückblickend.
+                                Die Effizienz zeigt, wie nah eine Methode am theoretisch besten
+                                Team (Hindsight-Optimum) lag.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="grid gap-5 md:grid-cols-2">
+                        {/* Multi-Season */}
+                        <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4 space-y-2">
+                            <h3 className="text-base font-semibold">Multi-Season</h3>
+                            <p className="text-sm text-slate-200">
+                                Stellt die Effizienz der wichtigsten Methoden über mehrere
+                                Saisons nebeneinander. Zeigt, ob ein Ansatz stabil bleibt oder
+                                stark schwankt.
+                            </p>
+                        </div>
+
+                        {/* Feature Importance */}
+                        <div className="bg-slate-900/60 border border-slate-700 rounded-xl p-4 space-y-2">
+                            <h3 className="text-base font-semibold">Feature Importance</h3>
+                            <p className="text-sm text-slate-200">
+                                Erklärt das Random-Forest-Modell: Welche Merkmale
+                                (z.&nbsp;B. Preis, Form, Einsatztendenz) tragen wie stark zur
+                                Vorhersage bei? Die Seite macht sichtbar, was das Modell
+                                «gelernt» hat.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Daten */}
+                <section className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-7 md:p-8 space-y-4">
+                    <div className="flex items-center gap-3">
+                        <ServerStackIcon className="h-6 w-6 text-sky-300" />
+                        <h2 className="text-xl font-semibold tracking-tight">
+                            Welche Daten werden verwendet?
+                        </h2>
+                    </div>
+                    <p className="text-sm md:text-base text-slate-200">
+                        Die Anwendung nutzt historische FPL-Daten aus vergangenen Saisons
+                        (z.&nbsp;B. 2020-21 bis 2023-24). Es werden keine Live-Daten oder
+                        in Echtzeit aktualisierte API-Abfragen verwendet.
+                    </p>
+                    <p className="text-sm md:text-base text-slate-200">
+                        Jede Datei ist mit einem Saison-Präfix versehen, zum Beispiel{' '}
+                        <code className="px-1.5 py-0.5 rounded bg-slate-900/80 text-xs border border-slate-700">
+                            predictions_2022-23_gw38_rf.json
+                        </code>
+                        . So ist jederzeit klar, aus welcher Saison die Daten stammen und
+                        welche Methode genutzt wurde.
+                    </p>
+                    <p className="text-sm md:text-base text-slate-200">
+                        Die Datensätze enthalten pro Spieler und Spielwoche unter anderem:
+                    </p>
+                    <ul className="list-disc list-inside text-sm md:text-base text-slate-200 space-y-1">
+                        <li>Punkte und Einsatzminuten</li>
+                        <li>Preis und Position</li>
+                        <li>
+                            ICT-Index (Influence, Creativity, Threat) und weitere abgeleitete
+                            Merkmale (z.&nbsp;B. Form über mehrere Wochen)
+                        </li>
+                    </ul>
+                </section>
+
+                {/* Prognosemethoden */}
+                <section className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-7 md:p-8 space-y-5">
+                    <div className="flex items-center gap-3">
+                        <BeakerIcon className="h-6 w-6 text-sky-300" />
+                        <h2 className="text-xl font-semibold tracking-tight">
+                            Welche Prognosemethoden gibt es?
+                        </h2>
+                    </div>
+
+                    {/* RF */}
+                    <div className="space-y-2">
+                        <h3 className="font-semibold text-slate-100">
+                            Random Forest (RF, KI-Modell)
+                        </h3>
+                        <p className="text-sm md:text-base text-slate-200">
+                            Ein Machine-Learning-Verfahren, das aus vielen Entscheidungsbäumen
+                            besteht. Das Modell nutzt Merkmale wie Form, Preis, Einsatzminuten
+                            und ICT-Werte. RF ist die Hauptmethode der Arbeit.
+                        </p>
+                        <p className="text-sm md:text-base text-slate-200">
+                            Es gibt mehrere Varianten, die alle auf demselben Modell basieren,
+                            aber die Teamwahl unterschiedlich einschränken:
+                        </p>
+                        <ul className="list-disc list-inside text-sm text-slate-200 space-y-1">
+                            <li>
+                                <span className="font-semibold">rf</span> – Standard-Modell
+                                (Basisvergleich)
+                            </li>
+                            <li>
+                                <span className="font-semibold">rf_pos</span> – berücksichtigt
+                                die Position explizit bei der Auswahl
+                            </li>
+                            <li>
+                                <span className="font-semibold">rf_rank</span> – bildet Spieler
+                                nach Modell-Ranking und wählt dann ein Team
+                            </li>
+                            <li>
+                                <span className="font-semibold">rf_filled / rf_relaxed</span> –
+                                Varianten mit leicht anderen Constraints bei der
+                                Teamausoptimierung
+                            </li>
+                        </ul>
+                    </div>
+
+                    {/* MA3 */}
+                    <div className="space-y-2">
+                        <h3 className="font-semibold text-slate-100">
+                            MA3 (Formdurchschnitt, Moving Average)
+                        </h3>
+                        <p className="text-sm md:text-base text-slate-200">
+                            Einfache Vergleichsmethode: Der Durchschnitt der letzten drei
+                            Spielwochen wird als Prognose verwendet. Dient als intuitive
+                            «Baseline» ohne KI.
                         </p>
                     </div>
 
-                    {/* Content Sections */}
-                    <div className="space-y-8">
-                        {/* Was macht diese WebApp */}
-                        <section className="bg-slate-800/90 rounded-lg shadow-lg p-6 border border-slate-700">
-                            <h2 className="text-2xl font-bold text-slate-100 mb-4 flex items-center gap-2">
-                                <BarChart3 className="w-6 h-6 text-blue-600" />
-                                Was macht diese WebApp?
-                            </h2>
-                            <div className="text-sm md:text-base text-slate-200 leading-relaxed space-y-3">
-                                <p>
-                                    Diese Anwendung prognostiziert die zu erwartenden Punkte von Fantasy Premier League Spielern für kommende Spielwochen.
-                                </p>
-                                <p>
-                                    Sie vergleicht verschiedene Vorhersagemethoden automatisch und zeigt transparent, welche Ansätze funktionieren und warum.
-                                </p>
-                                <p>
-                                    Die WebApp unterstützt dabei, fundierte Entscheidungen bei der Teamwahl zu treffen, indem sie Prognosen, historische Genauigkeit und Modellverhalten verständlich darstellt.
-                                </p>
-                            </div>
-                        </section>
-
-                        {/* Welche Daten */}
-                        <section className="bg-slate-800/90 rounded-lg shadow-lg p-6 border border-slate-700">
-                            <h2 className="text-2xl font-bold text-slate-100 mb-4 flex items-center gap-2">
-                                <Database className="w-6 h-6 text-green-600" />
-                                Welche Daten werden verwendet?
-                            </h2>
-                            <div className="text-sm md:text-base text-slate-200 leading-relaxed space-y-3">
-                                <p>
-                                    Die Anwendung nutzt historische FPL-Daten aus vergangenen Saisons (z.B. 2022–23, 2023–24). Es werden keine Live-Daten von der offiziellen FPL-API abgerufen.
-                                </p>
-                                <p>
-                                    Jede Datei ist mit einem Saison-Prefix versehen (z.B. <code className="bg-slate-700 px-2 py-1 rounded">predictions_2022-23_gw30_rf.json</code>), damit klar ist, aus welcher Saison die Daten stammen. Das gewährleistet Nachvollziehbarkeit und verhindert Verwechslungen.
-                                </p>
-                                <p>
-                                    Die Daten umfassen Spielerinformationen wie Punkte, Minuten, ICT-Index (Influence, Creativity, Threat) sowie weitere Statistiken pro Spielwoche.
-                                </p>
-                            </div>
-                        </section>
-
-                        {/* Welche Methoden */}
-                        <section className="bg-slate-800/90 rounded-lg shadow-lg p-6 border border-slate-700">
-                            <h2 className="text-2xl font-bold text-slate-100 mb-4 flex items-center gap-2">
-                                <BrainCircuit className="w-6 h-6 text-purple-600" />
-                                Welche Prognosemethoden gibt es?
-                            </h2>
-                            <div className="space-y-4">
-                                <div className="border-l-4 border-blue-500 pl-4">
-                                    <h3 className="font-semibold text-slate-100 mb-1">
-                                        RF (Random Forest)
-                                    </h3>
-                                    <p className="text-slate-200">
-                                        Ein maschinelles Lernverfahren, das aus vergangenen Spielwochen lernt und dabei Merkmale wie Form, Preis und ICT-Werte berücksichtigt. Dies ist die Hauptmethode der Arbeit.
-                                    </p>
-                                </div>
-
-                                <div className="border-l-4 border-green-500 pl-4">
-                                    <h3 className="font-semibold text-slate-100 mb-1">
-                                        MA3 (Moving Average)
-                                    </h3>
-                                    <p className="text-sm md:text-base text-slate-200 leading-relaxed">
-                                        Eine einfache Heuristik: Der Durchschnitt der letzten 3 Spielwochen wird als Vorhersage verwendet. Dient als Vergleichsbasis.
-                                    </p>
-                                </div>
-
-                                <div className="border-l-4 border-orange-500 pl-4">
-                                    <h3 className="font-semibold text-slate-100 mb-1">
-                                        POS (Positions-Durchschnitt)
-                                    </h3>
-                                    <p className="text-sm md:text-base text-slate-200 leading-relaxed">
-                                        Berechnet den Durchschnitt aller Spieler einer Position (z.B. alle Stürmer). Zeigt die Baseline-Erwartung ohne individuelle Betrachtung.
-                                    </p>
-                                </div>
-
-                                <div className="border-l-4 border-indigo-500 pl-4">
-                                    <h3 className="font-semibold text-slate-100 mb-1">
-                                        Effizienz (Punkte / Optimum)
-                                    </h3>
-                                    <p className="text-sm md:text-base text-slate-200 leading-relaxed">
-                                        Vergleicht die mit einer Methode erzielten Punkte mit dem theoretisch besten Team (Hindsight-Optimum). 100% bedeutet perfekte Auswahl, niedrigere Werte zeigen Verbesserungspotenzial.
-                                    </p>
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* Wie interpretiere ich die Seiten */}
-                        <section className="bg-slate-800/90 rounded-lg shadow-lg p-6 border border-slate-700">
-                            <h2 className="text-2xl font-bold text-slate-100 mb-4 flex items-center gap-2">
-                                <TrendingUp className="w-6 h-6 text-emerald-600" />
-                                Wie interpretiere ich die Seiten?
-                            </h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <h3 className="font-semibold text-slate-100 mb-2">
-                                        Prognosen-Seite
-                                    </h3>
-                                    <p className="text-slate-200">
-                                        Zeigt die vorhergesagten Punkte für jeden Spieler in einem bestimmten Gameweek. Sie können nach Position filtern und sehen, welche Spieler die höchsten Erwartungen haben.
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <h3 className="font-semibold text-slate-100 mb-2">
-                                        Backtest-Seite
-                                    </h3>
-                                    <p className="text-sm md:text-base text-slate-200 leading-relaxed">
-                                        Vergleicht die verschiedenen Methoden über mehrere Gameweeks hinweg. Die Effizienz zeigt, wie nah jede Methode am theoretisch optimalen Team war. Ein direkter Methodenvergleich wird hier möglich.
-                                    </p>
-                                </div>
-
-                                <div>
-                                    <h3 className="font-semibold text-slate-100 mb-2">
-                                        Feature Importance-Seite
-                                    </h3>
-                                    <p className="text-sm md:text-base text-slate-200 leading-relaxed">
-                                        Zeigt, welche Merkmale (z.B. Preis, Form, ICT-Index) das Random Forest Modell als wichtig erachtet. Das hilft zu verstehen, was das Modell gelernt hat und wo mögliche Schwachstellen liegen.
-                                    </p>
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* Grenzen und Annahmen */}
-                        <section className="bg-slate-800/90 rounded-lg shadow-lg p-6 border border-slate-700">
-                            <h2 className="text-2xl font-bold text-slate-100 mb-4 flex items-center gap-2">
-                                <AlertCircle className="w-6 h-6 text-amber-400" />
-                                Grenzen und Annahmen
-                            </h2>
-                            <div className="bg-slate-900/80 border border-amber-500/60 rounded-2xl shadow-lg p-6 text-sm md:text-base text-slate-200 leading-relaxed space-y-3">
-                                <p>
-                                    <strong>Fokus auf eine Saison:</strong> Die Modelle trainieren und testen innerhalb derselben Saison (z.B. 2022–23). Saison-übergreifende Muster werden nicht berücksichtigt.
-                                </p>
-                                <p>
-                                    <strong>Keine Live-Informationen:</strong> Verletzungen, Transfernews, taktische Änderungen oder aktuelle Form werden nicht einbezogen. Das Modell kennt nur historische Statistiken.
-                                </p>
-                                <p>
-                                    <strong>Vereinfachung der Realität:</strong> FPL ist komplex und von vielen Faktoren abhängig. Diese WebApp modelliert einen Teil davon, ist aber bewusst vereinfacht, um konsistente und nachvollziehbare Ergebnisse zu liefern.
-                                </p>
-                                <p>
-                                    <strong>Validierung wichtig:</strong> Alle Methoden werden transparent mit echten historischen Daten getestet. Die Ergebnisse zeigen, was funktioniert hat – nicht was definitiv in der Zukunft funktionieren wird.
-                                </p>
-                            </div>
-                        </section>
+                    {/* POS */}
+                    <div className="space-y-2">
+                        <h3 className="font-semibold text-slate-100">
+                            POS (Positionsmittel, Durchschnitt pro Position)
+                        </h3>
+                        <p className="text-sm md:text-base text-slate-200">
+                            Berechnet den Durchschnitt aller Spieler einer Position
+                            (z.&nbsp;B. alle Stürmer). Zeigt, wie ein sehr simples Modell ohne
+                            individuelle Spielerinformationen abschneiden würde.
+                        </p>
                     </div>
-                </div>
-            </main>
-        </>
+
+                    {/* Effizienz */}
+                    <div className="space-y-2">
+                        <h3 className="font-semibold text-slate-100">
+                            Effizienz (Punkte im Vergleich zum Optimum)
+                        </h3>
+                        <p className="text-sm md:text-base text-slate-200">
+                            Keine eigene Vorhersagemethode, sondern eine Kennzahl: Sie
+                            vergleicht die mit einer Methode erzielten Punkte mit dem
+                            theoretisch besten möglichen Team. 100&nbsp;Prozent entsprechen
+                            perfekter Auswahl.
+                        </p>
+                    </div>
+                </section>
+
+                {/* Grenzen */}
+                <section className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-7 md:p-8 space-y-4">
+                    <div className="flex items-center gap-3">
+                        <ExclamationTriangleIcon className="h-6 w-6 text-amber-400" />
+                        <h2 className="text-xl font-semibold tracking-tight">
+                            Grenzen und Annahmen
+                        </h2>
+                    </div>
+
+                    <div className="space-y-3 text-sm md:text-base text-slate-200">
+                        <p>
+                            <span className="font-semibold">Training pro Saison:</span> Für
+                            jede Saison wird ein eigenes Modell trainiert und auf
+                            Spielwochen derselben Saison getestet (z.&nbsp;B. 2020-21,
+                            2021-22, 2022-23, 2023-24). Es gibt keine explizite
+                            Cross-Season-Validierung; saisonübergreifende Muster werden nur
+                            indirekt sichtbar.
+                        </p>
+                        <p>
+                            <span className="font-semibold">Keine Live-Informationen:</span>{' '}
+                            Verletzungen, Transfers, taktische Anpassungen oder kurzfristige
+                            Form fliessen nicht ein. Die WebApp arbeitet bewusst nur mit
+                            historischen Statistiken.
+                        </p>
+                        <p>
+                            <span className="font-semibold">
+                                Vereinfachte Realität im FPL:
+                            </span>{' '}
+                            Im echten Spiel beeinflussen viele weitere Faktoren die
+                            Entscheidungen der Managerinnen und Manager. Das Projekt modelliert
+                            nur einen Teil dieser Komplexität, dafür transparent und
+                            nachvollziehbar.
+                        </p>
+                        <p>
+                            <span className="font-semibold">Validierung nur mit alten Daten:</span>{' '}
+                            Alle Methoden wurden mit historischen Spielwochen getestet. Die
+                            Ergebnisse zeigen, was in der Vergangenheit funktioniert hat –
+                            nicht, was garantiert in der Zukunft passieren wird.
+                        </p>
+                    </div>
+                </section>
+            </div>
+        </div>
     )
 }

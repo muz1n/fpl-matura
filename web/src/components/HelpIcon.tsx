@@ -1,22 +1,38 @@
-import { HelpCircle } from "lucide-react"
-import { Tooltip } from "./Tooltip"
+// web/src/components/HelpIcon.tsx
+import * as React from 'react'
+// @ts-ignore: Fehlende Typdefinitionen für Radix Tooltip
+import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 
-interface HelpIconProps {
+type HelpIconProps = {
     text: string
-    side?: "top" | "bottom" | "left" | "right"
+    side?: 'top' | 'right' | 'bottom' | 'left'
 }
 
-export function HelpIcon({ text, side = "top" }: HelpIconProps) {
+export const HelpIcon: React.FC<HelpIconProps> = ({ text, side = 'top' }) => {
     return (
-        <Tooltip content={text} side={side}>
-            <button
-                className="inline-flex items-center justify-center w-4 h-4 ml-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900 rounded"
-                aria-label={text}
-                aria-describedby={undefined}
-                type="button"
-            >
-                <HelpCircle className="w-4 h-4" />
-            </button>
-        </Tooltip>
+        <TooltipPrimitive.Provider delayDuration={150}>
+            <TooltipPrimitive.Root>
+                <TooltipPrimitive.Trigger asChild>
+                    <button
+                        type="button"
+                        className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full border border-slate-500 text-[10px] font-bold text-slate-200 hover:bg-slate-700 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/70"
+                        aria-label="Hilfe"
+                    >
+                        ?
+                    </button>
+                </TooltipPrimitive.Trigger>
+                <TooltipPrimitive.Portal>
+                    <TooltipPrimitive.Content
+                        side={side}
+                        align="center"
+                        sideOffset={6}
+                        className="z-50 max-w-xs rounded-lg border border-slate-600 bg-slate-900/95 px-3 py-2 text-xs leading-relaxed text-slate-100 shadow-xl"
+                    >
+                        {text}
+                        <TooltipPrimitive.Arrow className="fill-slate-900" />
+                    </TooltipPrimitive.Content>
+                </TooltipPrimitive.Portal>
+            </TooltipPrimitive.Root>
+        </TooltipPrimitive.Provider>
     )
 }
