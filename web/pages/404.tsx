@@ -4,7 +4,7 @@ export default function NotFoundPage() {
     return (
         <div className="min-h-screen bg-slate-900 text-slate-100">
             <Head>
-                <title>404 – Seite nicht gefunden</title>
+                <title>404 - Seite nicht gefunden</title>
             </Head>
             <div className="max-w-3xl mx-auto px-4 py-16 text-center space-y-4">
                 <div className="text-6xl md:text-7xl font-bold text-slate-600">404</div>

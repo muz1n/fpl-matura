@@ -16,9 +16,9 @@ export const PredictionPlayerSchema = z.object({
 });
 
 export const PredictionsPayloadSchema = z.object({
-    season: z.string(),
-    gw: z.number(),
-    generated_at: z.string(),
+    season: z.string().optional(),
+    gw: z.number().optional(),
+    generated_at: z.string().optional(),
     model_version: z.string().optional(),
     method: z.string().optional(),
     players: z.array(PredictionPlayerSchema),

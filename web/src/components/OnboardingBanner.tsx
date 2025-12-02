@@ -61,7 +61,7 @@ export function OnboardingBanner({ storageKey = 'fpl-onboarding-seen' }: Onboard
                         <button
                             onClick={handleDismiss}
                             className="flex-shrink-0 p-2 hover:bg-white/20 rounded-lg transition-colors"
-                            aria-label="Schließen"
+                            aria-label="Schliessen"
                         >
                             <X className="h-5 w-5" />
                         </button>

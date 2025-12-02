@@ -42,6 +42,7 @@ interface BacktestResponse {
 
 /**
  * Ermittelt verfügbare GW-Ranges aus neuer Unterordner-Struktur (backtests/) oder fällt auf alte Root-Struktur zurück.
+ * Filtert nur sinnvolle Ranges: 2-38 (long-term) und 30-38 (short-term)
  */
 async function getAvailableRanges(season: string): Promise<string[]> {
     try {
@@ -57,7 +58,12 @@ async function getAvailableRanges(season: string): Promise<string[]> {
             const match = file.match(pattern)
             if (match) {
                 const [_, start, end] = match
-                ranges.add(`${start}-${end}`)
+                const range = `${start}-${end}`
+
+                // Nur sinnvolle Ranges anbieten: 2-38 (long-term) und 30-38 (short-term)
+                if (range === '2-38' || range === '30-38') {
+                    ranges.add(range)
+                }
             }
         }
         return Array.from(ranges).sort()

@@ -27,7 +27,10 @@ async function findBacktestRanges(season: string): Promise<string[]> {
             // Beispiel: team_backtest_2023-24_gw2-38.csv
             const middle = file.slice(prefix.length, -'.csv'.length) // "2-38"
             if (middle && middle.includes('-')) {
-                ranges.add(middle)
+                // Nur sinnvolle Ranges: 2-38 (long-term) und 30-38 (short-term)
+                if (middle === '2-38' || middle === '30-38') {
+                    ranges.add(middle)
+                }
             }
         }
     }

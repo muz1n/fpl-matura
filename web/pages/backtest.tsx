@@ -2,13 +2,9 @@ import { useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
 import { motion } from 'framer-motion'
 import { Select } from '../src/components/Select'
-import { LoadingState, ErrorState } from '../src/components/States'
 import { TeamBacktestChart } from '../src/components/TeamBacktestChart'
-import { Tooltip } from '../src/components/Tooltip'
-import { tooltips } from '../src/data/tooltips'
 import { getUsableSeasons } from '../lib/seasonQuality'
-import { BarChart3, Download, TrendingUp, Activity, Target, Filter, Table, ArrowUpDown } from 'lucide-react'
-import { Card, SummaryCard, SectionHeader, InfoBox, ControlPanel } from '../src/components/ui'
+import { BarChart3, Download, Activity, ChevronDown, Info } from 'lucide-react'
 
 interface BacktestDetailRow {
     method: string
@@ -47,7 +43,7 @@ export default function BacktestPage() {
     const [availableSeasons, setAvailableSeasons] = useState<string[]>([])
     const [seasonsLoading, setSeasonsLoading] = useState<boolean>(true)
     const [seasonsError, setSeasonsError] = useState<string | null>(null)
-    const [selectedSeason, setSelectedSeason] = useState<string>('2022-23')
+    const [selectedSeason, setSelectedSeason] = useState<string>('2023-24')
 
     const [availableRanges, setAvailableRanges] = useState<string[]>([])
     const [selectedRange, setSelectedRange] = useState<string | null>(null)
@@ -78,7 +74,7 @@ export default function BacktestPage() {
             } catch (err) {
                 console.error('Fehler beim Laden der Saisons', err);
                 setSeasonsError('Fehler beim Laden der verfügbaren Saisons');
-                // Fallback – damit die UI trotzdem funktioniert
+                // Fallback - damit die UI trotzdem funktioniert
                 setAvailableSeasons(['2020-21', '2021-22', '2022-23', '2023-24']);
             } finally {
                 setSeasonsLoading(false);
@@ -156,8 +152,12 @@ export default function BacktestPage() {
 
                 const data: BacktestData = await res.json();
                 setBacktestData(data)
-                // Alle Methoden initial selektiert
+                // Alle Methoden initial selektiert - AUSSER deprecated methods
                 const allMethods: string[] = Array.from(new Set(data.detail.map((r: BacktestDetailRow) => r.method)))
+                    .filter(m => m !== 'rf_filled' && m !== 'rf_optfill')
+                console.log('🔍 Gefundene Methoden:', allMethods)
+                console.log('📊 Anzahl Detail-Rows:', data.detail.length)
+                console.log('📈 Summary Rows:', data.summary.map(s => s.method))
                 setSelectedMethods(allMethods)
                 setState('success')
             } catch (err) {
@@ -193,6 +193,8 @@ export default function BacktestPage() {
         if (!backtestData) return [] as Array<any>
         const byGw: Record<number, Record<string, number>> = {}
         for (const row of backtestData.detail) {
+            // FILTER: rf_filled und rf_optfill ignorieren
+            if (row.method === 'rf_filled' || row.method === 'rf_optfill') continue
             if (row.xi_points <= 0) continue
             if (!byGw[row.gw]) byGw[row.gw] = {}
             byGw[row.gw][row.method] = row.xi_points
@@ -245,14 +247,13 @@ export default function BacktestPage() {
     }, [pivotRows])
 
     const METHOD_COLORS: Record<string, string> = {
-        rf: '#3b82f6',           // Blau
-        rf_relaxed: '#8b5cf6',   // Violett
-        rf_optfill: '#06b6d4',   // Cyan
-        rf_pos: '#6366f1',       // Indigo
-        rf_rank: '#a855f7',      // Lila
-        ma3: '#10b981',          // Grün
-        pos: '#f59e0b',          // Orange
-        legacy: '#6b7280'        // Grau
+        rf: '#ec4899',         // Pink-500 (Hauptmodell)
+        rf_pos: '#22c55e',     // Green-500 (hoher Kontrast)
+        rf_rank: '#f97316',    // Orange-500 (hoher Kontrast)
+        rf_relaxed: '#8b5cf6', // Violet-500
+        ma3: '#eab308',        // Yellow-500 (hoher Kontrast)
+        pos: '#ef4444',        // Red-500 (hoher Kontrast)
+        legacy: '#6b7280'      // Gray-500
     }
 
     const toggleMethod = (m: string) => {
@@ -261,48 +262,51 @@ export default function BacktestPage() {
         );
     }
 
-    const allSelected = backtestData && selectedMethods.length === Array.from(new Set(backtestData.detail.map(r => r.method))).length
+    const allSelected = backtestData && selectedMethods.length === Array.from(new Set(backtestData.detail.map(r => r.method))).filter(m => m !== 'rf_filled' && m !== 'rf_optfill').length
     const toggleAll = () => {
         if (!backtestData) return
         if (allSelected) {
             setSelectedMethods([])
         } else {
-            setSelectedMethods(Array.from(new Set(backtestData.detail.map(r => r.method))))
+            setSelectedMethods(Array.from(new Set(backtestData.detail.map(r => r.method))).filter(m => m !== 'rf_filled' && m !== 'rf_optfill'))
         }
     }
 
     const formatEff = (v: number | null | undefined) => {
-        if (v === null || v === undefined || isNaN(v)) return '–'
+        if (v === null || v === undefined || isNaN(v)) return '-'
         return `${(v * 100).toFixed(1)} %`
     }
 
     return (
         <>
             <Head>
-                <title>Team Backtest - FPL Matura</title>
-                <meta name="description" content="Multi-GW Team Backtest: Vergleich verschiedener Prognosemethoden" />
+                <title>Historischer Backtest - FPL Matura</title>
+                <meta name="description" content="Vergleich der Prognosemethoden über mehrere Gameweeks" />
             </Head>
 
-            <main className="min-h-screen bg-slate-900 text-slate-100">
-                <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-                    {/* Header */}
+            <motion.main
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4 }}
+                className="min-h-screen text-slate-100"
+            >
+                <div className="mx-auto px-4 pt-12 pb-16 space-y-6 max-w-7xl">
+                    {/* Hero-Titel */}
                     <motion.div
                         initial={{ opacity: 0, y: -20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="text-center md:text-left"
+                        className="text-center space-y-3 mb-8"
                     >
-                        <div className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-6">
-                            <div className="flex items-center gap-3 mb-3">
-                                <BarChart3 className="w-10 h-10 text-emerald-400" />
-                                <h1 className="text-2xl md:text-3xl font-bold text-slate-100">
-                                    Historischer Backtest
-                                </h1>
-                            </div>
-                            <p className="text-sm text-slate-400 max-w-2xl mx-auto md:mx-0">
-                                Vergleich der Prognosemethoden über mehrere Gameweeks
-                            </p>
+                        <div className="flex items-center justify-center gap-3">
+                            <BarChart3 className="w-10 h-10 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600" />
+                            <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600">
+                                Historischer Backtest
+                            </h1>
                         </div>
+                        <p className="text-slate-300 text-lg max-w-2xl mx-auto">
+                            Vergleich der Prognosemethoden über mehrere Gameweeks mit Effizienz-Metriken
+                        </p>
                     </motion.div>
 
                     {/* Controls */}
@@ -310,54 +314,59 @@ export default function BacktestPage() {
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4, delay: 0.1 }}
+                        className="bg-slate-800/90 border border-pink-500/20 rounded-2xl shadow-lg p-6 mb-8"
                     >
-                        <ControlPanel>
-                            <ControlPanel className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-6">
-                                <Select
-                                    label="Saison"
-                                    value={selectedSeason}
-                                    onChange={(val) => setSelectedSeason(val as string)}
-                                    options={availableSeasons.map(s => ({
-                                        value: s,
-                                        label: s
-                                    }))}
-                                    disabled={seasonsLoading || availableSeasons.length === 0}
-                                />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <Select
+                                label="Saison"
+                                value={selectedSeason}
+                                onChange={(val) => setSelectedSeason(val as string)}
+                                options={availableSeasons.map(s => ({
+                                    value: s,
+                                    label: s
+                                }))}
+                                disabled={seasonsLoading || availableSeasons.length === 0}
+                            />
 
-                                <Select
-                                    label="Spieltag-Bereich"
-                                    value={selectedRange || ''}
-                                    onChange={(val) => setSelectedRange(val as string)}
-                                    options={availableRanges.map(r => ({
-                                        value: r,
-                                        label: `GW ${r}`
-                                    }))}
-                                    disabled={availableRanges.length === 0}
-                                />
+                            <Select
+                                label="Spieltag-Bereich"
+                                value={selectedRange || ''}
+                                onChange={(val) => setSelectedRange(val as string)}
+                                options={availableRanges.map(r => ({
+                                    value: r,
+                                    label: `GW ${r}`
+                                }))}
+                                disabled={availableRanges.length === 0}
+                            />
+                        </div>
 
-                                <div className="flex items-end">
-                                    <div className="w-full">
-                                        <label className="block text-sm font-medium text-slate-200 mb-2">
-                                            Methoden filtern
-                                        </label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {backtestData && Array.from(new Set(backtestData.detail.map(r => r.method))).map(m => (
-                                                <button
-                                                    key={m}
-                                                    onClick={() => toggleMethod(m)}
-                                                    className={`px-3 py-1.5 rounded-md border text-xs font-medium flex items-center gap-2 transition-colors ${selectedMethods.includes(m)
-                                                        ? 'bg-emerald-600 text-white border-emerald-500'
-                                                        : 'bg-slate-900/60 text-slate-200 border-slate-700 hover:bg-slate-800'}
-                                                    `}
-                                                >
-                                                    <span className="inline-block w-2 h-2 rounded-full" style={{ background: METHOD_COLORS[m] || '#6b7280' }} /> {m.toUpperCase()}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
+                        {backtestData && (
+                            <div>
+                                <label className="block text-sm font-medium text-slate-300 mb-3">
+                                    Methoden filtern
+                                </label>
+                                <div className="flex flex-wrap gap-2">
+                                    {Array.from(new Set(backtestData.detail.map(r => r.method)))
+                                        .filter(m => m !== 'rf_filled' && m !== 'rf_optfill')
+                                        .map(m => (
+                                            <button
+                                                key={m}
+                                                onClick={() => toggleMethod(m)}
+                                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${selectedMethods.includes(m)
+                                                    ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg shadow-pink-500/20'
+                                                    : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700 border border-slate-600'
+                                                    }`}
+                                            >
+                                                <span
+                                                    className="inline-block w-3 h-3 rounded-full mr-2 ring-2 ring-white/30"
+                                                    style={{ background: METHOD_COLORS[m] || '#6b7280' }}
+                                                />
+                                                {m.toUpperCase()}
+                                            </button>
+                                        ))}
                                 </div>
-                            </ControlPanel>
-                        </ControlPanel>
+                            </div>
+                        )}
 
                         {availableRanges.length === 0 && !seasonsLoading && (
                             <div className="mt-4">
@@ -369,9 +378,29 @@ export default function BacktestPage() {
                     </motion.div>
 
                     {/* Loading/Error States */}
-                    {state === 'loading' && <LoadingState message="Lade Backtest-Daten..." />}
+                    {state === 'loading' && (
+                        <div className="flex items-center justify-center py-20">
+                            <div className="text-center">
+                                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-slate-700 border-t-blue-500 mb-4"></div>
+                                <p className="text-slate-400">Lade Backtest-Daten...</p>
+                            </div>
+                        </div>
+                    )}
                     {state === 'error' && (
-                        <div className="rounded-2xl bg-red-900/40 border border-red-700 px-4 py-3 text-sm text-red-100 flex items-start gap-2 mb-6">
+                        <div className="bg-red-900/20 border border-red-800 rounded-xl p-6 mb-8">
+                            <div className="flex items-start gap-3">
+                                <div className="p-2 bg-red-900/30 rounded-lg">
+                                    <Info className="w-5 h-5 text-red-400" />
+                                </div>
+                                <div>
+                                    <h3 className="text-red-400 font-semibold mb-1">Fehler beim Laden</h3>
+                                    <p className="text-red-300 text-sm">{error}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    {state === 'error' && (
+                        <div className="rounded-2xl bg-red-900/40 border border-red-700 px-4 py-3 text-sm text-red-100 flex items-start gap-2 mb-6" style={{ display: 'none' }}>
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mt-0.5 text-red-300 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                                 <path fillRule="evenodd" d="M18 16a2 2 0 01-1.732 1H3.732A2 2 0 012 16c0-.386.11-.765.32-1.09l7-11a2 2 0 013.36 0l7 11A2 2 0 0118 16zm-8-4a1 1 0 112 0v2a1 1 0 11-2 0v-2zm1-6a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
                             </svg>
@@ -393,25 +422,35 @@ export default function BacktestPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
+                            className="mb-8"
                         >
-                            <SectionHeader
-                                title="Übersicht"
-                                subtitle="Durchschnittswerte für alle Methoden"
-                            />
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <h2 className="text-xl font-semibold text-slate-200 mb-4">Übersicht</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                 {backtestData.summary.map((row) => (
-                                    <SummaryCard
+                                    <div
                                         key={row.method}
-                                        title={row.method.toUpperCase()}
-                                        value={`${row.avg_xi_points.toFixed(1)} Pkt`}
-                                        subtitle={`${row.n_gw} GWs • Ø ${formatEff(row.avg_efficiency)}`}
-                                        icon={<Activity className="w-5 h-5" />}
-                                        className="rounded-2xl shadow-lg p-5"
-                                    />
+                                        className="bg-gradient-to-br from-slate-800/90 to-slate-800/50 border border-pink-500/20 rounded-2xl shadow-lg p-6 hover:border-pink-500/40 hover:shadow-pink-500/10 transition-all"
+                                    >
+                                        <div className="flex items-center justify-between mb-3">
+                                            <span className="text-sm font-semibold text-pink-400 uppercase tracking-wider">{row.method}</span>
+                                            <Activity className="w-5 h-5 text-pink-400/50" />
+                                        </div>
+                                        <div className="mb-3">
+                                            <div className="text-3xl font-bold text-slate-100">
+                                                {row.avg_xi_points.toFixed(1)} <span className="text-lg text-slate-400">Pkt</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3 text-sm">
+                                            <span className="font-semibold text-purple-400">{row.n_gw} GWs</span>
+                                            <span className="text-slate-600">•</span>
+                                            <span className="font-semibold text-pink-400">{formatEff(row.avg_efficiency)}</span>
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
                         </motion.div>
                     )}
+
 
                     {/* Info Box */}
                     {state === 'success' && backtestData && (
@@ -419,21 +458,37 @@ export default function BacktestPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.25 }}
+                            className="bg-gradient-to-br from-pink-900/10 via-purple-900/10 to-blue-900/10 border border-pink-500/20 rounded-2xl p-5 mb-8"
                         >
-                            <InfoBox className="rounded-2xl shadow-lg p-6">
-                                <p className="text-sm font-semibold text-slate-100">Was zeigt der Backtest?</p>
-                                <p className="text-sm text-slate-200">
-                                    In diesem Diagramm sieht man die durchschnittlichen Team-Punkte pro Spieltag.
-                                    Jede Linie steht für eine Methode. Ein Punkt bedeutet, dass das Modell ein gültiges
-                                    Team innerhalb der FPL-Regeln gefunden hat. Fehlen Punkte, konnte kein Team gebildet werden
-                                    (z. B. wegen Datenlücken oder zu strengen Constraints).
-                                </p>
-                                <p className="text-sm text-slate-200">
-                                    <strong>Effizienz:</strong> Verhältnis aus erzielten XI-Punkten (inkl. Captain) zur hypothetisch
-                                    perfekten Auswahl auf Basis der echten Punkte (Hindsight-Optimum). 100&nbsp;% = identische Punkte
-                                    wie theoretisches Maximum.
-                                </p>
-                            </InfoBox>
+                            <div className="flex items-start gap-3">
+                                <div className="p-2 bg-gradient-to-br from-pink-500/20 to-purple-500/20 rounded-lg">
+                                    <Info className="w-5 h-5 text-pink-400" />
+                                </div>
+                                <div className="text-sm text-slate-300 space-y-3">
+                                    <p>
+                                        <strong className="bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">Was zeigt der Backtest?</strong>{' '}
+                                        In diesem Diagramm sieht man die durchschnittlichen Team-Punkte pro Spieltag.
+                                        Jede Linie steht für eine Methode. Ein Punkt bedeutet, dass das Modell ein gültiges
+                                        Team innerhalb der FPL-Regeln gefunden hat. Fehlen Punkte, konnte kein Team gebildet werden
+                                        (z.B. wegen Datenlücken oder zu strengen Constraints).
+                                    </p>
+                                    <p>
+                                        <strong className="bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">Effizienz (%):</strong>{' '}
+                                        Verhältnis der <span className="text-pink-300 font-medium">erzielten Punkte</span> zur{' '}
+                                        <span className="text-purple-300 font-medium">theoretisch perfekten Auswahl</span> (Hindsight-Optimum).
+                                        <br />
+                                        <span className="text-slate-400 text-xs">
+                                            Beispiel: 35% = Team holte 35 von 100 theoretisch möglichen Punkten.
+                                            100% wäre perfekte Vorhersage (unrealistisch).
+                                        </span>
+                                    </p>
+                                    <p className="text-xs text-amber-400/80 bg-amber-900/10 border border-amber-800/30 rounded-lg p-3">
+                                        <strong>⚠️ Wenige Gameweeks?</strong> Methoden wie RF_RANK oder RF_POS können manchmal kein gültiges Team bilden,
+                                        weil ihnen Preis-Informationen fehlen (budget_used = 0.0) oder zu wenige Spieler mit echten Punkten verfügbar sind.
+                                        Dies erklärt, warum diese Methoden nur 3-7 GWs statt 9 GWs haben.
+                                    </p>
+                                </div>
+                            </div>
                         </motion.div>
                     )}
 
@@ -448,112 +503,77 @@ export default function BacktestPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.3 }}
+                            className="bg-slate-800/90 border border-pink-500/20 rounded-2xl shadow-lg p-6 mb-8"
                         >
-                            <Card className="rounded-2xl shadow-lg p-6">
-                                <SectionHeader
-                                    title="Punkteverlauf"
-                                    subtitle={`${backtestData.season}, GW ${backtestData.gw_start}-${backtestData.gw_end}`}
-                                    action={
-                                        <button
-                                            onClick={() => setShowTable(t => !t)}
-                                            className="inline-flex items-center gap-2 px-3 py-1.5 text-sm rounded-md bg-slate-700 hover:bg-slate-600 text-slate-100 border border-slate-600 transition-colors"
-                                        >
-                                            <Table className="w-4 h-4" />
-                                            {showTable ? 'Tabelle ausblenden' : 'Tabelle anzeigen'}
-                                        </button>
-                                    }
-                                />
-                                <TeamBacktestChart
-                                    data={filteredDetail}
-                                    title=""
-                                    height="500px"
-                                />
-                            </Card>
+                            <div className="flex items-center justify-between mb-6">
+                                <div>
+                                    <h2 className="text-xl font-semibold text-slate-200">Punkteverlauf</h2>
+                                    <p className="text-sm text-slate-400 mt-1">
+                                        {backtestData.season}, GW {backtestData.gw_start}-{backtestData.gw_end}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => setShowTable(t => !t)}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-pink-500/20"
+                                >
+                                    {showTable ? 'Tabelle ausblenden' : 'Tabelle anzeigen'}
+                                    <ChevronDown className="w-4 h-4" />
+                                </button>
+                            </div>
+                            <TeamBacktestChart
+                                data={filteredDetail}
+                                title=""
+                                height="500px"
+                            />
                         </motion.div>
                     )}
 
-                    {/* GW Pivot Tabelle */}
-                    {state === 'success' && backtestData && showTable && pivotRows.length > 0 && (
+                    {/* GW Pivot Tabelle - Vereinfacht */}
+                    {state === 'success' && backtestData && showTable && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.35 }}
+                            className="bg-slate-900/50 backdrop-blur-sm border border-slate-800 rounded-xl p-6 mb-8 overflow-hidden"
                         >
-                            <Card className="rounded-2xl shadow-lg p-6">
-                                <SectionHeader
-                                    title="Detaillierte Daten pro Gameweek"
-                                    action={
-                                        pivotCsvUrl && (
-                                            <a
-                                                href={pivotCsvUrl}
-                                                download={`backtest_pivot_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.csv`}
-                                                className="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-slate-700 hover:bg-slate-600 text-white rounded-md transition-colors"
-                                            >
-                                                <Download className="w-4 h-4" />
-                                                CSV Export
-                                            </a>
-                                        )
-                                    }
-                                />
-                                <div className="overflow-x-auto">
-                                    <table className="min-w-full text-sm">
-                                        <thead className="sticky top-0 bg-slate-900/90 border-b border-slate-700">
-                                            <tr className="text-[11px] uppercase tracking-wide text-slate-300">
-                                                <th
-                                                    className="px-3 py-2 text-left cursor-pointer hover:bg-slate-800 transition-colors"
-                                                    onClick={() => {
-                                                        if (sortColumn === 'gw') setSortDirection(d => d === 'asc' ? 'desc' : 'asc')
-                                                        else { setSortColumn('gw'); setSortDirection('asc') }
-                                                    }}
-                                                >
-                                                    <span className="flex items-center gap-1">
-                                                        GW <ArrowUpDown className="w-3 h-3" />
-                                                    </span>
-                                                </th>
-                                                {Array.from(new Set(backtestData.detail.map(r => r.method))).map(m => (
-                                                    <th
-                                                        key={m}
-                                                        className="px-3 py-2 text-left cursor-pointer hover:bg-slate-800 transition-colors"
-                                                        onClick={() => {
-                                                            if (sortColumn === m) setSortDirection(d => d === 'asc' ? 'desc' : 'asc')
-                                                            else { setSortColumn(m); setSortDirection('desc') }
-                                                        }}
-                                                    >
-                                                        <span className="flex items-center gap-1">
-                                                            {m.toUpperCase()} <ArrowUpDown className="w-3 h-3" />
-                                                        </span>
+                            <h2 className="text-xl font-semibold text-slate-200 mb-4">Detaillierte Daten</h2>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="border-b border-slate-800">
+                                            <th className="text-left py-3 px-4 text-slate-400 font-medium">GW</th>
+                                            {Array.from(new Set(backtestData.detail.map(r => r.method)))
+                                                .filter(m => m !== 'rf_filled' && m !== 'rf_optfill')
+                                                .map(m => (
+                                                    <th key={m} className="text-left py-3 px-4 text-slate-400 font-medium">
+                                                        {m.toUpperCase()}
                                                     </th>
                                                 ))}
-                                                <th className="px-3 py-2 text-left cursor-pointer hover:bg-slate-800 transition-colors">Effizienz RF</th>
-                                                <th className="px-3 py-2 text-left cursor-pointer hover:bg-slate-800 transition-colors">Beste Methode</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {pivotRows.map((row, idx) => {
-                                                const methods = Array.from(new Set(backtestData.detail.map(r => r.method)))
-                                                const best = row.best_method
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {Array.from(new Set(backtestData.detail.map(r => r.gw)))
+                                            .sort((a, b) => a - b)
+                                            .map((gw) => {
+                                                const gwData = backtestData.detail.filter(r => r.gw === gw)
                                                 return (
-                                                    <tr
-                                                        key={row.gw}
-                                                        className="border-b border-slate-700 hover:bg-slate-800/60 transition-colors"
-                                                    >
-                                                        <td className="px-3 py-2 text-slate-200 text-sm">{row.gw}</td>
-                                                        {methods.map(m => (
-                                                            <td key={m} className={`px-3 py-2 text-slate-200 text-sm${best === m ? ' font-semibold text-emerald-400' : ''}`}>
-                                                                {row[m] !== undefined ? row[m].toFixed(1) : '-'}
-                                                            </td>
-                                                        ))}
-                                                        <td className="px-3 py-2 text-slate-200 text-sm">{formatEff(row.efficiency_rf)}</td>
-                                                        <td className="px-3 py-2 font-semibold text-emerald-400">
-                                                            {best.toUpperCase()} ({row.best_points.toFixed(1)})
-                                                        </td>
+                                                    <tr key={gw} className="border-b border-slate-800/50 hover:bg-slate-800/30">
+                                                        <td className="py-3 px-4 text-slate-300">{gw}</td>
+                                                        {Array.from(new Set(backtestData.detail.map(r => r.method)))
+                                                            .filter(m => m !== 'rf_filled' && m !== 'rf_optfill')
+                                                            .map(m => {
+                                                                const methodData = gwData.find(r => r.method === m)
+                                                                return (
+                                                                    <td key={m} className="py-3 px-4 text-slate-300">
+                                                                        {methodData ? methodData.xi_points.toFixed(1) : '-'}
+                                                                    </td>
+                                                                )
+                                                            })}
                                                     </tr>
                                                 )
                                             })}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </Card>
+                                    </tbody>
+                                </table>
+                            </div>
                         </motion.div>
                     )}
 
@@ -563,45 +583,34 @@ export default function BacktestPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ duration: 0.5, delay: 0.4 }}
+                            className="bg-slate-800/90 border border-pink-500/20 rounded-2xl shadow-lg p-6"
                         >
-                            <Card>
-                                <SectionHeader title="Daten exportieren" className="mb-4" />
-                                <div className="flex flex-wrap gap-3">
-                                    <a
-                                        href={`/api/files?name=team_backtest_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.csv`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors bg-emerald-600 hover:bg-emerald-700"
-                                    >
-                                        <Download className="w-4 h-4" />
-                                        Detail CSV
-                                    </a>
+                            <h2 className="text-xl font-semibold text-slate-200 mb-4">Daten exportieren</h2>
+                            <div className="flex flex-wrap gap-3">
+                                <a
+                                    href={`/api/files?name=team_backtest_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.csv`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-pink-500/20"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Detail CSV
+                                </a>
 
-                                    <a
-                                        href={`/api/files?name=team_backtest_summary_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.csv`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors bg-slate-700 hover:bg-slate-600"
-                                    >
-                                        <Download className="w-4 h-4" />
-                                        Summary CSV
-                                    </a>
-
-                                    <a
-                                        href={`/api/files?name=team_backtest_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.png`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white transition-colors bg-slate-700 hover:bg-slate-600"
-                                    >
-                                        <Download className="w-4 h-4" />
-                                        PNG Plot
-                                    </a>
-                                </div>
-                            </Card>
+                                <a
+                                    href={`/api/files?name=team_backtest_summary_${backtestData.season}_gw${backtestData.gw_start}-${backtestData.gw_end}.csv`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-lg text-sm font-medium transition-all shadow-lg shadow-pink-500/20"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Summary CSV
+                                </a>
+                            </div>
                         </motion.div>
                     )}
                 </div>
-            </main>
+            </motion.main>
         </>
     )
 }

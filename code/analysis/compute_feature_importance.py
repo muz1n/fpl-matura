@@ -31,10 +31,13 @@ from typing import Any, Dict, List
 
 import numpy as np
 
-# Reuse Helper aus rf_baseline
-from rf_baseline import load_train_table, train_rf  # type: ignore
+# Reuse Helper aus baseline_model
+import sys
 
-ROOT = Path(__file__).resolve().parents[1]
+sys.path.append(str(Path(__file__).resolve().parents[1] / "models"))
+from baseline_model import load_train_table, train_rf  # type: ignore
+
+ROOT = Path(__file__).resolve().parents[2]  # code/analysis/ -> code/ -> project root
 OUT_DIR = ROOT / "out"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 DATA_DIR = ROOT / "data"

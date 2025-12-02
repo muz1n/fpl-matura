@@ -5,9 +5,10 @@ import type {
     PredictionsPayload,
     LineupPayload,
     PredictionPlayer,
-} from "./types/fpl";
-import { Select } from "./src/components/Select";
-import { getUsableSeasons } from "./lib/seasonQuality";
+} from "@/types/fpl";
+import { Select } from "@/src/components/Select";
+import { getUsableSeasons } from "../lib/seasonQuality";
+import { TrendingUp, Trophy, TrendingDown, Medal } from "lucide-react";
 
 type LoadingStateType = "idle" | "loading" | "success" | "error";
 type PredictionMethod = "rf" | "ma3" | "pos" | "rf_rank" | "rf_pos";
@@ -16,11 +17,10 @@ type PredictionMethod = "rf" | "ma3" | "pos" | "rf_rank" | "rf_pos";
 const methodOptions = [
     { value: "rf", label: "Random Forest (Standard)" },
     { value: "rf_rank", label: "Random Forest (Rank)" },
-    { value: "rf_pos", label: "Random Forest (Pos)" },
-    { value: "rf_filled", label: "Random Forest (Filled)" },
+    { value: "rf_pos", label: "Random Forest (Position)" },
     { value: "rf_relaxed", label: "Random Forest (Relaxed)" },
     { value: "ma3", label: "Formdurchschnitt (MA3)" },
-    { value: "pos", label: "Positionsmittel" },
+    { value: "pos", label: "Positionsmittel (POS)" },
 ];
 
 // erlaubte Formationen nur für evtl. spätere Features
@@ -52,7 +52,7 @@ export default function PredictionsPage() {
     const [gwError, setGwError] = useState<string>("");
 
     // Auswahl-States
-    const [selectedSeason, setSelectedSeason] = useState<string>("2022-23");
+    const [selectedSeason, setSelectedSeason] = useState<string>("2023-24");
     const [availableSeasons, setAvailableSeasons] = useState<string[]>([]);
     const [seasonsLoading, setSeasonsLoading] = useState<boolean>(true);
 
@@ -62,9 +62,9 @@ export default function PredictionsPage() {
     // ---------- Seasons laden ----------
 
     useEffect(() => {
-        async function loadSeasons() {
+        function loadSeasons() {
             try {
-                const seasons = await getUsableSeasons();
+                const seasons = getUsableSeasons();
                 setAvailableSeasons(seasons);
 
                 // Falls Season leer, nimm neueste
@@ -180,7 +180,7 @@ export default function PredictionsPage() {
 
     // ---------- Hilfsvariablen fürs Layout ----------
 
-    // Fallback: 1–38, falls Meta nichts liefert
+    // Fallback: 1-38, falls Meta nichts liefert
     const fallbackGWs = Array.from({ length: 38 }, (_, i) => i + 1);
     const gwList = availableGWs.length ? availableGWs : fallbackGWs;
 
@@ -198,7 +198,7 @@ export default function PredictionsPage() {
     const selectedMethodLabel =
         (selectedMethod && methodOptions.find((o) => o.value === selectedMethod)?.label) ||
         selectedMethod ||
-        "–";
+        "-";
 
     const sortedPlayers = [...(predictions?.players ?? [])].sort(
         (a, b) => b.predicted_points - a.predicted_points
@@ -227,207 +227,221 @@ export default function PredictionsPage() {
     return (
         <>
             <Head>
-                <title>Prognosen GW{selectedGW ?? ""} - FPL Assistent</title>
+                <title>Prognosen - FPL Matura</title>
             </Head>
 
-            <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
-                {/* Toolbar oben */}
-                <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                    className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-6"
-                >
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {/* Season */}
-                        <Select
-                            label="Season"
-                            value={selectedSeason}
-                            onChange={(val) => setSelectedSeason(val as string)}
-                            options={availableSeasons.map((s) => ({
-                                value: s,
-                                label: `Season ${s}`,
-                            }))}
-                            disabled={seasonsLoading || availableSeasons.length === 0}
-                        />
+            <motion.main
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4 }}
+                className="min-h-screen text-slate-100"
+            >
+                <div className="mx-auto px-4 pt-12 pb-16 space-y-6 max-w-7xl">
+                    {/* Hero-Titel */}
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="text-center space-y-3 mb-8"
+                    >
+                        <div className="flex items-center justify-center gap-3">
+                            <TrendingUp className="w-10 h-10 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600" />
+                            <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600">
+                                Prognosen und Aufstellung
+                            </h1>
+                        </div>
+                        <p className="text-slate-300 text-lg max-w-2xl mx-auto">
+                            Erwartete Punkte für alle Spieler nach Spielwoche und Methode
+                        </p>
+                    </motion.div>
 
-                        {/* Spielwoche */}
-                        <Select
-                            label="Spielwoche"
-                            value={selectedGW ?? gwList[0] ?? 1}
-                            onChange={(val) => setSelectedGW(Number(val))}
-                            options={gameweekOptions}
-                            disabled={gwLoadingState === "loading" && availableGWs.length === 0}
-                        />
-
-                        {/* Methode */}
-                        <div className="relative">
+                    {/* Toolbar oben */}
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4 }}
+                        className="bg-slate-800/90 border border-pink-500/20 rounded-2xl shadow-lg p-6"
+                    >
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {/* Season */}
                             <Select
-                                label="Prognosemethode"
-                                value={selectedMethod ?? ""}
-                                onChange={(val) => setSelectedMethod(val as string)}
-                                options={methodOptions.map((m) => ({
-                                    value: m.value,
-                                    label: m.label,
+                                label="Season"
+                                value={selectedSeason}
+                                onChange={(val) => setSelectedSeason(val as string)}
+                                options={availableSeasons.map((s) => ({
+                                    value: s,
+                                    label: `Season ${s}`,
                                 }))}
-                                disabled={
-                                    availableMethods.length === 0 ||
-                                    (availableMethods.length === 1 && availableMethods[0] === "legacy")
-                                }
+                                disabled={seasonsLoading || availableSeasons.length === 0}
                             />
-                            {isLegacyLineup && (
-                                <span className="absolute top-2 right-2 px-2 py-1 text-[11px] font-semibold rounded-full bg-amber-500/10 text-amber-300 border border-amber-400/60 shadow">
-                                    Legacy
+
+                            {/* Spielwoche */}
+                            <Select
+                                label="Spielwoche"
+                                value={selectedGW ?? gwList[0] ?? 1}
+                                onChange={(val) => setSelectedGW(Number(val))}
+                                options={gameweekOptions}
+                                disabled={gwLoadingState === "loading" && availableGWs.length === 0}
+                            />
+
+                            {/* Methode */}
+                            <div className="relative">
+                                <Select
+                                    label="Prognosemethode"
+                                    value={selectedMethod ?? ""}
+                                    onChange={(val) => setSelectedMethod(val as string)}
+                                    options={methodOptions.map((m) => ({
+                                        value: m.value,
+                                        label: m.label,
+                                    }))}
+                                    disabled={
+                                        availableMethods.length === 0 ||
+                                        (availableMethods.length === 1 && availableMethods[0] === "legacy")
+                                    }
+                                />
+                                {isLegacyLineup && (
+                                    <span className="absolute top-2 right-2 px-2 py-1 text-[11px] font-semibold rounded-full bg-amber-500/10 text-amber-300 border border-amber-400/60 shadow">
+                                        Legacy
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        {availableMethods.length === 0 && (
+                            <div className="text-sm text-slate-400 mt-2">
+                                Keine Prognosemethode für diese Spielwoche verfügbar.
+                            </div>
+                        )}
+                        {availableMethods.length === 1 && availableMethods[0] === "legacy" && (
+                            <div className="text-sm text-slate-400 mt-2">
+                                Nur Legacy-Daten für diese Spielwoche vorhanden. Prognoseauswahl deaktiviert.
+                            </div>
+                        )}
+                    </motion.div>
+
+                    {/* Fehlermeldung */}
+                    {state === "error" && (
+                        <div className="bg-red-900/40 border border-red-700 text-red-200 rounded-xl px-4 py-3 text-sm">
+                            {error || "Es ist ein Fehler beim Laden der Prognosen aufgetreten."}
+                        </div>
+                    )}
+
+                    {/* Hauptinhalt: Tabelle + Aufstellung nebeneinander (auf grossen Screens) */}
+                    <div className={`grid gap-6 items-start ${lineup ? 'grid-cols-1 lg:grid-cols-3' : 'grid-cols-1'}`}>
+                        {/* Prognose-Tabelle */}
+                        <div className={`bg-slate-800/90 border border-pink-500/20 rounded-2xl shadow-lg p-6 ${lineup ? 'lg:col-span-2' : ''}`}>
+                            <div className="flex items-center justify-between mb-4">
+                                <div>
+                                    <h2 className="text-xl font-semibold text-pink-400">
+                                        Prognose-Tabelle
+                                    </h2>
+                                    <p className="text-xs md:text-sm text-slate-400">
+                                        Top {tablePlayers.length} Spieler nach erwarteten Punkten in
+                                        dieser Spielwoche.
+                                    </p>
+                                </div>
+                                <span className="text-xs md:text-sm text-slate-400 border border-slate-600 rounded-full px-3 py-1">
+                                    {sortedPlayers.length} Spieler insgesamt
                                 </span>
+                            </div>
+
+                            {state === "loading" && (
+                                <div className="py-10 text-center text-slate-400 text-sm">
+                                    Lade Prognosen ...
+                                </div>
+                            )}
+
+                            {state === "success" && tablePlayers.length === 0 && (
+                                <div className="py-10 text-center text-slate-400 text-sm">
+                                    Keine Prognosedaten für diese Auswahl gefunden.
+                                </div>
+                            )}
+
+                            {tablePlayers.length > 0 && (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full table-auto text-left border-collapse">
+                                        <thead>
+                                            <tr className="border-b-2 border-pink-500/30 text-xs uppercase tracking-wide text-pink-400/80">
+                                                <th className="py-3 pr-3">Rang</th>
+                                                <th className="py-3 pr-3">Spieler</th>
+                                                <th className="py-3 pr-3">Team</th>
+                                                <th className="py-3 pr-3">Pos</th>
+                                                <th className="py-3 pr-3 text-right">Prognose</th>
+                                                <th className="py-3 pl-3 text-right">Preis</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-sm">
+                                            {tablePlayers.map((p, idx) => {
+                                                const isTopPlayer = idx < 3;
+                                                const isHighScore = p.predicted_points >= 7;
+                                                const posColors: Record<string, string> = {
+                                                    GK: "bg-yellow-500/20 text-yellow-300 border-yellow-500/30",
+                                                    DEF: "bg-green-500/20 text-green-300 border-green-500/30",
+                                                    MID: "bg-blue-500/20 text-blue-300 border-blue-500/30",
+                                                    FWD: "bg-red-500/20 text-red-300 border-red-500/30",
+                                                };
+
+                                                return (
+                                                    <tr
+                                                        key={p.player_id}
+                                                        className={`border-b border-slate-800/80 hover:bg-gradient-to-r hover:from-slate-700/50 hover:via-pink-900/15 hover:to-slate-700/50 transition-all duration-150 ${isTopPlayer ? 'bg-pink-500/5' : ''
+                                                            }`}
+                                                    >
+                                                        <td className="py-3 pr-3">
+                                                            {isTopPlayer ? (
+                                                                <div className="flex items-center gap-1">
+                                                                    {idx === 0 && <Trophy className="w-4 h-4 text-yellow-400" />}
+                                                                    {idx === 1 && <Medal className="w-4 h-4 text-slate-300" />}
+                                                                    {idx === 2 && <Medal className="w-4 h-4 text-orange-400" />}
+                                                                    <span className="text-pink-400 font-bold">{idx + 1}</span>
+                                                                </div>
+                                                            ) : (
+                                                                <span className="text-slate-400">{idx + 1}</span>
+                                                            )}
+                                                        </td>
+                                                        <td className="py-3 pr-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-slate-100 font-medium">{p.name}</span>
+                                                                {isHighScore && (
+                                                                    <TrendingUp className="w-3.5 h-3.5 text-green-400" />
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-3 pr-3 text-slate-300">{p.team}</td>
+                                                        <td className="py-3 pr-3">
+                                                            <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold border ${posColors[p.pos] || "bg-slate-700 text-slate-300"}`}>
+                                                                {p.pos}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3 pr-3 text-right">
+                                                            <span className={`font-bold ${p.predicted_points >= 7 ? 'text-green-400' :
+                                                                p.predicted_points >= 5 ? 'text-pink-400' :
+                                                                    'text-slate-400'
+                                                                }`}>
+                                                                {p.predicted_points.toFixed(1)}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3 pl-3 text-right text-slate-300 font-medium">
+                                                            £{p.price.toFixed(1)}m
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
                             )}
                         </div>
-                    </div>
 
-                    {availableMethods.length === 0 && (
-                        <div className="text-sm text-slate-400 mt-2">
-                            Keine Prognosemethode für diese Spielwoche verfügbar.
-                        </div>
-                    )}
-                    {availableMethods.length === 1 && availableMethods[0] === "legacy" && (
-                        <div className="text-sm text-slate-400 mt-2">
-                            Nur Legacy-Daten für diese Spielwoche vorhanden. Prognoseauswahl deaktiviert.
-                        </div>
-                    )}
-                </motion.div>
-
-                {/* Header-Karte */}
-                <div className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-6">
-                    <h1 className="text-2xl md:text-3xl font-bold text-slate-100 mb-3">
-                        Prognosen und Aufstellung
-                    </h1>
-                    <div className="flex flex-wrap gap-3 text-xs md:text-sm text-slate-400">
-                        <span>
-                            Saison:{" "}
-                            <span className="text-slate-100 font-medium">
-                                {predictions?.season || selectedSeason || "–"}
-                            </span>
-                        </span>
-                        <span>•</span>
-                        <span>
-                            Gameweek:{" "}
-                            <span className="text-slate-100 font-medium">
-                                {predictions?.gw ?? selectedGW ?? "–"}
-                            </span>
-                        </span>
-                        <span>•</span>
-                        <span>
-                            Methode:{" "}
-                            <span className="text-slate-100 font-medium">{selectedMethodLabel}</span>
-                        </span>
+                        {/* Aufstellungs-Karte rechts - nur anzeigen wenn Lineup vorhanden */}
                         {lineup && (
-                            <>
-                                <span>•</span>
-                                <span>
-                                    Generiert:{" "}
-                                    <span className="text-slate-100 font-medium">
-                                        {lineup.generated_at
-                                            ? new Date(lineup.generated_at).toLocaleString("de-DE")
-                                            : "–"}
-                                    </span>
-                                </span>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                {/* Fehlermeldung */}
-                {state === "error" && (
-                    <div className="bg-red-900/40 border border-red-700 text-red-200 rounded-xl px-4 py-3 text-sm">
-                        {error || "Es ist ein Fehler beim Laden der Prognosen aufgetreten."}
-                    </div>
-                )}
-
-                {/* Hauptinhalt: Tabelle + Aufstellung nebeneinander (auf grossen Screens) */}
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
-                    {/* Prognose-Tabelle */}
-                    <div className="xl:col-span-2 bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-6">
-                        <div className="flex items-center justify-between mb-4">
-                            <div>
-                                <h2 className="text-xl font-semibold text-slate-100">
-                                    Prognose-Tabelle
+                            <div className="bg-slate-800/90 border border-pink-500/20 rounded-2xl shadow-lg p-6">
+                                <h2 className="text-xl font-semibold text-pink-400 mb-2">
+                                    Empfohlene Aufstellung
                                 </h2>
-                                <p className="text-xs md:text-sm text-slate-400">
-                                    Top {tablePlayers.length} Spieler nach erwarteten Punkten in
-                                    dieser Spielwoche.
-                                </p>
-                            </div>
-                            <span className="text-xs md:text-sm text-slate-400 border border-slate-600 rounded-full px-3 py-1">
-                                {sortedPlayers.length} Spieler insgesamt
-                            </span>
-                        </div>
-
-                        {state === "loading" && (
-                            <div className="py-10 text-center text-slate-400 text-sm">
-                                Lade Prognosen ...
-                            </div>
-                        )}
-
-                        {state === "success" && tablePlayers.length === 0 && (
-                            <div className="py-10 text-center text-slate-400 text-sm">
-                                Keine Prognosedaten für diese Auswahl gefunden.
-                            </div>
-                        )}
-
-                        {tablePlayers.length > 0 && (
-                            <div className="overflow-x-auto">
-                                <table className="w-full table-auto text-left border-collapse">
-                                    <thead>
-                                        <tr className="border-b border-slate-700 text-xs uppercase tracking-wide text-slate-400">
-                                            <th className="py-2 pr-3">Rang</th>
-                                            <th className="py-2 pr-3">Spieler</th>
-                                            <th className="py-2 pr-3">Team</th>
-                                            <th className="py-2 pr-3">Position</th>
-                                            <th className="py-2 pr-3 text-right">Prognose</th>
-                                            <th className="py-2 pl-3 text-right">Preis</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="text-sm">
-                                        {tablePlayers.map((p, idx) => (
-                                            <tr
-                                                key={p.player_id}
-                                                className="border-b border-slate-800/80 hover:bg-slate-800/80"
-                                            >
-                                                <td className="py-2 pr-3 text-slate-400">{idx + 1}</td>
-                                                <td className="py-2 pr-3 text-slate-100">{p.name}</td>
-                                                <td className="py-2 pr-3 text-slate-300">{p.team}</td>
-                                                <td className="py-2 pr-3 text-slate-300">{p.pos}</td>
-                                                <td className="py-2 pr-3 text-right text-emerald-300 font-semibold">
-                                                    {p.predicted_points.toFixed(1)}
-                                                </td>
-                                                <td className="py-2 pl-3 text-right text-slate-300">
-                                                    £{p.now_cost.toFixed(1)}m
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Aufstellungs-Karte rechts */}
-                    <div className="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-lg p-6">
-                        <h2 className="text-xl font-semibold text-slate-100 mb-2">
-                            Empfohlene Aufstellung
-                        </h2>
-
-                        {!lineup && (
-                            <p className="text-sm text-slate-400">
-                                Es wurde noch keine Aufstellung geladen oder das Backend liefert
-                                keine XI für diese Auswahl.
-                            </p>
-                        )}
-
-                        {lineup && (
-                            <>
                                 <p className="text-xs text-slate-400 mb-3">
                                     Formation: {lineup.formation} • Gesamtpunkte XI:{" "}
-                                    <span className="text-emerald-300 font-semibold">
+                                    <span className="text-pink-400 font-semibold">
                                         {lineup.xi_points.toFixed(1)}
                                     </span>
                                 </p>
@@ -449,7 +463,7 @@ export default function PredictionsPage() {
                                                             ({p.team} · {p.pos})
                                                         </span>
                                                     </span>
-                                                    <span className="text-emerald-300 font-semibold">
+                                                    <span className="text-pink-400 font-semibold">
                                                         {p.predicted_points.toFixed(1)} Pkt
                                                     </span>
                                                 </div>
@@ -486,11 +500,11 @@ export default function PredictionsPage() {
                                         </div>
                                     )}
                                 </div>
-                            </>
+                            </div>
                         )}
                     </div>
                 </div>
-            </div>
+            </motion.main>
         </>
     );
 }

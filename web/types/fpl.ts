@@ -11,6 +11,7 @@ export interface PredictionPlayer {
     is_home: boolean;
     opp_strength: number;
     price: number;
+    now_cost: number; // Alias für Kompatibilität
 }
 
 export interface PredictionsPayload {
@@ -33,8 +34,10 @@ export interface LineupPayload {
     xi_ids: number[];            // 11 ints
     bench_gk_id: number;
     bench_out_ids: number[];     // 3 ints (B1,B2,B3)
+    bench_ids: number[];         // Alias für Kompatibilität
     captain_id: number;
     vice_id: number;
     xi_points_sum: number;
+    xi_points: number;           // Alias für Kompatibilität
     debug?: { rules_ok?: boolean; notes?: string };
 }

@@ -16,7 +16,7 @@ export function Select({ label, value, onChange, options, tooltip, className, di
     const id = React.useId?.() || `${label.replace(/\s+/g, '_')}_select`
     return (
         <div className={cn("relative", className)}>
-            <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 inline-flex items-center">
+            <label htmlFor={id} className="block text-sm font-medium text-slate-300 mb-2 inline-flex items-center">
                 {label}
                 {tooltip && <span className="ml-1">{tooltip}</span>}
             </label>
@@ -27,9 +27,10 @@ export function Select({ label, value, onChange, options, tooltip, className, di
                     onChange={(e) => onChange(e.target.value)}
                     aria-label={label}
                     disabled={!!disabled}
+                    style={{ fontFamily: 'inherit' }}
                     className={cn(
-                        "block w-full px-4 py-2.5 pr-10 text-base border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900 focus:border-transparent appearance-none cursor-pointer transition-colors",
-                        disabled ? "bg-gray-100 dark:bg-gray-700 cursor-not-allowed" : ""
+                        "block w-full px-4 py-2.5 pr-10 text-base border border-pink-500/20 rounded-lg bg-slate-800 text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:border-pink-500/50 appearance-none cursor-pointer transition-colors",
+                        disabled ? "bg-slate-700 cursor-not-allowed opacity-50" : "hover:border-pink-500/40"
                     )}
                 >
                     {options.map((option) => (
@@ -38,7 +39,7 @@ export function Select({ label, value, onChange, options, tooltip, className, di
                         </option>
                     ))}
                 </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-400">
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-pink-400">
                     <ChevronDown className="h-5 w-5" />
                 </div>
             </div>

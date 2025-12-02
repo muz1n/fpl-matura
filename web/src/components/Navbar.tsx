@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { BarChart3, BrainCircuit, LineChart, Info } from 'lucide-react'
+import { TrendingUp, Target, BarChart3, Info, Calendar, Activity, Layers, BookOpen } from 'lucide-react'
 
 export function Navbar() {
     const router = useRouter()
@@ -11,22 +11,22 @@ export function Navbar() {
     }, [])
     const isActive = (path: string) => router.pathname === path
     const links = [
-        { href: '/prognosen', label: 'Prognosen', icon: LineChart },
-        { href: '/lineup-builder', label: 'Lineup-Builder', icon: BrainCircuit },
-        { href: '/backtest', label: 'Backtest', icon: BarChart3 },
-        { href: '/multi-season', label: 'Multi-Season', icon: BarChart3 },
-        { href: '/feature-importance', label: 'Feature Importance', icon: BrainCircuit },
+        { href: '/prognosen', label: 'Prognosen', icon: TrendingUp },
+        { href: '/backtest', label: 'Backtest', icon: Activity },
+        { href: '/multi-season', label: 'Multi-Season', icon: Calendar },
+        { href: '/feature-importance', label: 'Feature Importance', icon: BarChart3 },
+        { href: '/methodik', label: 'Methodik', icon: Layers },
+        { href: '/glossar', label: 'Glossar', icon: BookOpen },
         { href: '/info', label: 'Info', icon: Info },
     ]
 
     return (
-        <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 shadow-sm">
-            <div className="container mx-auto px-4">
+        <nav className="w-full bg-gradient-to-r from-slate-900 via-purple-900/30 to-slate-900 border-b border-pink-500/20 sticky top-0 z-50 shadow-lg backdrop-blur-sm">
+            <div className="mx-auto px-4 max-w-7xl">
                 <div className="flex items-center justify-between h-16">
-                    {/* Logo / Titel */}
-                    <Link href="/" className="flex items-center gap-2 font-bold text-xl text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                        <BarChart3 className="w-6 h-6" />
-                        <span>FPL Maturaarbeit</span>
+                    {/* Logo / Titel - KEIN Icon */}
+                    <Link href="/" className="flex items-center gap-2 font-bold text-xl text-white hover:text-pink-400 transition-colors">
+                        <span>FPL Matura</span>
                     </Link>
 
                     {/* Navigation Links */}
@@ -41,8 +41,8 @@ export function Navbar() {
                                     className={`
                                         flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
                                         ${active
-                                            ? 'bg-blue-600 text-white shadow-md'
-                                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                            ? 'bg-pink-600 text-white shadow-lg shadow-pink-500/30'
+                                            : 'text-slate-300 hover:bg-slate-800/60 hover:text-pink-400'
                                         }
                                     `}
                                 >

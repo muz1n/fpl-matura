@@ -22,22 +22,24 @@ interface TeamBacktestChartProps {
     showLegend?: boolean
 }
 
-// Farbschema für Methoden
+// Farbschema für Methoden - HOHER KONTRAST für bessere Unterscheidbarkeit in Charts/Tabellen
 const METHOD_COLORS: Record<string, string> = {
-    rf: '#3b82f6',      // blue-500
-    rf_rank: '#8b5cf6', // violet-500
-    rf_pos: '#6366f1',  // indigo-500
-    ma3: '#10b981',     // emerald-500
-    pos: '#f59e0b',     // amber-500
-    legacy: '#6b7280',  // gray-500
+    rf: '#ec4899',         // Pink-500 (Hauptmodell)
+    rf_pos: '#22c55e',     // Green-500 (hoher Kontrast zu Pink)
+    rf_rank: '#f97316',    // Orange-500 (hoher Kontrast)
+    rf_relaxed: '#8b5cf6', // Violet-500
+    ma3: '#eab308',        // Yellow-500 (hoher Kontrast)
+    pos: '#ef4444',        // Red-500 (hoher Kontrast)
+    legacy: '#6b7280',     // Gray-500
 }
 
 const METHOD_LABELS: Record<string, string> = {
-    rf: 'Random Forest',
-    rf_rank: 'RF (Rank)',
-    rf_pos: 'RF (Pos)',
-    ma3: 'MA3 (Form)',
-    pos: 'Positionsmittel',
+    rf: 'Random Forest (Standard)',
+    rf_pos: 'Random Forest (Position)',
+    rf_rank: 'Random Forest (Rank)',
+    rf_relaxed: 'Random Forest (Relaxed)',
+    ma3: 'Formdurchschnitt (MA3)',
+    pos: 'Positionsmittel (POS)',
     legacy: 'Legacy',
 }
 
@@ -139,6 +141,7 @@ export function TeamBacktestChart({
             legend: showLegend ? {
                 data: Array.from(methods).map(m => METHOD_LABELS[m] || m),
                 top: title ? 40 : 10,
+                right: 150, // Platz für "Tabelle anzeigen" Button
                 type: 'scroll',
                 textStyle: {
                     color: isDark ? '#d1d5db' : '#374151',
@@ -162,10 +165,11 @@ export function TeamBacktestChart({
                 },
                 min: Math.min(...gwArray),
                 max: Math.max(...gwArray),
-                interval: 1,
                 axisLabel: {
                     formatter: (value: number) => `GW${value}`,
                     color: isDark ? '#9ca3af' : '#6b7280',
+                    rotate: 45, // Labels schräg stellen um Überlappung zu vermeiden
+                    fontSize: 10,
                 },
                 axisLine: {
                     lineStyle: {
@@ -209,8 +213,15 @@ export function TeamBacktestChart({
                     dataZoom: {
                         yAxisIndex: 'none',
                         title: {
-                            zoom: 'Zoomen',
-                            back: 'Zurück',
+                            zoom: 'Bereich wählen',
+                            back: 'Zurücksetzen',
+                        },
+                    },
+                    magicType: {
+                        type: ['line', 'bar'],
+                        title: {
+                            line: 'Liniendiagramm',
+                            bar: 'Balkendiagramm',
                         },
                     },
                     restore: {
@@ -219,6 +230,7 @@ export function TeamBacktestChart({
                     saveAsImage: {
                         title: 'Als Bild speichern',
                         pixelRatio: 2,
+                        backgroundColor: isDark ? '#0f172a' : '#ffffff',
                     },
                 },
                 right: 20,

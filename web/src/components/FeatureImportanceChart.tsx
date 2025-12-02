@@ -52,20 +52,40 @@ export function FeatureImportanceChart({
                         (showCumulative ? `<div>Kumulativ: <strong>${cum?.toFixed(4)}</strong></div>` : '')
                 }
             },
-            grid: { left: 80, right: showCumulative ? 80 : 40, top: 80, bottom: 80 },
-            xAxis: {
+            grid: { left: 120, right: showCumulative ? 80 : 40, top: 60, bottom: 60 },
+            xAxis: [{
                 type: 'value',
                 name: 'Importance',
                 nameLocation: 'middle',
-                nameGap: 40,
-                axisLabel: { formatter: (v: number) => v.toFixed(3) }
+                nameGap: 35,
+                axisLabel: { formatter: (v: number) => v.toFixed(3) },
+                splitLine: { lineStyle: { color: '#334155', opacity: 0.3 } }
             },
-            yAxis: [{
+            ...(showCumulative ? [{
+                type: 'value' as const,
+                name: 'Kumulativ (%)',
+                nameLocation: 'end' as const,
+                min: 0,
+                max: 100,
+                position: 'top' as const,
+                axisLabel: {
+                    formatter: (v: number) => `${v.toFixed(0)}%`,
+                    color: '#a855f7'
+                },
+                splitLine: { show: false },
+                axisLine: { lineStyle: { color: '#a855f7' } }
+            }] : [])] as any,
+            yAxis: {
                 type: 'category',
                 data: categories,
                 inverse: true,
-                axisLabel: { formatter: (name: string) => name }
-            }],
+                axisLabel: {
+                    formatter: (name: string) => name,
+                    fontSize: 11,
+                    color: '#cbd5e1'
+                },
+                axisLine: { lineStyle: { color: '#475569' } }
+            },
             series: [
                 {
                     name: 'Importance',
@@ -74,9 +94,9 @@ export function FeatureImportanceChart({
                     itemStyle: {
                         color: (params: any) => {
                             const t = params.dataIndex / Math.max(sorted.length - 1, 1)
-                            // Gradient von blau nach grün
-                            const r1 = 59, g1 = 130, b1 = 246 // blue-500
-                            const r2 = 16, g2 = 185, b2 = 129 // emerald-500
+                            // Gradient von Pink nach Purple (konsistent mit anderen Pages)
+                            const r1 = 236, g1 = 72, b1 = 153  // pink-500 #ec4899
+                            const r2 = 139, g2 = 92, b2 = 246  // purple-600 #8b5cf6
                             const r = Math.round(r1 + (r2 - r1) * t)
                             const g = Math.round(g1 + (g2 - g1) * t)
                             const b = Math.round(b1 + (b2 - b1) * t)
@@ -88,11 +108,12 @@ export function FeatureImportanceChart({
                     name: 'Kumulativ',
                     type: 'line',
                     data: cumulative,
-                    xAxisIndex: 0,
+                    xAxisIndex: 1,
                     yAxisIndex: 0,
-                    lineStyle: { width: 2, color: '#9333ea' },
+                    lineStyle: { width: 3, color: '#a855f7' }, // purple-500
                     symbol: 'circle',
-                    symbolSize: 6,
+                    symbolSize: 7,
+                    itemStyle: { color: '#a855f7' },
                     smooth: true
                 } as any] : [])
             ],

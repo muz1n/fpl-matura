@@ -3,6 +3,7 @@ import { join } from 'path';
 import { createReadStream, existsSync, statSync } from 'fs';
 
 const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out');
+const BACKTEST_DIR = join(OUT_DIR, 'backtests');
 
 const MIME_MAP: Record<string, string> = {
     '.csv': 'text/csv',
@@ -20,11 +21,19 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     if (typeof name !== 'string' || name.includes('/') || name.includes('\\') || name.includes('..')) {
         return res.status(400).json({ error: 'invalid filename' });
     }
-    const filePath = join(OUT_DIR, name);
+
+    // Zuerst im backtests/ Unterordner suchen, dann im root
+    let filePath = join(BACKTEST_DIR, name);
     if (!existsSync(filePath) || !statSync(filePath).isFile()) {
-        return res.status(404).json({ error: 'file not found' });
+        // Fallback: Root-Verzeichnis
+        filePath = join(OUT_DIR, name);
+        if (!existsSync(filePath) || !statSync(filePath).isFile()) {
+            return res.status(404).json({ error: 'file not found' });
+        }
     }
+
     res.setHeader('Content-Type', getMimeType(name));
+    res.setHeader('Content-Disposition', `attachment; filename="${name}"`);
     const stream = createReadStream(filePath);
     stream.pipe(res);
 }

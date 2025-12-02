@@ -101,10 +101,10 @@ export function getFplPhotoUrl(photo: number | null | undefined): string | null 
     return `https://resources.premierleague.com/premierleague/photos/players/250x250/p${photo}.png`
 }
 
-// Liefert Headshot URL. Verwendet Standard 110x140 Format, da dieses stabiler ist.
-// Falls kein photo_code vorhanden: Inline SVG Placeholder mit Initialen.
+// Liefert Headshot URL. Verwendet immer SVG Placeholder mit Initialen in Premier League Farben.
 function headshotUrlFromPlayer(p: PlayerRow): string | null {
-    return getFplPhotoUrl(p.photo_code) || svgDataUrl(initialsFromName(p.name), '#0f766e', '#ecfeff')
+    // Pink/Purple Gradient für alle Spieler
+    return svgDataUrl(initialsFromName(p.name), '#e90052', '#f0f9ff')
 }
 
 function resolveDataPathForSeason(season: string): { type: 'merged' | 'cleaned' | 'none'; filePath: string | null } {
