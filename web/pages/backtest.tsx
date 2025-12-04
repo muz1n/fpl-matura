@@ -523,6 +523,7 @@ export default function BacktestPage() {
                                 </button>
                             </div>
                             <TeamBacktestChart
+                                key={selectedMethods.sort().join(',')}
                                 data={filteredDetail}
                                 title=""
                                 height="500px"
