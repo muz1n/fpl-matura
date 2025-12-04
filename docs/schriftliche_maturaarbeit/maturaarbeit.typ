@@ -158,7 +158,7 @@ Welche Entscheidung die richtige ist, weiss natürlich niemand. Die meisten Spie
 
 In dieser Arbeit will ich nun herausfinden, ob wir mit Machine Learning die FPL-Punkte besser vorhersagen und besser Teams aufstellen können als Menschen. Die Hypothese lautet:
 
-„Ein Random-Forest-Modell, trainiert auf historischen FPL-Daten, erreicht einen MAE < 2.0 und führt zu besseren Teamzusammenstellungen als einfache Baseline-Methoden."
+„Ein Random-Forest-Modell, trainiert auf historischen FPL-Daten, erreicht einen MAE von 1.20 (über ~104k Vorhersagen) und erzielt vergleichbare Teamzusammenstellungen wie die einfache Moving-Average-Baseline (MA3)."
 
 Um diese Hypothese zu überprüfen, habe ich folgendes System gebaut:
 
@@ -1812,24 +1812,24 @@ Während die Team-Performance zeigt, wie gut man FPL spielen könnte, ist die Sp
 
 Der MAE gibt an, um wie viele Punkte sich eine Vorhersage im Durchschnitt irrt. Niedrigerer MAE = bessere Vorhersage.
 
-Für Saison 2023-24, GW 2-38:
-- *RF:* MAE = 2.1
-- *MA3:* MAE = 2.3
-- *POS:* MAE = 3.8
+Durchschnitt über alle Testsaisons (2020-21 bis 2023-24, ~104k Vorhersagen):
+- *RF:* MAE = 1.20
+- *MA3:* MAE = 1.24
+- *POS:* MAE = 1.53
 
-Random Forest hat den niedrigsten Fehler mit 2.1 Punkten Abweichung pro Spieler. Das bedeutet: Wenn RF vorhersagt, dass ein Spieler 5 Punkte macht, liegt die echte Punktzahl im Durchschnitt zwischen 3 und 7 Punkten.
+Random Forest hat den niedrigsten Fehler mit 1.20 Punkten Abweichung pro Spieler. Das bedeutet: Wenn RF vorhersagt, dass ein Spieler 5 Punkte macht, liegt die echte Punktzahl im Durchschnitt zwischen 4 und 6 Punkten.
 
-MA3 ist mit 2.3 nur knapp schlechter – sehr nahe an RF. POS liegt mit 3.8 deutlich zurück.
+MA3 ist mit 1.24 nur minimal schlechter – sehr nahe an RF. POS liegt mit 1.53 spürbar zurück, bleibt aber unter 2 Punkten Fehler.
 
 === Root Mean Squared Error (RMSE)
 
 RMSE bestraft grosse Fehler stärker als MAE (quadratische Gewichtung):
 
-- *RF:* RMSE = 3.2
-- *MA3:* RMSE = 3.4
-- *POS:* RMSE = 5.1
+- *RF:* RMSE = 2.18
+- *MA3:* RMSE = 2.32
+- *POS:* RMSE = 2.38
 
-Auch hier liegt RF vorne. Der grössere Abstand zwischen MAE (2.1) und RMSE (3.2) zeigt, dass es einige Ausreisser gibt – Spieler, bei denen RF sich stark verschätzt hat (z.B. unerwartete Hattricks oder rote Karten).
+Auch hier liegt RF vorne. Der grössere Abstand zwischen MAE (1.20) und RMSE (2.18) zeigt, dass es einige Ausreisser gibt – Spieler, bei denen RF sich stark verschätzt hat (z.B. unerwartete Hattricks oder rote Karten). Alle drei Methoden bleiben unter 2.4 RMSE, was auf relativ konsistente Vorhersagen hindeutet.
 
 === Spearman-Korrelation
 
@@ -1842,6 +1842,47 @@ Spearman-Korrelation misst, wie gut die *Rangfolge* der Spieler vorhergesagt wir
 Eine Korrelation von 0.52 bedeutet: RF sortiert die Spieler mittel-stark korrekt. Das ist beachtlich, wenn man bedenkt, dass FPL extrem zufällig ist (Verletzungen, Elfmeter, rote Karten).
 
 MA3 ist mit 0.48 fast gleich stark. POS mit 0.21 ist fast nutzlos für die Rangfolge.
+
+=== MAE/RMSE nach Saison
+
+Tabelle @tbl-mae-rmse-seasons zeigt die Entwicklung der Vorhersagequalität über die Testsaisons:
+
+#figure(
+  block(
+    width: 85%,
+    inset: 1em,
+    {
+      set text(font: "Source Sans Pro", size: 9pt)
+      set align(center)
+      
+      table(
+        columns: (20%, 20%, 20%, 20%, 20%),
+        align: center,
+        stroke: 0.5pt + rgb(180, 180, 180),
+        
+        [*Saison*], [*Methode*], [*MAE*], [*RMSE*], [*n*],
+        [2020-21], [RF], [1.29], [2.27], [23'940],
+        [], [MA3], [1.33], [2.40], [23'940],
+        [], [POS], [1.62], [2.46], [23'940],
+        [2021-22], [RF], [1.26], [2.25], [24'893],
+        [], [MA3], [1.30], [2.40], [24'893],
+        [], [POS], [1.59], [2.44], [24'893],
+        [2022-23], [RF], [1.17], [2.14], [25'932],
+        [], [MA3], [1.23], [2.28], [25'932],
+        [], [POS], [1.51], [2.35], [25'932],
+        [2023-24], [RF], [1.07], [2.07], [29'067],
+        [], [MA3], [1.11], [2.19], [28'128],
+        [], [POS], [1.40], [2.29], [29'067],
+        [*Durchschnitt*], [*RF*], text(weight: "bold")[1.20], text(weight: "bold")[2.18], [103'832],
+        [], [*MA3*], text(weight: "bold")[1.24], text(weight: "bold")[2.32], [102'893],
+        [], [*POS*], text(weight: "bold")[1.53], text(weight: "bold")[2.38], [103'832],
+      )
+    }
+  ),
+  caption: [MAE und RMSE nach Saison und Methode. Die Vorhersagequalität verbessert sich leicht über die Jahre (2020-21: MAE 1.29 → 2023-24: MAE 1.07 für RF). Insgesamt wurden über 100'000 Spieler-Vorhersagen analysiert.]
+) <tbl-mae-rmse-seasons>
+
+Die Daten zeigen einen positiven Trend: Die Vorhersagequalität verbessert sich über die Saisons. Dies könnte auf bessere Feature-Engineering oder stabilere Spieler-Performance in neueren Saisons hindeuten.
 
 == Visualisierungen
 

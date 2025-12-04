@@ -231,7 +231,7 @@ def main():
         json.dump(result, f, indent=2, ensure_ascii=False)
 
     print(f"\n✓ Ergebnisse gespeichert: {out_file}")
-    print(f"\nTop 3 Features:")
+    print("\nTop 3 Features:")
     for feat, imp in sorted_features[:3]:
         print(f"  {feat}: {imp:.1%}")
 
