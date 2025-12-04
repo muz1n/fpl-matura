@@ -687,7 +687,7 @@ Nur alle drei zusammen ergeben ein vollständiges Bild der Modellgüte.
 
 Die Grundlage dieses Projekts bildet der öffentliche Datensatz von Vaastav Anand @vaastav-fpl, der FPL-Daten seit der Saison 2016/17 automatisiert sammelt. Der Datensatz enthält sehr viele Daten zu jedem Spieler und jeder Gameweek: Minuten gespielt, Punkte, Tore, Vorlagen, Clean Sheets und weitere Statistiken.
 
-Jede Zeile repräsentiert einen Spieler in einer Gameweek. Bei ca. 500 aktiven Spielern pro Saison und 38 Gameweeks ergeben sich pro Saison ca. 19'000 Datenpunkte. Über acht Saisons 2016/17 bis 2023/24 ergibt das mehr als 150'000 Datensätze.
+Jede Zeile repräsentiert einen Spieler in einer Gameweek. Bei ca. 500 aktiven Spielern pro Saison und 38 Gameweeks ergeben sich pro Saison ca. 23'500 Datenpunkte. Über acht Saisons 2016/17 bis 2023/24 ergibt das 188'168 Datensätze.
 
 === Zeitliche Aufteilung
 
@@ -1599,7 +1599,7 @@ Die Webseite macht die Modelle aus dem maschinellen Lernen direkt erlebbar – m
 
 Die Methodik kombiniert klassische Data-Science-Schritte mit domänenspezifischen FPL-Regeln:
 
-1. *Daten:* Vaastav-Anand-Dataset, 8 Saisons, ~150,000 Datenpunkte
+1. *Daten:* Vaastav-Anand-Dataset, 8 Saisons, 188'168 Datenpunkte
 2. *Features:* 20+ Features aus Spieler-, Gegner- und Team-Metriken
 3. *Modell:* Random Forest mit 100 Bäumen, max_depth=15, optimiert via Grid Search
 4. *Baselines:* MA3 und POS zum Vergleich
@@ -1793,7 +1793,7 @@ Ein robustes Modell sollte nicht nur in einer Saison gut sein, sondern konsisten
         [2020-21], [41.1], [45.2], [14.7],
         [2021-22], [45.0], [47.6], [11.5],
         [2022-23], [49.6], [45.9], [15.4],
-        [2023-24], [47.4], [45.1], [10.5],
+        [2023-24], [49.0], [45.2], [14.6],
       )
     }
   ),
@@ -1914,7 +1914,7 @@ Die Daten zeigen einen positiven Trend: Die Vorhersagequalität verbessert sich 
         // Random Forest
         text()[Random Forest],
         {
-          let bar-width = (2.1 / 4.0) * 100%
+          let bar-width = (1.20 / 2.0) * 100%
           block(
             width: 100%,
             height: 1.8em,
@@ -1930,12 +1930,12 @@ Die Daten zeigen einen positiven Trend: Die Vorhersagequalität verbessert sich 
             }
           )
         },
-        text(weight: "bold", fill: rgb(80, 130, 180))[2.1],
+        text(weight: "bold", fill: rgb(80, 130, 180))[1.20],
         
         // MA3
         text()[Moving Average (MA3)],
         {
-          let bar-width = (2.3 / 4.0) * 100%
+          let bar-width = (1.24 / 2.0) * 100%
           block(
             width: 100%,
             height: 1.8em,
@@ -1951,12 +1951,12 @@ Die Daten zeigen einen positiven Trend: Die Vorhersagequalität verbessert sich 
             }
           )
         },
-        text(weight: "bold", fill: rgb(200, 140, 80))[2.3],
+        text(weight: "bold", fill: rgb(200, 140, 80))[1.24],
         
         // POS
         text()[Position Average (POS)],
         {
-          let bar-width = (3.8 / 4.0) * 100%
+          let bar-width = (1.53 / 2.0) * 100%
           block(
             width: 100%,
             height: 1.8em,
@@ -1972,7 +1972,7 @@ Die Daten zeigen einen positiven Trend: Die Vorhersagequalität verbessert sich 
             }
           )
         },
-        text(weight: "bold", fill: rgb(100, 100, 100))[3.8],
+        text(weight: "bold", fill: rgb(100, 100, 100))[1.53],
       )
       
       v(0.8em)
@@ -1987,10 +1987,10 @@ Die Daten zeigen einen positiven Trend: Die Vorhersagequalität verbessert sich 
             dir: ltr,
             spacing: 1fr,
             [0],
-            [1],
-            [2],
-            [3],
-            [4],
+            [0.5],
+            [1.0],
+            [1.5],
+            [2.0],
           )
         },
         [],
@@ -2002,10 +2002,10 @@ Die Daten zeigen einen positiven Trend: Die Vorhersagequalität verbessert sich 
       ]
     }
   ),
-  caption: [MAE-Vergleich: Random Forest (2.1) schneidet besser ab als MA3 (2.3) und deutlich besser als POS (3.8). Niedrigerer MAE bedeutet genauere Vorhersagen.]
+  caption: [MAE-Vergleich: Random Forest (1.20) schneidet minimal besser ab als MA3 (1.24) und deutlich besser als POS (1.53). Niedrigerer MAE bedeutet genauere Vorhersagen. Durchschnitt über ~104k Spieler-Vorhersagen.]
 ) <fig-mae-comparison>
 
-/*@fig-mae-comparison*/ visualisiert den MAE über alle Testsaisons. RF (blaue Linie) liegt konsistent unter MA3 (orange) und weit unter POS (grau). Die Verbesserung von RF gegenüber MA3 ist klein, aber konsistent – das zeigt, dass Machine Learning einen Mehrwert bietet, auch wenn er nicht dramatisch ist.
+/*@fig-mae-comparison*/ visualisiert den MAE über alle Testsaisons. RF (blaue Linie) liegt nur minimal unter MA3 (orange), aber beide sind deutlich besser als POS (grau). Die Verbesserung von RF gegenüber MA3 ist marginal (0.04 Punkte) – das zeigt, dass die einfache MA3-Baseline bereits sehr stark ist.
 
 #figure(
   block(
@@ -2028,46 +2028,46 @@ Die Daten zeigen einen positiven Trend: Die Vorhersagequalität verbessert sich 
         [*Punkte-Bereich*], [*Anzahl Fälle*], [*Ø MAE*], [*Genauigkeit*],
         
         [0-2 Punkte],
-        [~12'000],
-        [1.8],
-        box(fill: rgb(100, 180, 100).lighten(30%), inset: 0.3em)[Gut],
+        [~50'000],
+        [0.9],
+        box(fill: rgb(100, 180, 100).lighten(30%), inset: 0.3em)[Sehr gut],
         
         [3-5 Punkte],
-        [~10'000],
-        [2.0],
+        [~35'000],
+        [1.2],
         box(fill: rgb(100, 180, 100).lighten(30%), inset: 0.3em)[Gut],
         
         [6-10 Punkte],
-        [~6'000],
-        [2.4],
+        [~15'000],
+        [1.8],
         box(fill: rgb(220, 180, 100).lighten(20%), inset: 0.3em)[Mittel],
         
         [11-15 Punkte],
-        [~1'800],
-        [3.2],
+        [~3'000],
+        [2.5],
         box(fill: rgb(220, 180, 100).lighten(20%), inset: 0.3em)[Mittel],
         
         [16+ Punkte],
-        [~200],
-        [5.1],
+        [~800],
+        [4.2],
         box(fill: rgb(220, 120, 120).lighten(20%), inset: 0.3em)[Schwach],
       )
       
       v(1em)
       
       text(size: 8pt, fill: rgb(80, 80, 80), style: "italic")[
-        Daten: Random Forest Vorhersagen, Saison 2023-24 (~30'000 Spieler-Spiele)
+        Daten: Random Forest Vorhersagen, alle Testsaisons (~104'000 Spieler-Spiele)
       ]
       
       v(0.5em)
       
       text(size: 8pt, fill: rgb(80, 80, 80))[
-        *Erkenntnis:* Extreme Werte (>15 Punkte) haben 2.5x höheren MAE als normale Werte.\ 
+        *Erkenntnis:* Extreme Werte (>15 Punkte) haben ~4x höheren MAE als normale Werte.\ 
         Grund: Hattricks und andere unvorhersehbare Ereignisse.
       ]
     }
   ),
-  caption: [Vorhersagegenauigkeit nach Punktebereichen. Das Modell ist am genauesten bei niedrigen und mittleren Punktzahlen (MAE 1.8-2.4). Bei extremen Werten (>15 Punkte) steigt der MAE auf 5.1, da diese oft auf unvorhersehbaren Ereignissen basieren.]
+  caption: [Vorhersagegenauigkeit nach Punktebereichen. Das Modell ist am genauesten bei niedrigen Punktzahlen (MAE 0.9-1.2). Bei extremen Werten (>15 Punkte) steigt der MAE auf 4.2, da diese oft auf unvorhersehbaren Ereignissen basieren.]
 ) <fig-points-scatter>
 
 /*@fig-points-scatter*/ zeigt einen Scatter-Plot der Vorhersagen. Die meisten Punkte liegen nahe der Diagonalen (perfekte Vorhersage), aber es gibt deutliche Streuung. Besonders auffällig: Hohe tatsächliche Punkte (>15) werden oft unterschätzt – das sind unvorhersehbare Ereignisse wie Hattricks.

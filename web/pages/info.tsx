@@ -70,9 +70,9 @@ export default function InfoPage() {
                                 <div className="bg-slate-900/60 border border-pink-500/20 rounded-xl p-4 space-y-2">
                                     <p className="text-sm text-slate-300">
                                         <strong className="text-pink-400">Hypothese:</strong> Ein regressives ML-Modell
-                                        (z. B. Random Forest) erzielt eine mittlere Abweichung (MAE) von ~2 Punkten
-                                        pro Spieler und erhöht die Gesamtpunktzahl des Teams im Vergleich zu
-                                        einfachen Baseline-Methoden (Moving Average, Positionsmittel).
+                                        (z. B. Random Forest) erzielt eine mittlere Abweichung (MAE) von ~1.2 Punkten
+                                        pro Spieler und liefert vergleichbare Teampunktzahlen wie
+                                        einfache Baseline-Methoden (Moving Average, Positionsmittel).
                                     </p>
                                 </div>
                             </div>
