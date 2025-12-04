@@ -136,6 +136,8 @@ export default async function handler(
         try {
             const detailContent = await readFile(detailFile, 'utf8')
             detailData = parseCSV<BacktestDetailRow>(detailContent)
+            // FILTER: rf_optfill und rf_filled komplett entfernen
+            detailData = detailData.filter(row => row.method !== 'rf_optfill' && row.method !== 'rf_filled')
         } catch (e: any) {
             if (e.code === 'ENOENT') {
                 const ranges = await getAvailableRanges(season)
@@ -155,6 +157,8 @@ export default async function handler(
         try {
             const summaryContent = await readFile(summaryFile, 'utf8')
             summaryData = parseCSV<BacktestSummaryRow>(summaryContent)
+            // FILTER: rf_optfill und rf_filled komplett entfernen
+            summaryData = summaryData.filter(row => row.method !== 'rf_optfill' && row.method !== 'rf_filled')
         } catch (e: any) {
             if (e.code !== 'ENOENT') {
                 throw e
@@ -166,6 +170,8 @@ export default async function handler(
         if (!summaryData.length || !('avg_efficiency' in summaryData[0])) {
             const byMethod: Record<string, { pts: number[]; eff: number[] }> = {}
             for (const row of detailData) {
+                // FILTER: rf_optfill und rf_filled ignorieren
+                if (row.method === 'rf_optfill' || row.method === 'rf_filled') continue
                 if (!byMethod[row.method]) byMethod[row.method] = { pts: [], eff: [] }
                 if (typeof row.xi_points === 'number' && row.xi_points > 0) {
                     byMethod[row.method].pts.push(row.xi_points)
