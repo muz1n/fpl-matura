@@ -58,13 +58,41 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({ error: 'Keine gültigen Seasons angegeben' })
     }
 
-    const outDir = path.join(process.cwd(), '..', 'out')
-    const backtestsDir = path.join(outDir, 'backtests')
+    const backtestsDir = path.join(process.cwd(), 'public', 'data', 'backtests')
     const results: Array<BacktestData> = []
     const errors: Array<{ season: string; error: string }> = []
 
     for (const season of seasonList) {
         try {
+            // Zuerst JSON versuchen (neue Struktur)
+            const jsonPath = path.join(backtestsDir, `${season}_gw${gwRange}.json`)
+            
+            if (fs.existsSync(jsonPath)) {
+                // JSON-Datei laden
+                const jsonContent = fs.readFileSync(jsonPath, 'utf-8')
+                const jsonData = JSON.parse(jsonContent)
+                
+                const summary: BacktestSummaryRow[] = jsonData.map((row: any) => ({
+                    method: row.method || 'unknown',
+                    avg_xi_points: row.avg_points || row.avg_xi_points || 0,
+                    std_xi_points: row.std_points || row.std_xi_points || 0,
+                    n_gw: row.n_gw || 0,
+                    avg_efficiency: row.efficiency || row.avg_efficiency || null
+                }))
+                
+                const [gwStart, gwEnd] = gwRange.split('-').map(Number)
+                
+                results.push({
+                    season,
+                    gw_start: gwStart,
+                    gw_end: gwEnd,
+                    detail: [], // JSON hat keine Details
+                    summary
+                })
+                continue
+            }
+            
+            // Fallback: CSV-Dateien versuchen
             const detailPath = path.join(backtestsDir, `team_backtest_${season}_gw${gwRange}.csv`)
             const summaryPath = path.join(backtestsDir, `team_backtest_summary_${season}_gw${gwRange}.csv`)
 
