@@ -195,6 +195,8 @@ export default function BacktestPage() {
         for (const row of backtestData.detail) {
             // FILTER: rf_filled und rf_optfill ignorieren
             if (row.method === 'rf_filled' || row.method === 'rf_optfill') continue
+            // FILTER: Nur selektierte Methoden anzeigen
+            if (!selectedMethods.includes(row.method)) continue
             if (row.xi_points <= 0) continue
             if (!byGw[row.gw]) byGw[row.gw] = {}
             byGw[row.gw][row.method] = row.xi_points
@@ -225,7 +227,7 @@ export default function BacktestPage() {
             if (sortDirection === 'asc') return aVal > bVal ? 1 : -1
             return aVal < bVal ? 1 : -1
         })
-    }, [backtestData, sortColumn, sortDirection])
+    }, [backtestData, sortColumn, sortDirection, selectedMethods])
 
     // CSV Export erstellen (on demand bei Änderungen der PivotRows)
     useEffect(() => {
@@ -543,6 +545,7 @@ export default function BacktestPage() {
                                             <th className="text-left py-3 px-4 text-slate-400 font-medium">GW</th>
                                             {Array.from(new Set(backtestData.detail.map(r => r.method)))
                                                 .filter(m => m !== 'rf_filled' && m !== 'rf_optfill')
+                                                .filter(m => selectedMethods.includes(m))
                                                 .map(m => (
                                                     <th key={m} className="text-left py-3 px-4 text-slate-400 font-medium">
                                                         {m.toUpperCase()}
@@ -560,6 +563,7 @@ export default function BacktestPage() {
                                                         <td className="py-3 px-4 text-slate-300">{gw}</td>
                                                         {Array.from(new Set(backtestData.detail.map(r => r.method)))
                                                             .filter(m => m !== 'rf_filled' && m !== 'rf_optfill')
+                                                            .filter(m => selectedMethods.includes(m))
                                                             .map(m => {
                                                                 const methodData = gwData.find(r => r.method === m)
                                                                 return (
