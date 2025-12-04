@@ -23,7 +23,7 @@ async function getAvailableGWs(): Promise<{ available: number[]; methodsByGw: Re
         try {
             files = await readdir(PRED_DIR)
         } catch {
-            files = await readdir(OUT_DIR)
+            return { available: [], methodsByGw: {} }
         }
         const gwSet = new Set<number>()
         const methodsByGw: Record<number, string[]> = {}
