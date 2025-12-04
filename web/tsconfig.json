@@ -24,9 +24,10 @@
       }
     ],
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"],
+      "lib/*": ["lib/*"],
+      "src/*": ["src/*"],
+      "components/*": ["src/components/*"]
     }
   },
   "include": [
