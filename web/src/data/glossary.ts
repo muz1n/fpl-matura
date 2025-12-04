@@ -47,7 +47,7 @@ export const glossary = {
     modellVersion: "Die Version des KI-Modells, das für die Prognosen verwendet wurde.",
 
     regelPruefung: "Prüfung, ob die Aufstellung alle FPL-Regeln einhält (Budget, Spieleranzahl, max. 3 Spieler pro Team).",
-    
+
     // Positionen
     torwart: "Torwart (GK) - erhält Punkte für gehaltene Bälle und Clean Sheets.",
 
