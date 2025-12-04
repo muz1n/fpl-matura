@@ -1,0 +1,51 @@
+[
+  {
+    "method": "ma3",
+    "season": "2021-22",
+    "gw_range": "2-38",
+    "avg_points": 47.648648648648646,
+    "efficiency": 0.3606516544796994
+  },
+  {
+    "method": "rf",
+    "season": "2021-22",
+    "gw_range": "2-38",
+    "avg_points": 45,
+    "efficiency": 0.33977064104605026
+  },
+  {
+    "method": "rf_optfill",
+    "season": "2021-22",
+    "gw_range": "2-38",
+    "avg_points": 45,
+    "efficiency": 0.33977064104605026
+  },
+  {
+    "method": "rf_relaxed",
+    "season": "2021-22",
+    "gw_range": "2-38",
+    "avg_points": 44.972972972972975,
+    "efficiency": 0.339618474695755
+  },
+  {
+    "method": "rf_pos",
+    "season": "2021-22",
+    "gw_range": "2-38",
+    "avg_points": 37.44444444444444,
+    "efficiency": 0.2805796760842491
+  },
+  {
+    "method": "rf_rank",
+    "season": "2021-22",
+    "gw_range": "2-38",
+    "avg_points": 15.11111111111111,
+    "efficiency": 0.11250587688370592
+  },
+  {
+    "method": "pos",
+    "season": "2021-22",
+    "gw_range": "2-38",
+    "avg_points": 11.457142857142857,
+    "efficiency": 0.08631621765741923
+  }
+]

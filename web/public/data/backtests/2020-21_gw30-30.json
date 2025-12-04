@@ -1,0 +1,23 @@
+[
+  {
+    "method": "ma3",
+    "season": "2020-21",
+    "gw_range": "30-30",
+    "avg_points": 49,
+    "efficiency": null
+  },
+  {
+    "method": "rf",
+    "season": "2020-21",
+    "gw_range": "30-30",
+    "avg_points": 45,
+    "efficiency": null
+  },
+  {
+    "method": "pos",
+    "season": "2020-21",
+    "gw_range": "30-30",
+    "avg_points": 11,
+    "efficiency": null
+  }
+]

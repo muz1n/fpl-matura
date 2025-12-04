@@ -1,0 +1,23 @@
+[
+  {
+    "method": "rf",
+    "season": "2022-23",
+    "gw_range": "1-38",
+    "avg_points": 46.5,
+    "efficiency": null
+  },
+  {
+    "method": "ma3",
+    "season": "2022-23",
+    "gw_range": "1-38",
+    "avg_points": 45.333333333333336,
+    "efficiency": null
+  },
+  {
+    "method": "pos",
+    "season": "2022-23",
+    "gw_range": "1-38",
+    "avg_points": 8.666666666666666,
+    "efficiency": null
+  }
+]
