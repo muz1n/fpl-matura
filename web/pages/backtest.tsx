@@ -3,7 +3,7 @@ import Head from 'next/head'
 import { motion } from 'framer-motion'
 import { Select } from '../src/components/Select'
 import { TeamBacktestChart } from '../src/components/TeamBacktestChart'
-import { getUsableSeasons } from '../lib/seasonQuality'
+import { getUsableSeasons } from '../src/lib/seasonQuality'
 import { BarChart3, Download, Activity, ChevronDown, Info } from 'lucide-react'
 
 interface BacktestDetailRow {

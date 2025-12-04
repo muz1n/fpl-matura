@@ -3,7 +3,7 @@ import Head from 'next/head'
 import { motion } from 'framer-motion'
 import ReactECharts from 'echarts-for-react'
 import type { EChartsOption } from 'echarts'
-import { getUsableSeasons } from '../lib/seasonQuality'
+import { getUsableSeasons } from '../src/lib/seasonQuality'
 import { LoadingState, ErrorState } from '../src/components/States'
 import { TrendingUp, Info, Calendar } from 'lucide-react'
 

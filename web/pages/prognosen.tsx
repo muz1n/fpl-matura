@@ -7,7 +7,7 @@ import type {
     PredictionPlayer,
 } from "@/types/fpl";
 import { Select } from "@/src/components/Select";
-import { getUsableSeasons } from "../lib/seasonQuality";
+import { getUsableSeasons } from "../src/lib/seasonQuality";
 import { TrendingUp, Trophy, TrendingDown, Medal } from "lucide-react";
 
 type LoadingStateType = "idle" | "loading" | "success" | "error";
