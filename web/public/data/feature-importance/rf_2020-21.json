@@ -1,0 +1,64 @@
+{
+  "season": "2020-21",
+  "method": "rf",
+  "n_features": 8,
+  "generated_at": "2025-12-04",
+  "features": [
+    {
+      "feature": "price",
+      "importance": 0.230705,
+      "normalized": 0.230705,
+      "cumulative": 0.230705,
+      "rank": 1
+    },
+    {
+      "feature": "influence_r3",
+      "importance": 0.147677,
+      "normalized": 0.147677,
+      "cumulative": 0.378382,
+      "rank": 2
+    },
+    {
+      "feature": "creativity_r3",
+      "importance": 0.145449,
+      "normalized": 0.145449,
+      "cumulative": 0.523831,
+      "rank": 3
+    },
+    {
+      "feature": "ict_index_r3",
+      "importance": 0.140777,
+      "normalized": 0.140777,
+      "cumulative": 0.664608,
+      "rank": 4
+    },
+    {
+      "feature": "minutes_r3",
+      "importance": 0.109275,
+      "normalized": 0.109275,
+      "cumulative": 0.773883,
+      "rank": 5
+    },
+    {
+      "feature": "points_per90_r3",
+      "importance": 0.093095,
+      "normalized": 0.093095,
+      "cumulative": 0.866978,
+      "rank": 6
+    },
+    {
+      "feature": "threat_r3",
+      "importance": 0.092291,
+      "normalized": 0.092291,
+      "cumulative": 0.959269,
+      "rank": 7
+    },
+    {
+      "feature": "points_r3",
+      "importance": 0.040731,
+      "normalized": 0.040731,
+      "cumulative": 1.0,
+      "rank": 8
+    }
+  ]
+}
