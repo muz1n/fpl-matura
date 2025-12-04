@@ -100,9 +100,9 @@ Schliesslich danke ich der Open-Source-Community für die Entwicklung der verwen
 
 Die Fantasy Premier League (FPL) ist eine der grössten Fantasy-Sport-Plattformen weltweit und hat über 11 Millionen Nutzer. In diesem Spiel stellen die Teilnehmer wöchentlich ihr Team aus 15 Profis der Premier League zusammen, wobei die Punkte anhand von echten Spielstatistiken ermittelt werden. Die Vorhersage zukünftiger Leistungen der Spieler ist eine anspruchsvolle Aufgabe, da zahlreiche Faktoren, wie etwa die aktuelle Form, die Stärke des Gegners, Verletzungen und die taktische Ausrichtung des Trainers, berücksichtigt werden müssen.
 
-In dieser Arbeit wird untersucht, inwieweit Machine-Learning-Methoden die Punktzahlen der FPL-Spieler gut genug vorhersagen können, um damit die Teamzusammenstellung systematisch zu verbessern. Verwendet wurde ein Random-Forest-Modell; Grundlage bildeten die Daten von acht Spieljahren (2016/17 bis 2023/24), ~150'000 Datensätze. Berücksichtigt wurden Merkmale wie Form der letzten Spiele, Gegnerstärke, Einsatzminuten und positionsspezifisches Verhalten. Die Evaluation erfolgte mittels Backtesting an vier Testsaisons (2020/21 bis 2023/24), wobei Moving Average (MA3) und Positions-Mittelwert (POS) als Baseline-Methoden dienten.
+In dieser Arbeit wird untersucht, inwieweit Machine-Learning-Methoden die Punktzahlen der FPL-Spieler gut genug vorhersagen können, um damit die Teamzusammenstellung systematisch zu verbessern. Verwendet wurde ein Random-Forest-Modell; Grundlage bildeten die Daten von acht Spieljahren (2016/17 bis 2023/24), ~188'000 Datensätze. Berücksichtigt wurden Merkmale wie Form der letzten Spiele, Gegnerstärke, Einsatzminuten und positionsspezifisches Verhalten. Die Evaluation erfolgte mittels Backtesting an vier Testsaisons (2020/21 bis 2023/24), wobei Moving Average (MA3) und Positions-Mittelwert (POS) als Baseline-Methoden dienten.
 
-Die Ergebnisse zeigen: Random Forest erzielt im Durchschnitt 47,4 Punkte pro Spieltag – etwa 5% mehr als MA3 mit 45,1 Punkten. Der mittlere absolute Fehler (MAE) beträgt 2,1 Punkte, die Effizienz relativ zum theoretisch optimalen Team liegt bei 34%. Die Feature-Importance-Analyse zeigt, dass die Form der letzten drei Spiele mit 34% den stärksten Einfluss hat, gefolgt von der Position mit 18%. Eine interaktive Web-Applikation visualisiert die Vorhersagen und ermöglicht explorative Analysen der Modellperformance.
+Die Ergebnisse zeigen: Random Forest und Moving Average (MA3) erzielen beide im Durchschnitt etwa 46 Punkte pro Spieltag über die vier Testsaisons, wobei RF in einzelnen Saisons (2022/23, 2023/24) leicht überlegen ist. Die Vorhersagequalität variiert stark je nach Spielertyp und Spielsituation. Die Analyse zeigt, dass die Form der letzten Spiele den stärksten Einfluss auf die Vorhersagegenauigkeit hat. Eine interaktive Web-Applikation visualisiert die Vorhersagen und ermöglicht explorative Analysen der Modellperformance.
 
 Die Arbeit zeigt, dass Machine Learning einen messbaren, wenn auch moderaten Mehrwert für FPL-Vorhersagen bietet. Die Limitationen – insbesondere die Unfähigkeit, kurzfristige Ereignisse wie Last-Minute-Verletzungen zu antizipieren – bleiben bestehen. Für praktische Anwendungen wäre eine Integration mit Live-Daten der offiziellen FPL-API vielversprechend.
 
@@ -597,7 +597,7 @@ Features mit hoher Importance sind wichtig für die Vorhersage. In diesem Projek
       )
     }
   ),
-  caption: [Feature Importance im Random Forest. Die wichtigsten Prädiktoren für FPL-Punkte sind die Form der letzten 3 Spiele (34%), die Spielerposition (18%) und die defensive Schwäche des Gegners (14%).]
+  caption: [Feature Importance im Random Forest. Die wichtigsten Prädiktoren für FPL-Punkte sind die Form der letzten 3 Spiele, die Spielerposition und die defensive Schwäche des Gegners.]
 ) <fig-feature-importance>
 
 === Hyperparameter
@@ -610,14 +610,21 @@ Random Forest hat einige Hyperparameter, die vor dem Training festgelegt werden 
 - *min_samples_leaf:* wie viele Datenpunkte in einem Blatt mindestens sein müssen (je mehr, desto glattere Vorhersage)
 - *max_features:* wie viele der Features pro Split ausgewählt werden (häufig $sqrt(n)$ oder $log_2(n)$)
 
-Verwendet wurden hier:
+Verwendet wurden positionsspezifische Hyperparameter:
 
-- n_estimators = 100
-- max_depth = 15
-- min_samples_leaf = 5
+Für die meisten Positionen (GK, MID):
+- n_estimators = 400
+- max_depth = None (unbegrenzt)
+- min_samples_leaf = 2
 - max_features = 'sqrt'
+- random_state = 42
 
-Diese Werte wurden mittels Kreuzvalidierung auf den Trainingsdaten optimiert.
+Für Stürmer (FWD) und Verteidiger (DEF) wurden nach manuellen Tests flachere Bäume verwendet:
+- n_estimators = 100
+- max_depth = 4
+- min_samples_leaf = 3
+
+Die Hyperparameter wurden durch manuelle Experimente auf Validierungsdaten optimiert. Eine systematische Grid Search wurde exploriert (siehe `code/archive/tuning/`), aber die finalen Modelle verwenden die oben genannten Werte.
 
 === Warum Random Forest für FPL?
 
@@ -1193,7 +1200,7 @@ Ergebnis:
   caption: [Feature Importance nach Training des Random Forest Modells]
 ) <tbl-feature-importance>
 
-Form war also eindeutig am wichtigsten (34%). Das überrascht nicht: Wer gerade gut spielt, spielt auch nächste Woche gut. Interessant ist, dass der Marktwert (value) nur 4% ausmachte – teure Spieler sind also nicht automatisch besser in der Vorhersage.
+Die aktuelle Form (Durchschnitt der letzten 3-5 Spiele) war eindeutig am wichtigsten. Das überrascht nicht: Wer gerade gut spielt, spielt auch nächste Woche gut. Interessant ist, dass der Marktwert nur eine kleine Rolle spielte – teure Spieler sind also nicht automatisch besser in der Vorhersage.
 
 === Baseline-Methoden
 
@@ -1638,9 +1645,9 @@ Tabelle @tbl-backtest-results zeigt die durchschnittliche Team-Performance über
         stroke: 0.5pt + rgb(180, 180, 180),
         
         [*Methode*], [*Ø Punkte/GW*], [*Std.-Abw.*], [*Effizienz*],
-        [RF], [47.4], [19.3], [34.5%],
-        [MA3], [45.1], [14.8], [32.4%],
-        [POS], [10.5], [6.5], [7.7%],
+        [RF], [45.8], [16.7], [33.6%],
+        [MA3], [46.0], [14.5], [33.9%],
+        [POS], [13.0], [8.8], [9.6%],
       )
     }
   ),
@@ -1668,7 +1675,7 @@ Tabelle @tbl-backtest-results zeigt die durchschnittliche Team-Performance über
         // Random Forest
         text()[Random Forest],
         {
-          let bar-width = (47.4 / 50) * 100%
+          let bar-width = (45.8 / 50) * 100%
           block(
             width: 100%,
             height: 1.8em,
@@ -1684,12 +1691,12 @@ Tabelle @tbl-backtest-results zeigt die durchschnittliche Team-Performance über
             }
           )
         },
-        text(weight: "bold", fill: rgb(80, 130, 180))[47.4],
+        text(weight: "bold", fill: rgb(80, 130, 180))[45.8],
         
         // MA3
         text()[Moving Average],
         {
-          let bar-width = (45.1 / 50) * 100%
+          let bar-width = (46.0 / 50) * 100%
           block(
             width: 100%,
             height: 1.8em,
@@ -1705,12 +1712,12 @@ Tabelle @tbl-backtest-results zeigt die durchschnittliche Team-Performance über
             }
           )
         },
-        text(weight: "bold", fill: rgb(200, 140, 80))[45.1],
+        text(weight: "bold", fill: rgb(200, 140, 80))[46.0],
         
         // POS
         text()[Position Average],
         {
-          let bar-width = (10.5 / 50) * 100%
+          let bar-width = (13.0 / 50) * 100%
           block(
             width: 100%,
             height: 1.8em,
@@ -1726,7 +1733,7 @@ Tabelle @tbl-backtest-results zeigt die durchschnittliche Team-Performance über
             }
           )
         },
-        text(weight: "bold", fill: rgb(100, 100, 100))[10.5],
+        text(weight: "bold", fill: rgb(100, 100, 100))[13.0],
       )
       
       v(0.8em)
@@ -1753,19 +1760,19 @@ Tabelle @tbl-backtest-results zeigt die durchschnittliche Team-Performance über
       
       v(0.3em)
       text(size: 8pt, fill: rgb(80, 80, 80), style: "italic")[
-        Durchschnitt über 4 Testsaisons (2020-2024). RF und MA3 liegen nah beieinander,\ 
+        Durchschnitt über 4 Testsaisons (2020-2024). MA3 und RF liegen sehr nah beieinander,\ 
         POS deutlich schlechter aufgrund zu generischer Vorhersagen.
       ]
     }
   ),
-  caption: [Team-Performance im Vergleich (Durchschnitt 2020-2024). Random Forest (47.4 Pkt/GW) und MA3 (45.1 Pkt/GW) liegen relativ nah beieinander. Position Average (10.5 Pkt/GW) schneidet deutlich schlechter ab.]
+  caption: [Team-Performance im Vergleich (Durchschnitt 2020-2024). Moving Average (46.0 Pkt/GW) schneidet minimal besser ab als Random Forest (45.8 Pkt/GW). Position Average (13.0 Pkt/GW) liegt weit zurück.]
 ) <fig-team-performance>
 
 *Effizienz* = Tatsächliche Punkte / Hindsight-Optimum. Das Hindsight-Optimum ist das beste Team, das man hätte wählen können, wenn man die echten Punkte im Voraus gekannt hätte (theoretisches Maximum).
 
-Die Resultate zeigen: *Random Forest erzielt mit 47.4 Punkten pro Gameweek die höchste Performance*, knapp vor MA3 mit 45.1 Punkten. POS schneidet mit nur 10.5 Punkten sehr schlecht ab – die Positions-Durchschnitte sind zu generisch.
+Die Resultate zeigen: *Moving Average (MA3) erzielt mit 46.0 Punkten pro Gameweek minimal mehr als Random Forest (45.8 Punkte)*. Der Unterschied ist sehr klein und liegt innerhalb der Standardabweichung. POS schneidet mit nur 13.0 Punkten deutlich schlechter ab – die Positions-Durchschnitte sind zu generisch.
 
-Interessant ist die Effizienz: RF erreicht 34.5% des theoretischen Optimums. Das klingt niedrig, aber das Hindsight-Optimum ist extrem anspruchsvoll (perfekte Vorhersage aller ~600 Spieler pro GW). In der Praxis ist 30-35% Effizienz ein sehr gutes Ergebnis @geron-2019.
+Interessant ist die Effizienz: Beide Methoden (RF und MA3) erreichen etwa 33-34% des theoretischen Optimums. Das klingt niedrig, aber das Hindsight-Optimum ist extrem anspruchsvoll (perfekte Vorhersage aller ~600 Spieler pro GW). In der Praxis ist 30-35% Effizienz ein sehr gutes Ergebnis @geron-2019.
 
 === Stabilität über Saisons
 
@@ -1785,9 +1792,9 @@ Ein robustes Modell sollte nicht nur in einer Saison gut sein, sondern konsisten
         stroke: 0.5pt + rgb(180, 180, 180),
         
         [*Saison*], [*RF (Ø)*], [*MA3 (Ø)*], [*POS (Ø)*],
-        [2020-21], [46.8], [44.2], [11.1],
-        [2021-22], [48.3], [46.5], [10.8],
-        [2022-23], [47.1], [44.8], [10.2],
+        [2020-21], [41.1], [45.2], [14.7],
+        [2021-22], [45.0], [47.6], [11.5],
+        [2022-23], [49.6], [45.9], [15.4],
         [2023-24], [47.4], [45.1], [10.5],
       )
     }
@@ -1795,9 +1802,9 @@ Ein robustes Modell sollte nicht nur in einer Saison gut sein, sondern konsisten
   caption: [Performance über die Testsaisons hinweg]
 ) <tbl-season-performance>
 
-Die Resultate sind bemerkenswert stabil: RF schwankt nur zwischen 46.8 und 48.3 Punkten pro GW über vier Saisons. Das zeigt, dass das Modell generalisiert und nicht auf spezifische Saisoneffekte overfittet ist.
+Die Resultate zeigen ein interessantes Muster: *MA3 schlägt RF in zwei Saisons (2020-21 und 2021-22)*, während *RF in den neueren Saisons (2022-23 und 2023-24) überlegen ist*. Die Varianz ist beachtlich: RF schwankt zwischen 41.1 (2020-21) und 49.6 (2022-23) Punkten pro GW.
 
-MA3 ist ebenfalls recht stabil (44.2-46.5), allerdings konsistent unter RF. POS bleibt durchweg schwach bei ~10-11 Punkten.
+Diese Inkonsistenz deutet darauf hin, dass beide Methoden ihre Stärken und Schwächen haben. RF profitiert vermutlich von zusätzlichen Features (Gegnerstärke, Team-Metriken), aber MA3 ist robuster gegenüber Overfitting. POS bleibt durchweg schwach bei 10-15 Punkten.
 
 == Spieler-Vorhersagen: MAE und RMSE
 
@@ -1845,7 +1852,7 @@ MA3 ist mit 0.48 fast gleich stark. POS mit 0.21 ist fast nutzlos für die Rangf
   caption: [Feature Importance: Die wichtigsten Features für Random Forest]
 ) <fig-feature-importance>*/
 
-/*@fig-feature-importance*/ zeigt die wichtigsten Features. `form_3` (Form der letzten 3 GW) ist mit Abstand am wichtigsten (34%), gefolgt von `position` (18%) und `opp_def_weakness` (14%). Interessanterweise spielt der Marktwert (`value`) nur eine kleine Rolle (4%) – teure Spieler sind nicht automatisch besser vorhersagbar.
+/*@fig-feature-importance*/ zeigt die wichtigsten Features. `form_3` (Form der letzten 3 GW) ist mit Abstand am wichtigsten, gefolgt von `position` und `opp_def_weakness` (defensive Schwäche des Gegners). Interessanterweise spielt der Marktwert (`value`) nur eine kleine Rolle – teure Spieler sind nicht automatisch besser vorhersagbar.
 
 #figure(
   block(
@@ -2207,23 +2214,28 @@ In diesem Kapitel werden die Ergebnisse kritisch eingeordnet, Limitationen disku
 
 === Random Forest vs. Baselines
 
-Die Resultate zeigen: Random Forest schlägt MA3 um durchschnittlich 2.3 Punkte pro Gameweek (47.4 vs. 45.1). Das klingt wenig, aber über eine 38-Gameweek-Saison summiert sich das auf ~87 Zusatzpunkte. In FPL-Ligen mit Tausenden Teilnehmern kann das den Unterschied zwischen Platz 50 und Platz 500 ausmachen.
+Die Resultate zeigen ein überraschendes Bild: *Moving Average (MA3) schneidet im Durchschnitt minimal besser ab als Random Forest* (46.0 vs. 45.8 Punkte pro Gameweek). Der Unterschied ist statistisch nicht signifikant und liegt innerhalb der Standardabweichung. 
 
-Interessant ist, dass MA3 sehr nahe an RF liegt. Das zeigt: *Einfache Heuristiken sind überraschend effektiv.* Moving Average nutzt die jüngste Form eines Spielers – genau das macht auch Random Forest (form_3 ist das wichtigste Feature mit 34%). Der Mehrwert von RF liegt vor allem darin, *zusätzliche Informationen* zu integrieren (Gegner-Stärke, Team-Performance), was MA3 nicht kann.
+Interessant ist die saisonale Variation: RF gewinnt in den neueren Saisons (2022/23, 2023/24), während MA3 in den älteren überlegen war (2020/21, 2021/22). Das deutet darauf hin, dass *beide Methoden ihre Stärken und Schwächen haben*:
 
-POS mit nur 10.5 Punkten zeigt, dass reine Positions-Durchschnitte nutzlos sind. Die Varianz innerhalb einer Position ist zu gross (Salah vs. ein Mittelfeld-Spieler aus einem Abstiegskandidat).
+- **MA3 ist robust und simpel**: Keine Overfitting-Gefahr, nutzt direkt die aktuelle Form
+- **RF kann zusätzliche Signale nutzen**: Gegnerstärke, Team-Performance, positionsspezifische Muster
+
+Der kleine Vorsprung von MA3 widerlegt die Hypothese, dass ML deutlich überlegen ist. Stattdessen zeigt es: *Einfache Heuristiken sind überraschend effektiv*, besonders wenn sie das wichtigste Feature (aktuelle Form) bereits nutzen.
+
+POS mit nur 13.0 Punkten zeigt, dass reine Positions-Durchschnitte nutzlos sind. Die Varianz innerhalb einer Position ist zu gross (Salah vs. ein Mittelfeld-Spieler aus einem Abstiegskandidat).
 
 === Feature Importance: Was zählt wirklich?
 
 Die Feature-Importance-Analyse bestätigt meine Hypothese aus der Recherche:
 
-1. *Form (34%):* Aktuelle Leistung ist der stärkste Prädiktor. "Form is temporary, class is permanent" stimmt nicht für FPL.
+1. *Form:* Aktuelle Leistung ist der stärkste Prädiktor. "Form is temporary, class is permanent" stimmt nicht für FPL.
 
-2. *Position (18%):* Stürmer und Mittelfeldspieler machen mehr Punkte als Verteidiger – logisch.
+2. *Position:* Stürmer und Mittelfeldspieler machen mehr Punkte als Verteidiger – logisch.
 
-3. *Gegner-Schwäche (14%):* Gegen schwache Teams gibt es mehr Punkte. Das validiert meinen Ansatz mit `opp_def_weakness`.
+3. *Gegner-Schwäche:* Gegen schwache Teams gibt es mehr Punkte. Das validiert meinen Ansatz mit `opp_def_weakness`.
 
-Überraschend: Marktwert (4%) ist fast irrelevant. Das widerspricht der FPL-Community, wo teure Spieler oft als "sicherer" gelten. Aber teuer ≠ vorhersagbar. Ein 12M-Spieler kann genauso Schwankungen haben wie ein 5M-Spieler.
+Überraschend: Marktwert ist fast irrelevant. Das widerspricht der FPL-Community, wo teure Spieler oft als "sicherer" gelten. Aber teuer ≠ vorhersagbar. Ein 12M-Spieler kann genauso Schwankungen haben wie ein 5M-Spieler.
 
 === Warum nur 34% Effizienz?
 
@@ -2389,7 +2401,7 @@ Die Evaluation zeigt klare Resultate:
 
 *Spieler-Vorhersagen:* MAE von 2.1 Punkten (RF) vs. 2.3 (MA3) vs. 3.8 (POS). Auch hier liegt RF vorne, aber nicht dramatisch.
 
-*Feature Importance:* Form (34%), Position (18%) und Gegner-Schwäche (14%) sind die wichtigsten Prädiktoren. Marktwert spielt kaum eine Rolle (4%).
+*Feature Importance:* Form, Position und Gegner-Schwäche sind die wichtigsten Prädiktoren. Marktwert spielt kaum eine Rolle.
 
 *Effizienz:* RF erreicht 34.5% des theoretischen Optimums. Das klingt niedrig, ist aber realistisch bei der hohen Varianz in Fussball.
 
