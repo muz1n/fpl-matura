@@ -2,10 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { readFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 
-// Basis-Ausgabeordner (ein Verzeichnis über dem Web Root)
-const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
-// Neuer Unterordner für Backtests gemäss aktueller Pipeline-Struktur
-const BACKTEST_DIR = join(OUT_DIR, 'backtests')
+// Basis-Ausgabeordner im public/data Verzeichnis
+const BACKTEST_DIR = join(process.cwd(), 'public', 'data', 'backtests')
 
 interface BacktestDetailRow {
     method: string
@@ -46,12 +44,7 @@ interface BacktestResponse {
  */
 async function getAvailableRanges(season: string): Promise<string[]> {
     try {
-        let files: string[] = []
-        try {
-            files = await readdir(BACKTEST_DIR)
-        } catch {
-            files = await readdir(OUT_DIR) // Fallback: alte Struktur ohne Unterordner
-        }
+        const files = await readdir(BACKTEST_DIR)
         const ranges = new Set<string>()
         const pattern = new RegExp(`^team_backtest_${season}_gw(\d+)-(\d+)\.csv$`)
         for (const file of files) {
