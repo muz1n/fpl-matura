@@ -501,7 +501,7 @@ So wird gerechnet:
 2. Diese Verbesserungen für jedes Feature über alle Bäume summieren
 3. Normalisieren, sodass die Wichtigkeiten auf 1 summieren
 
-Features mit hoher Importance sind wichtig für die Vorhersage. In diesem Projekt war „Form (letzte 3 Spiele)" mit Abstand am wichtigsten.
+Features mit hoher Importance sind wichtig für die Vorhersage. Die Analyse über 14'980 Spieler-Gameweeks der Saison 2020-21 (GW2-28) zeigte: Die Spielzeit der letzten 3 Spiele (`minutes_ma3`) und der ICT-Index (`ict_index_ma3`) sind die wichtigsten Prädiktoren.
 
 #figure(
   block(
@@ -510,16 +510,14 @@ Features mit hoher Importance sind wichtig für die Vorhersage. In diesem Projek
     {
       set text(size: 9pt)
       
-      // Daten
+      // Daten aus out/analysis/feature_importance.json
       let data = (
-        ("Form (3 Spiele)", 34),
-        ("Position", 18),
-        ("Gegnerschwäche Def.", 14),
-        ("Minuten (3 Spiele)", 11),
-        ("Team Clean Sheets (5)", 9),
-        ("Form (5 Spiele)", 6),
-        ("Marktwert", 4),
-        ("Heimspiel", 2),
+        ("Minuten (letzte 3 GW)", 33),
+        ("ICT-Index (letzte 3 GW)", 23),
+        ("Einfluss (letzte 3 GW)", 16),
+        ("Kreativität (letzte 3 GW)", 11),
+        ("Punkte (letzte 3 GW)", 10),
+        ("Angriffsgefahr (letzte 3 GW)", 7),
       )
       
       let max-val = 40  // Maximum für Skalierung
@@ -597,7 +595,7 @@ Features mit hoher Importance sind wichtig für die Vorhersage. In diesem Projek
       )
     }
   ),
-  caption: [Feature Importance im Random Forest. Die wichtigsten Prädiktoren für FPL-Punkte sind die Form der letzten 3 Spiele, die Spielerposition und die defensive Schwäche des Gegners.]
+  caption: [Feature Importance im Random Forest. Die wichtigsten Prädiktoren für FPL-Punkte sind die Spielzeit der letzten 3 Spiele (`minutes_ma3`: 33%), der ICT-Index (`ict_index_ma3`: 23%) und der Einfluss (`influence_ma3`: 16%). Berechnet über 14'980 Spieler-Gameweeks der Saison 2020-21.]
 ) <fig-feature-importance>
 
 === Hyperparameter
@@ -1025,11 +1023,11 @@ Form (letzte 5 Gameweeks): wie form_3, aber stabiler, weil mehr Spiele.
 
 Saisonform: Durchschnitt über die ganze Saison bisher. Zeigt die generelle Qualität des Spielers.
 
-Spielminuten (letzte 3 GW): wie viele Minuten hat der Spieler zuletzt gespielt? Wer regelmässig 90 Minuten spielt, ist sicher Stammspieler und wird mehr Punkte sammeln.
+Spielminuten (letzte 3 GW): wie viele Minuten hat der Spieler zuletzt gespielt? Wer regelmässig 90 Minuten spielt, ist sicher Stammspieler und wird mehr Punkte sammeln. Dieses Feature erwies sich als das wichtigste (33% Feature Importance).
 
 Position: kategorisch (GK, DEF, MID, FWD). Random Forest kann mit kategorischen Variablen umgehen, man braucht kein One-Hot-Encoding.
 
-Marktwert (Value): Preis in FPL. Teure Spieler sind meistens besser – aber nicht immer. Interessanterweise war dieses Feature nicht so wichtig, wie ich angenommen hätte (nur 4% Feature Importance).
+ICT-Index (letzte 3 GW): FPL's eigene Metrik für Einfluss, Kreativität und Angriffsgefahr. Dieses Feature war das zweitwichtigste (23% Feature Importance).
 
 === Gegner-Features
 
@@ -1167,7 +1165,7 @@ feature_importance_df = pd.DataFrame({
 print(feature_importance_df.head(5))
 ```
 
-Ergebnis:
+Ergebnis (basierend auf 14'980 Spieler-GW der Saison 2020-21, GW2-28):
 
 #figure(
   block(
@@ -1183,11 +1181,11 @@ Ergebnis:
         stroke: 0.5pt + rgb(180, 180, 180),
         
         [*Feature*], [*Importance*],
-        [form_3], text(fill: rgb(80, 130, 180), weight: "bold")[0.34],
-        [position], text(fill: rgb(80, 130, 180), weight: "bold")[0.18],
-        [opp_def_weakness], text(fill: rgb(80, 130, 180), weight: "bold")[0.14],
-        [minutes_3], [0.11],
-        [team_clean_sheets_5], [0.09],
+        [minutes_ma3], text(fill: rgb(80, 130, 180), weight: "bold")[0.33],
+        [ict_index_ma3], text(fill: rgb(80, 130, 180), weight: "bold")[0.23],
+        [influence_ma3], text(fill: rgb(80, 130, 180), weight: "bold")[0.16],
+        [creativity_ma3], [0.11],
+        [points_ma3], [0.10],
       )
       
       v(0.8em)
@@ -1197,10 +1195,10 @@ Ergebnis:
       ]
     }
   ),
-  caption: [Feature Importance nach Training des Random Forest Modells]
+  caption: [Feature Importance nach Training des Random Forest Modells. Die drei wichtigsten Features (Spielzeit, ICT-Index, Einfluss der letzten 3 GW) tragen zusammen 72% zur Vorhersagequalität bei.]
 ) <tbl-feature-importance>
 
-Die aktuelle Form (Durchschnitt der letzten 3-5 Spiele) war eindeutig am wichtigsten. Das überrascht nicht: Wer gerade gut spielt, spielt auch nächste Woche gut. Interessant ist, dass der Marktwert nur eine kleine Rolle spielte – teure Spieler sind also nicht automatisch besser in der Vorhersage.
+Die Spielzeit der letzten 3 Gameweeks war mit 33% am wichtigsten – Spieler die regelmässig 90 Minuten spielen, sind Stammspieler und daher wertvoller. Der ICT-Index (23%) und Einfluss (16%) erfassen die aktuelle Form. Zusammen machen diese drei Features bereits 72% der Vorhersagequalität aus.
 
 === Baseline-Methoden
 
