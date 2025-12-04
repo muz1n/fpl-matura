@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import Head from 'next/head'
 import { motion } from 'framer-motion'
-import { Select } from '../src/components/Select.tsx'
-import { TeamBacktestChart } from '../src/components/TeamBacktestChart.tsx'
-import { getUsableSeasons } from '../lib/seasonQuality.ts'
+import { Select } from '../src/components/Select'
+import { TeamBacktestChart } from '../src/components/TeamBacktestChart'
+import { getUsableSeasons } from '../lib/seasonQuality'
 import { BarChart3, Download, Activity, ChevronDown, Info } from 'lucide-react'
 
 interface BacktestDetailRow {
