@@ -1540,7 +1540,39 @@ Alle Endpoints verwenden Server-Side Rendering, d.h. die Daten werden auf dem Se
 
 === Deployment und Performance
 
-Die App funktioniert bei Vercel – du erreichst sie direkt über eine ganz normale Website-Adresse. Sobald was nach main kommt, startet automatisch ein neuer Build-Lauf, niemand muss zuschalten. Das Ganze nutzt keine zentrale Hardware, sondern lokale Edge-Funktionen; dadurch laufen Anfragen flotter ab, da die Prozesse näher beim Nutzer stattfinden.
+Die Web-Applikation ist öffentlich zugänglich unter:
+
+#align(center)[
+  #text(size: 11pt)[
+    #link("https://fpl-matura-h1rhqmdgc-timurs-projects-422c7dcc.vercel.app/")[fpl-matura-h1rhqmdgc-timurs-projects-422c7dcc.vercel.app]
+  ]
+]
+
+#v(1em)
+
+Das Deployment erfolgt über Vercel @vercel-docs, eine Cloud-Plattform für moderne Web-Anwendungen. Vercel bietet mehrere Vorteile:
+
+*Automatisches Deployment:* Bei jedem Push auf den `main` Branch wird automatisch ein neuer Build gestartet @vercel-deployment. Innerhalb von 2-3 Minuten ist die neue Version live. Das ermöglicht iterative Entwicklung mit sofortiger Validierung.
+
+*Serverless Functions:* API-Routes werden als serverless Functions deployed, die nur bei Bedarf ausgeführt werden. Das spart Ressourcen und Kosten (Free Tier: 100 GB Bandwidth, 6000 Build-Minuten/Monat).
+
+*Edge Network:* Die Applikation wird auf Vercels globalem CDN deployed. Anfragen werden vom geografisch nächsten Server bearbeitet, was die Latenz minimiert.
+
+*Zero Configuration:* Next.js wird automatisch erkannt und korrekt konfiguriert. Kein manuelles Setup von Build-Scripts oder Environment Variables nötig.
+
+*Preview Deployments:* Jeder Pull Request erhält eine eigene Preview-URL. Das erleichtert Code-Reviews und das Testen von Features vor dem Merge.
+
+Der Deployment-Prozess:
+
+Der Deployment-Prozess:
+
+1. *Code Push:* Nach lokaler Entwicklung und Testing wird der Code via Git auf GitHub gepusht
+2. *Trigger:* Vercel erkennt den Push automatisch (GitHub Integration)
+3. *Build:* Next.js Build wird ausgeführt (`npm run build`), TypeScript wird kompiliert, Static Pages werden generiert
+4. *Deploy:* Build-Artefakte werden auf das CDN hochgeladen, API-Routes werden als Functions deployed
+5. *Live:* Neue Version ist innerhalb von 2-3 Minuten weltweit verfügbar
+
+Ein technisches Problem stellte die Grösse der JSON-Daten dar: Eine gesamte Saison mit allen Spielern und Gameweeks kann über 10 MB gross werden, was Vercels Limit für serverless Functions übersteigt. Die Lösung war, die Daten in `public/data/` zu platzieren und als statische Assets zu servieren. Die API-Routes lesen dann direkt aus diesen Files, ohne sie in Memory zu laden.
 
 Performance-Optimierungen:
 
@@ -2413,7 +2445,9 @@ Diese Maturaarbeit war mein erstes grösseres Data-Science-Projekt – und es ha
 
 Die wichtigste Lektion: *Einfach anfangen.* Ich habe Wochen damit verbracht, das "perfekte" Modell zu planen. Aber erst als ich angefangen habe zu coden, habe ich wirklich gelernt. Fehler sind Teil des Prozesses – jeder Bug war eine Lernchance.
 
-Rückblickend bin ich stolz auf das End-to-End-System: Von Rohdaten über Feature Engineering und Training bis hin zu Backtesting und Web-Interface. Das ist mehr als nur ein Modell – es ist eine funktionierende Pipeline.
+Rückblickend bin ich stolz auf das End-to-End-System: Von Rohdaten über Feature Engineering und Training bis hin zu Backtesting und Web-Interface. Das ist mehr als nur ein Modell – es ist eine funktionierende Pipeline, die live im Internet verfügbar ist.
+
+Das Live-Deployment auf Vercel war ein spannender Abschluss: Plötzlich war die Arbeit nicht mehr nur auf meinem Laptop, sondern weltweit abrufbar. Das hat die Arbeit "echt" gemacht – nicht nur ein Schulprojekt, sondern ein funktionierendes Web-Produkt. Die Herausforderungen (Build-Errors, Datengrössen, API-Routes) haben mich viel über Production-Deployment gelehrt – Dinge, die man in Tutorials nicht lernt.
 
 Würde ich etwas anders machen? Ja: Früher mit der schriftlichen Arbeit beginnen, mehr Tests schreiben, kleinere Iterationen. Aber das sind Details. Im Grossen und Ganzen bin ich zufrieden.
 
@@ -2492,6 +2526,24 @@ Das Repository enthält:
 - Jupyter Notebooks für explorative Analysen
 
 Alle Experimente sind mit den bereitgestellten Daten und Scripts vollständig reproduzierbar.
+
+== Live Web-App
+
+Die Web-Applikation ist live deployed und unter folgender URL erreichbar:
+
+#align(center)[
+  #text(size: 11pt)[
+    #link("https://fpl-matura-h1rhqmdgc-timurs-projects-422c7dcc.vercel.app/")[fpl-matura-h1rhqmdgc-timurs-projects-422c7dcc.vercel.app]
+  ]
+]
+
+Die Applikation bietet:
+- Interaktive Prognosen für alle Saisons, Gameweeks und Methoden
+- Backtest-Visualisierungen mit Lineup-Tabellen und Performance-Charts
+- Multi-Season-Vergleich über 8 Saisons hinweg
+- Feature-Importance-Analysen der wichtigsten Prädiktoren
+
+Deployed auf Vercel mit automatischer CI/CD-Pipeline (GitHub Integration).
 
 == KI-Deklaration
 
