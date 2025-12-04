@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-const OUT_ROOT = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
+const FEATURE_IMPORTANCE_DIR = join(process.cwd(), 'public', 'data', 'feature-importance')
 
 interface RawFeatureRow {
     feature: string
@@ -39,10 +39,8 @@ async function loadFileForSeason(
     season: string
 ): Promise<{ path: string; text: string }> {
     const candidates = [
-        // Variante 1: out/rf_2023-24.json
-        join(OUT_ROOT, `rf_${season}.json`),
-        // Variante 2: out/feature_importance/rf_2023-24.json
-        join(OUT_ROOT, 'feature_importance', `rf_${season}.json`)
+        // Variante 1: public/data/feature-importance/rf_2023-24.json
+        join(FEATURE_IMPORTANCE_DIR, `rf_${season}.json`)
     ]
 
     let lastError: any = null

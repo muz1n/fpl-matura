@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import { PredictionsPayloadSchema } from '@/src/types/fpl.schema'
 
 // Basis-Ausgabepfad (analog zu bestehenden Endpoints)
-const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
+const DATA_DIR = join(process.cwd(), 'public', 'data')
 
 // Erwartete Dateinamen-Muster (Fallback-Reihenfolge)
 // Beispiel: predictions_gw12.json, predictions_gw12_rf.json, predictions_gw12_ma3.json, predictions_gw12_pos.json
@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         for (const suffix of METHOD_SUFFIXES) {
             const filename = `predictions_gw${gwNum}${suffix}.json`
-            const filePath = join(OUT_DIR, filename)
+            const filePath = join(DATA_DIR, filename)
             tried.push(filename)
             try {
                 const raw = await readFile(filePath, 'utf8')

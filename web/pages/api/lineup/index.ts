@@ -11,8 +11,7 @@ import { join } from 'node:path'
  * - method: Prognose-Methode (rf, ma3, pos, rf_rank, rf_pos, rf_relaxed, etc.)
  */
 
-const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
-const LINEUPS_DIR = join(OUT_DIR, 'lineups')
+const LINEUPS_DIR = join(process.cwd(), 'public', 'data', 'lineups')
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'GET') {

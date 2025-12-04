@@ -10,8 +10,7 @@ import { join } from 'node:path'
  * - Verfügbare Methoden pro Gameweek (optional)
  */
 
-const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
-const PREDICTIONS_DIR = join(OUT_DIR, 'predictions')
+const PREDICTIONS_DIR = join(process.cwd(), 'public', 'data', 'predictions')
 
 // Regex-Muster: predictions_2023-24_gw38_rf.json
 const PREDICTION_FILE_PATTERN = /^predictions_([^_]+)_gw(\d+)_([^.]+)\.json$/

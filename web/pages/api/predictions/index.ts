@@ -12,8 +12,7 @@ import { PredictionsPayloadSchema } from '@/src/types/fpl.schema'
  * - method: Prognose-Methode (rf, ma3, pos, rf_rank, rf_pos, rf_relaxed, etc.)
  */
 
-const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
-const PREDICTIONS_DIR = join(OUT_DIR, 'predictions')
+const PREDICTIONS_DIR = join(process.cwd(), 'public', 'data', 'predictions')
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'GET') {

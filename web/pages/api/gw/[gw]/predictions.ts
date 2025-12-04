@@ -4,10 +4,8 @@ import { join } from 'node:path'
 import { PredictionsPayloadSchema } from '@/src/types/fpl.schema'
 import { z } from 'zod'
 
-// Basis-Ausgabeordner (ein Verzeichnis über dem Web Root)
-const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
-// Neuer Unterordner für Prognosedateien gemäss Pipeline
-const PRED_DIR = join(OUT_DIR, 'predictions')
+// Basis-Ausgabeordner im public/data Verzeichnis
+const PRED_DIR = join(process.cwd(), 'public', 'data', 'predictions')
 
 // Unterstützte Methoden
 type PredictionMethod = 'rf' | 'ma3' | 'pos' | 'rf_rank' | 'rf_pos'

@@ -2,10 +2,8 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 
-// Basis-Ausgabeordner (root der generierten Artefakte ausserhalb des Web-Verzeichnisses)
-const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
-// Unterordner für Prognosen gemäss aktueller Pipeline-Struktur
-const PRED_DIR = join(OUT_DIR, 'predictions')
+// Basis-Ausgabeordner im public/data Verzeichnis
+const PRED_DIR = join(process.cwd(), 'public', 'data', 'predictions')
 
 /**
  * Response-Typ für verfügbare Gameweeks
@@ -30,16 +28,15 @@ interface AvailableGWsResponse {
  */
 /**
  * Liest den Prognose-Unterordner und extrahiert verfügbare Gameweeks + Methoden.
- * Berücksichtigt neue Dateistruktur: out/predictions/predictions_{season}_gw{N}_{method}.json
+ * Berücksichtigt neue Dateistruktur: predictions/predictions_{season}_gw{N}_{method}.json
  */
 async function getAvailableGWs(): Promise<{ available: number[]; methodsByGw: Record<number, string[]> }> {
     try {
-        // Versuche zuerst den neuen Unterordner, falle bei Fehler auf das alte Root zurück
         let files: string[] = []
         try {
             files = await readdir(PRED_DIR)
         } catch {
-            files = await readdir(OUT_DIR)
+            return { available: [], methodsByGw: {} }
         }
         const gwSet = new Set<number>()
         const methodsByGw: Record<number, string[]> = {}

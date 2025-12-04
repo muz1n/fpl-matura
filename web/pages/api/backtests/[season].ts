@@ -2,8 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 
-const OUT_ROOT = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
-const BACKTEST_DIR = join(OUT_ROOT, 'backtests')
+const BACKTEST_DIR = join(process.cwd(), 'public', 'data', 'backtests')
 
 interface BacktestsBySeasonResponse {
     season: string

@@ -2,8 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { join } from 'path';
 import { createReadStream, existsSync, statSync } from 'fs';
 
-const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out');
-const BACKTEST_DIR = join(OUT_DIR, 'backtests');
+const DATA_DIR = join(process.cwd(), 'public', 'data');
+const BACKTEST_DIR = join(DATA_DIR, 'backtests');
 
 const MIME_MAP: Record<string, string> = {
     '.csv': 'text/csv',
@@ -26,7 +26,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     let filePath = join(BACKTEST_DIR, name);
     if (!existsSync(filePath) || !statSync(filePath).isFile()) {
         // Fallback: Root-Verzeichnis
-        filePath = join(OUT_DIR, name);
+        filePath = join(DATA_DIR, name);
         if (!existsSync(filePath) || !statSync(filePath).isFile()) {
             return res.status(404).json({ error: 'file not found' });
         }
