@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 
-const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
+const BACKTEST_DIR = join(process.cwd(), 'public', 'data', 'backtests')
 
 interface BacktestArtifact {
     filename: string
@@ -31,7 +31,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
     }
 
     try {
-        const files = await readdir(OUT_DIR)
+        const files = await readdir(BACKTEST_DIR)
         const bySeason: Record<string, BacktestArtifact[]> = {}
 
         for (const file of files) {

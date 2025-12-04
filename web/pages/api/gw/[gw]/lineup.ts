@@ -5,13 +5,14 @@ import { join } from 'node:path'
 import type { LineupPayload, PredictionsPayload, PredictionPlayer, FormationStr, PredictionMethod } from '@/types/fpl'
 // Falls Zod-Validierung benötigt wird, bitte separat importieren
 
-const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
+const LINEUPS_DIR = join(process.cwd(), 'public', 'data', 'lineups')
+const PRED_DIR = join(process.cwd(), 'public', 'data', 'predictions')
 const FORMATIONS: FormationStr[] = ["3-4-3", "3-5-2", "4-4-2", "4-3-3", "4-5-1", "5-4-1", "5-3-2"]
 
 // Helper: scan predictions files for available GWs and methods
 async function getAvailableGWsAndMethods(): Promise<{ available: number[]; methodsByGw: Record<number, string[]> }> {
     try {
-        const files = await readdir(OUT_DIR)
+        const files = await readdir(PRED_DIR)
         const gwSet = new Set<number>()
         const methodsByGw: Record<number, string[]> = {}
         for (const file of files) {
@@ -67,20 +68,20 @@ export default async function handler(
 
         if (seasonStr) {
             candidatePaths.push({
-                path: join(OUT_DIR, `lineup_${seasonStr}_gw${gwNum}_${method}.json`),
+                path: join(LINEUPS_DIR, `lineup_${seasonStr}_gw${gwNum}_${method}.json`),
                 method,
                 description: `season-specific (${seasonStr})`
             })
         }
 
         candidatePaths.push({
-            path: join(OUT_DIR, `lineup_gw${gwNum}_${method}.json`),
+            path: join(LINEUPS_DIR, `lineup_gw${gwNum}_${method}.json`),
             method,
             description: 'method-specific'
         })
 
         candidatePaths.push({
-            path: join(OUT_DIR, `lineup_gw${gwNum}.json`),
+            path: join(LINEUPS_DIR, `lineup_gw${gwNum}.json`),
             method: 'legacy',
             description: 'legacy'
         })
@@ -112,10 +113,10 @@ export default async function handler(
         const predCandidates: string[] = []
 
         if (seasonStr) {
-            predCandidates.push(join(OUT_DIR, `predictions_${seasonStr}_gw${gwNum}_${method}.json`))
+            predCandidates.push(join(PRED_DIR, `predictions_${seasonStr}_gw${gwNum}_${method}.json`))
         }
-        predCandidates.push(join(OUT_DIR, `predictions_gw${gwNum}_${method}.json`))
-        predCandidates.push(join(OUT_DIR, `predictions_gw${gwNum}.json`))
+        predCandidates.push(join(PRED_DIR, `predictions_gw${gwNum}_${method}.json`))
+        predCandidates.push(join(PRED_DIR, `predictions_gw${gwNum}.json`))
 
         let predRaw: string | null = null
 

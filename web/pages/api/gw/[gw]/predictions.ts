@@ -125,24 +125,7 @@ export default async function handler(
             method: 'legacy',
             description: 'legacy (subdir)'
         })
-        // Fallback: alte Root-Struktur falls Unterordner fehlt
-        if (seasonStr) {
-            candidatePaths.push({
-                path: join(OUT_DIR, `predictions_${seasonStr}_gw${gwNum}_${method}.json`),
-                method,
-                description: `season-specific (fallback root)`
-            })
-        }
-        candidatePaths.push({
-            path: join(OUT_DIR, `predictions_gw${gwNum}_${method}.json`),
-            method,
-            description: 'method-specific (fallback root)'
-        })
-        candidatePaths.push({
-            path: join(OUT_DIR, `predictions_gw${gwNum}.json`),
-            method: 'legacy',
-            description: 'legacy (fallback root)'
-        })
+        // Diese Fallback-Pfade sind nicht mehr nötig, da alle Daten in PRED_DIR liegen
 
         let raw: string | null = null
         let usedMethod: string = method

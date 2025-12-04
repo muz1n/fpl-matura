@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { readdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
-const OUT_DIR = process.env.FPL_OUT_DIR || join(process.cwd(), '..', 'out')
+const FEATURE_IMPORTANCE_DIR = join(process.cwd(), 'public', 'data', 'feature-importance')
 
 interface FileEntry {
     season: string
@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
         const { season } = req.query
-        const entries = await readdir(OUT_DIR, { withFileTypes: true })
+        const entries = await readdir(FEATURE_IMPORTANCE_DIR, { withFileTypes: true })
         const fiFiles = entries
             .filter(d => d.isFile() && /^feature_importance_.*_rf(?:_(GK|DEF|MID|FWD))?\.json$/.test(d.name))
             .map(d => d.name)
@@ -39,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             // parts: [season, method, optional position]
             const [seasonPart, methodPart, posPart] = parts
             if (season && typeof season === 'string' && seasonPart !== season) continue
-            const filePath = join(OUT_DIR, name)
+            const filePath = join(FEATURE_IMPORTANCE_DIR, name)
             files.push({ season: seasonPart, method: methodPart, position: posPart || null, path: filePath })
             if (!positionsPerSeason[seasonPart]) positionsPerSeason[seasonPart] = new Set()
             if (posPart) positionsPerSeason[seasonPart].add(posPart)
