@@ -70,9 +70,9 @@ export default function InfoPage() {
                                 <div className="bg-slate-900/60 border border-pink-500/20 rounded-xl p-4 space-y-2">
                                     <p className="text-sm text-slate-300">
                                         <strong className="text-pink-400">Hypothese:</strong> Ein regressives ML-Modell
-                                        (z. B. Random Forest) erzielt eine mittlere Abweichung (MAE) von &lt;2 Punkten
-                                        pro Spieler und erhöht die Gesamtpunktzahl des Teams im Vergleich zur
-                                        Durchschnittsstrategie.
+                                        (z. B. Random Forest) erzielt eine mittlere Abweichung (MAE) von ~2 Punkten
+                                        pro Spieler und erhöht die Gesamtpunktzahl des Teams im Vergleich zu
+                                        einfachen Baseline-Methoden (Moving Average, Positionsmittel).
                                     </p>
                                 </div>
                             </div>
@@ -291,8 +291,8 @@ export default function InfoPage() {
                                     <div className="bg-slate-900/60 border border-amber-500/20 rounded-xl p-3">
                                         <p className="font-medium text-amber-300 mb-1">Training pro Saison</p>
                                         <p className="text-xs">
-                                            Für jede Saison wird ein eigenes Modell trainiert. Es gibt keine explizite
-                                            Cross-Season-Validierung.
+                                            Walk-Forward Cross-Season Testing: Training auf historischen Daten (2016-2020),
+                                            Test auf neueren Saisons (2020-2024). Pro Saison wird ein separates Modell trainiert.
                                         </p>
                                     </div>
                                     <div className="bg-slate-900/60 border border-amber-500/20 rounded-xl p-3">
