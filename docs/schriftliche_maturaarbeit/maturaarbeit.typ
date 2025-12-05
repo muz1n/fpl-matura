@@ -1505,7 +1505,7 @@ Die Web-Applikation ist öffentlich zugänglich unter:
 
 #align(center)[
   #text(size: 11pt)[
-    #link("https://fpl-matura-h1rhqmdgc-timurs-projects-422c7dcc.vercel.app/")[fpl-matura-h1rhqmdgc-timurs-projects-422c7dcc.vercel.app]
+    #link("https://fpl-matura.vercel.app/")[fpl-matura.vercel.app]
   ]
 ]
 
@@ -2536,7 +2536,7 @@ Die Web-Applikation ist live deployed und unter folgender URL erreichbar:
 
 #align(center)[
   #text(size: 11pt)[
-    #link("https://fpl-matura-h1rhqmdgc-timurs-projects-422c7dcc.vercel.app/")[fpl-matura-h1rhqmdgc-timurs-projects-422c7dcc.vercel.app]
+    #link("https://fpl-matura.vercel.app/")[fpl-matura.vercel.app]
   ]
 ]
 
