@@ -137,7 +137,7 @@ Kapitel 5 geht dann kritisch mit den Ergebnissen um: Besonders relevant ist die 
 
 Kapitel 6 schliesst mit einer Zusammenfassung der Ergebnisse, beantwortet die Forschungsfrage und wagt einen Ausblick auf mögliche Weiterentwicklungen, etwa ein Live-Deployment mit der offiziellen FPL-API.
 
-#pagebreak()
+
 
 = Theoretische Grundlagen
 
@@ -1529,11 +1529,6 @@ Performance-Optimierungen:
 
 
 
-
-
-
-#pagebreak()
-
 = Ergebnisse
 
 In diesem Kapitel werden die Resultate des Backtestings präsentiert. Alle Methoden (Random Forest, MA3, POS) wurden auf vier ungesehenen Testsaisons (2020-21 bis 2023-24) evaluiert. Dabei wurde für jede Gameweek ein Team aus 15 Spielern ausgewählt, daraus die beste Aufstellung (11 Spieler) sowie Captain und Vice-Captain bestimmt.
@@ -1768,8 +1763,6 @@ Warum ist das problematisch? Bei FPL kommt es darauf an, die Top-Performer zu id
 
 *Wichtig:* Trotz der schwachen Rangfolge-Korrelation funktioniert die Team-Auswahl dennoch: Das Modell identifiziert zuverlässig Spieler mit hohem erwarteten Wert (≥5 Punkte), auch wenn es die exakte Reihenfolge innerhalb dieser Gruppe nicht vorhersagen kann. Die Team-Selektion basiert auf einem Schwellenwert-Ansatz, nicht auf perfektem Ranking.
 
-
-#pagebreak()
 
 === MAE/RMSE nach Saison
 
@@ -2500,6 +2493,7 @@ Bei der Erstellung dieser Arbeit wurden folgende KI-Tools verwendet:
 - *Claude 3.5 Sonnet* für Journal-Überarbeitung und Textstrukturierung
 
 Alle inhaltlichen Entscheidungen, Datenanalysen und Interpretationen sind meine eigenen. Alle Tabellen und Diagramme wurden selbst in Typst erstellt.
+
 
 #import "@preview/muchpdf:0.1.2": muchpdf
 
