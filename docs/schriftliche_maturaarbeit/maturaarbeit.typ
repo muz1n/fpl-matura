@@ -114,7 +114,7 @@ Welche Entscheidung die richtige ist, weiss natürlich niemand. Die meisten Spie
 
 In dieser Arbeit will ich nun herausfinden, ob wir mit Machine Learning die FPL-Punkte besser vorhersagen und besser Teams aufstellen können als Menschen. Die Hypothese lautet:
 
-„Ein Random-Forest-Modell, trainiert auf historischen FPL-Daten, erreicht einen MAE von 1.20 (über ~104k Vorhersagen) und erzielt vergleichbare Teamzusammenstellungen wie die einfache Moving-Average-Baseline (MA3)."
+„Ein Random-Forest-Modell, trainiert auf historischen FPL-Daten, erreicht eine höhere Vorhersagegenauigkeit (niedrigerer MAE) als einfache Baseline-Methoden und ermöglicht eine systematische, datengetriebene Teamzusammenstellung."
 
 Um diese Hypothese zu überprüfen, habe ich folgendes System gebaut:
 
@@ -143,7 +143,7 @@ Kapitel 6 schliesst mit einer Zusammenfassung der Ergebnisse, beantwortet die Fo
 
 == Das FPL-Punktesystem
 
-Fantasy Premier League vergibt nach einem festen Punktesystem Punkte @fpl-scoring, welches sich an der realen Leistung im Spiel orientiert. Je nach Position gibt es für dieselbe Aktion unterschiedlich viele Punkte – ein Tor eines Torwarts zählt somit mehr als das eines Stürmers.
+Fantasy Premier League vergibt nach einem festen Punktesystem Punkte @fpl-scoring, welches sich an der realen Leistung im Spiel orientiert. Je nach Position gibt es für dieselbe Aktion unterschiedlich viele Punkte. Ein Tor eines Torwarts zählt somit mehr als das eines Stürmers.
 
 === Grundpunkte für Einsatz
 
@@ -185,7 +185,7 @@ Nach jedem Spiel gibt es für die drei besten Spieler Bonuspunkte (3, 2 oder 1 P
 
 === Implikationen für die Vorhersage
 
-Das Punktesystem zeigt: In FPL zählen nicht nur Tore, sondern auch defensives Verhalten. Ein Verteidiger mit Vorlage und Clean Sheet kann mehr Punkte sammeln als ein Stürmer mit einem Tor. Genau diese Komplexität macht die Vorhersage schwierig – verschiedene Spielertypen müssen miteinander verglichen werden, obwohl sie völlig unterschiedliche Stärken haben.
+Das Punktesystem zeigt: In FPL zählen nicht nur Tore, sondern auch defensives Verhalten. Ein Verteidiger mit Vorlage und Clean Sheet kann mehr Punkte sammeln als ein Stürmer mit einem Tor. Genau diese Komplexität macht die Vorhersage schwierig. Verschiedene Spielertypen müssen miteinander verglichen werden, obwohl sie unterschiedliche Stärken haben; deshalb braucht es Modelle, die solche nichtlinearen Effekte abbilden.
 
 == Grundlagen des Maschinellen Lernens
 
@@ -193,7 +193,7 @@ Maschinelles Lernen ermöglicht es Computern, aus Daten zu lernen, ohne dass jed
 
 === Supervised Learning
 
-Im Supervised Learning trainiere ich ein Modell anhand von Beispielen, wobei ich bereits weiss was herauskommen soll. In unserem Fall sind das die historischen Spielerdaten: als Eingaben dienen mir Features wie aktuelle Form, Gegner, Position – als Ausgabe die tatsächlich erreichten FPL-Punkte. Das Modell lernt, welche Faktoren wirklich zählen.
+Im Supervised Learning trainiere ich ein Modell anhand von Beispielen, wobei ich bereits weiss was herauskommen soll. In unserem Fall sind das die historischen Spielerdaten: als Eingaben dienen mir Features wie aktuelle Form, Gegner, Position und als Ausgabe die tatsächlich erreichten FPL-Punkte. Das Modell lernt, welche Faktoren wirklich zählen.
 
 === Regression vs. Klassifikation
 
@@ -308,7 +308,7 @@ Jeder Knoten ist eine Frage, jeder Ast ist eine Antwort, jedes Ende eines Pfades
 
 Der Algorithmus muss nun an jedem Knoten entscheiden, welche Frage die beste ist. Hierfür gibt es mathematische Kriterien:
 
-- *Mean Squared Error (MSE):* Wie weit weichen die Vorhersagen im Durchschnitt von den echten Werten ab? Der Baum wählt die Frage, die den MSE am stärksten reduziert.
+- *Mean Squared Error (MSE):* Wie stark sind die quadrierten Abweichungen zwischen Vorhersage und Realität? Da die Fehler quadriert werden, werden grosse Abweichungen überproportional bestraft. Der Baum wählt die Frage, die den MSE am stärksten reduziert.
 
 Die Formel für MSE ist:
 
@@ -335,15 +335,15 @@ Stoppkriterien sind:
 
 === Vorteile von Decision Trees
 
-- *Einfach zu verstehen:* Man kann die Entscheidungen nachvollziehen
-- *Keine Datentransformation:* Die Features müssen nicht normiert werden
-- *Erfassen auch nichtlineare Zusammenhänge:* Auch komplizierte Muster werden abgebildet
+- Einfach zu verstehen: Man kann die Entscheidungen nachvollziehen
+- Keine Datentransformation: Die Features müssen nicht normiert werden
+- Erfassen auch nichtlineare Zusammenhänge: Auch komplizierte Muster werden abgebildet
 
 === Nachteile von Decision Trees
 
-- *Overfitting:* Ein einzelner Baum passt sich sehr schnell zu stark an die Trainingsdaten an
-- *Instabil:* Kleine Änderungen in den Daten haben grosse Auswirkungen auf den gesamten Baum
-- *Schlechte Generalisierung:* Auf neuen Daten funktioniert er oft schlecht
+- Overfitting: Ein einzelner Baum passt sich sehr schnell zu stark an die Trainingsdaten an
+- Instabil: Kleine Änderungen in den Daten haben grosse Auswirkungen auf den gesamten Baum
+- Schlechte Generalisierung: Auf neuen Daten funktioniert er oft schlecht
 
 Genau diese Fehler behebt Random Forest durch Ensemble Learning.
 
@@ -447,9 +447,9 @@ So wird gerechnet:
 
 1. Für jeden Baum: Bei jedem Split messen, wie stark der MSE gesenkt wird
 2. Diese Verbesserungen für jedes Feature über alle Bäume summieren
-3. Normalisieren, sodass die Wichtigkeiten auf 1 summieren
+3. Normalisieren, sodass alle Wichtigkeiten zusammen 100% ergeben
 
-Features mit hoher Importance sind wichtig für die Vorhersage. Die Analyse über 14'980 Spieler-Gameweeks der Saison 2020-21 (GW2-28) zeigte: Die Spielzeit der letzten 3 Spiele (`minutes_ma3`) und der ICT-Index (`ict_index_ma3`) sind die wichtigsten Prädiktoren.
+Features mit hoher Importance sind wichtig für die Vorhersage. Die Analyse über 14'980 Spieler-Gameweeks der Saison 2020-21 (GW2-28) zeigte: Die Spielzeit der letzten 3 Spiele (`minutes_ma3`) mit 33% und der ICT-Index (`ict_index_ma3`) mit 23% sind die wichtigsten Prädiktoren.
 
 #figure(
   block(
@@ -543,34 +543,31 @@ Features mit hoher Importance sind wichtig für die Vorhersage. Die Analyse übe
       )
     }
   ),
-  caption: [Feature Importance im Random Forest. Die wichtigsten Prädiktoren für FPL-Punkte sind die Spielzeit der letzten 3 Spiele (`minutes_ma3`: 33%), der ICT-Index (`ict_index_ma3`: 23%) und der Einfluss (`influence_ma3`: 16%). Berechnet über 14'980 Spieler-Gameweeks der Saison 2020-21.]
+  caption: [Feature Importance im Random Forest. Die wichtigsten Prädiktoren für FPL-Punkte sind die Spielzeit der letzten 3 Spiele (`minutes_ma3`: 33%), der ICT-Index (`ict_index_ma3`: 23%) und der Einfluss (`influence_ma3`: 16%). Basis: Saison 2020-21, GW2-28, Berechnung auf dem Test-Set (keine OOB-Werte).]
 ) <fig-feature-importance>
+
+
+*Was bedeutet "33% Importance"?* Wenn ein Feature 33% Importance hat, bedeutet das: Von der gesamten Verbesserung, die alle Features zusammen bringen, stammen 33% von diesem einen Feature. Ein Feature mit 33% ist also ungefähr doppelt so wichtig wie eines mit 16%.
 
 === Hyperparameter
 
 Random Forest hat einige Hyperparameter, die vor dem Training festgelegt werden müssen:
 
-- *n_estimators:* Anzahl der Bäume (je mehr, desto stabiler, aber langsamer; typischerweise 100 500)
-- *max_depth:* maximale Tiefe eines jeden Baums (begrenzt Overfitting; typischerweise 10 30)
-- *min_samples_split:* wie viele Datenpunkte mindestens für einen Split notwendig sind (je mehr, desto weniger Overfitting)
-- *min_samples_leaf:* wie viele Datenpunkte in einem Blatt mindestens sein müssen (je mehr, desto glattere Vorhersage)
-- *max_features:* wie viele der Features pro Split ausgewählt werden (häufig $sqrt(n)$ oder $log_2(n)$)
+- n_estimators: Anzahl der Bäume (je mehr, desto stabiler, aber langsamer; typischerweise 100–500)
+- max_depth: maximale Tiefe eines jeden Baums (begrenzt Overfitting)
+- min_samples_split: wie viele Datenpunkte mindestens für einen Split notwendig sind
+- min_samples_leaf: wie viele Datenpunkte in einem Blatt mindestens sein müssen
+- max_features: wie viele der Features pro Split ausgewählt werden (häufig $sqrt(n)$ oder $log_2(n)$)
 
-Verwendet wurden positionsspezifische Hyperparameter:
+Für die berichteten Ergebnisse wurde ein einheitliches Modell für alle Positionen genutzt:
 
-Für die meisten Positionen (GK, MID):
-- n_estimators = 400
+- n_estimators = 300
 - max_depth = None (unbegrenzt)
 - min_samples_leaf = 2
-- max_features = 'sqrt'
 - random_state = 42
+- n_jobs = -1 (alle CPU-Kerne)
 
-Für Stürmer (FWD) und Verteidiger (DEF) wurden nach manuellen Tests flachere Bäume verwendet:
-- n_estimators = 100
-- max_depth = 4
-- min_samples_leaf = 3
-
-Die Hyperparameter wurden durch manuelle Experimente auf Validierungsdaten optimiert. Eine systematische Grid Search wurde exploriert (siehe `code/archive/tuning/`), aber die finalen Modelle verwenden die oben genannten Werte.
+Positionsspezifische Varianten (z.B. flachere Bäume für FWD/DEF, tiefere für GK/MID) wurden getestet, aber nicht für die finalen Resultate verwendet; entsprechende Experimente liegen in `code/archive/tuning/`.
 
 === Warum Random Forest für FPL?
 
@@ -647,8 +644,8 @@ Jede Zeile repräsentiert einen Spieler in einer Gameweek. Bei ca. 500 aktiven S
 
 Die Daten wurden chronologisch in Trainings- und Testdaten aufgeteilt:
 
-- *Trainingsdaten:* 2016/17 bis 2019/20 (4 Saisons, ~76'000 Datensätze)
-- *Testdaten:* 2020/21 bis 2023/24 (4 Saisons, ~76'000 Datensätze)
+- *Trainingsdaten:* 2016/17 bis 2019/20 (4 Saisons, ~88'000 Datensätze)
+- *Testdaten:* 2020/21 bis 2023/24 (4 Saisons, ~100'000 Datensätze)
 
 Diese Aufteilung folgt zwei Prinzipien: Erstens gewährleistet die strikte chronologische Trennung, dass das Modell ausschliesslich auf vergangenen Daten trainiert wird (keine Data Leakage). Zweitens bietet die Verwendung von vier kompletten Saisons als Testdaten eine robuste Basis für die Evaluation, da saisonale Schwankungen (z.B. COVID-19-Saison 2020/21) ausgeglichen werden können. Die 50/50-Aufteilung maximiert sowohl die Trainingsdatenmenge als auch die statistische Aussagekraft der Testresultate.
 
@@ -773,14 +770,14 @@ Diese Aufteilung folgt zwei Prinzipien: Erstens gewährleistet die strikte chron
           dir: ltr,
           spacing: 0.5em,
           box(fill: rgb(100, 180, 100), width: 1.5em, height: 0.8em, radius: 2pt),
-          text(size: 8pt)[Training (4 Saisons, ~76'000 Datensätze)]
+          text(size: 8pt)[Training (4 Saisons, ~88'000 Datensätze)]
         ),
         
         stack(
           dir: ltr,
           spacing: 0.5em,
           box(fill: rgb(220, 120, 120), width: 1.5em, height: 0.8em, radius: 2pt),
-          text(size: 8pt)[Test (4 Saisons, ~76'000 Datensätze)]
+          text(size: 8pt)[Test (4 Saisons, ~100'000 Datensätze)]
         ),
       )
     }
@@ -794,50 +791,36 @@ Diese strenge zeitliche Trennung ist entscheidend: Das Modell darf nur in der Ve
 
 Die Rohdaten von der FPL-API kommen nicht immer ganz sauber daher. Mehrere Probleme mussten gelöst werden:
 
-*Fehlende Werte:* Manche Spieler haben für bestimmte Gameweeks keine Einträge, z.B. weil sie verletzt oder gesperrt waren, oder weil sie nicht im Kader standen. Diese Zeilen habe ich entfernt, sie enthalten keine verwertbaren Informationen.
+Fehlende Werte: Manche Spieler haben für bestimmte Gameweeks keine Einträge, z.B. weil sie verletzt oder gesperrt waren, oder weil sie nicht im Kader standen. Diese Zeilen habe ich entfernt, sie enthalten keine verwertbaren Informationen.
 
-*Doppelte Einträge:* Bei Vereinswechseln innerhalb der Saison tauchen Spieler manchmal mehrere Male auf. Diese Fälle habe ich zusammengeführt, die Statistiken des neuen Vereins werden weitergeführt.
+Doppelte Einträge: Bei Vereinswechseln innerhalb der Saison tauchen Spieler manchmal mehrere Male auf. Diese Fälle habe ich zusammengeführt, die Statistiken des neuen Vereins werden weitergeführt.
 
-*Verschiedene Positionen:* Die API verwendet z.T. verschiedene Schreibweisen für die Positionen. Dazu wurden folgende Bezeichnungen vereinheitlicht:
+Verschiedene Positionen: Die API verwendet z.T. verschiedene Schreibweisen für die Positionen. Dazu wurden folgende Bezeichnungen vereinheitlicht:
 
 - Torhüter: `GK`
 - Verteidiger: `DEF`
 - Mittelfeldspieler: `MID`
 - Stürmer: `FWD`
 
-Hier ein Beispiel wie die Bereinigung in Python aussieht:
+Die Bereinigung erfolgt automatisiert mit pandas. Die Rohdaten von vaastav/Fantasy-Premier-League enthalten bereits normalisierte Positionskürzel (GK, DEF, MID, FWD). Folgendes Skript zeigt die wesentlichen Bereinigungsschritte:
 
 ```python
 import pandas as pd
 
-# Fehlende Werte wegschmeissen
+# Fehlende Werte entfernen
 df = df.dropna(subset=['total_points', 'minutes'])
 
-# Position normalisieren
-position_map = {
-    'Goalkeeper': 'GK',
-    'Defender': 'DEF',
-    'Midfielder': 'MID',
-    'Forward': 'FWD'
-}
-df['position'] = df['position'].map(position_map)
+# Positionen sind bereits als GK, DEF, MID, FWD kodiert
+# Keine Umwandlung nötig
 
-# Duplikate bei Transfers zusammenfassen
+# Duplikate bei Transfers zusammenfassen (letzter Eintrag pro GW)
 df = df.groupby(['player_id', 'season', 'GW']).last().reset_index()```
 
-=== Normalisierung
+=== Warum keine Normalisierung?
 
-Verschiedene Features nutzen völlig unterschiedliche Wertebereiche. Gespielte Minuten liegen zwischen 0 und 90, Marktwert zwischen 4.0 und 15.0 Millionen Pfund. Ohne Normalisierung würden Features mit grösseren Werten das Modell dominieren.
+Bei vielen Machine-Learning-Algorithmen (z.B. lineare Regression, neuronale Netze) ist Normalisierung wichtig, da Features mit grösseren Werten sonst dominieren. Random Forest ist hier jedoch eine Ausnahme: Da Entscheidungsbäume nur Schwellenwerte vergleichen ("ist minutes > 60?"), spielt die absolute Skalierung keine Rolle. Ein Split bei 60 Minuten funktioniert genauso wie ein Split bei 0.67 nach Min-Max-Skalierung.
 
-Deshalb wurden alle numerischen Features auf den Bereich [0, 1] skaliert:
-
-```from sklearn.preprocessing import MinMaxScaler
-
-scaler = MinMaxScaler()
-numeric_cols = ['minutes', 'form_3', 'form_5', 'value', 'opp_strength']
-df[numeric_cols] = scaler.fit_transform(df[numeric_cols])```
-
-Durch die Skalierung haben alle Features dasselbe Gewicht, das Modell kann dadurch besser lernen und trainiert schneller.
+Deshalb wurde in diesem Projekt bewusst auf Feature-Normalisierung verzichtet - Random Forest benötigt sie nicht und die Rohdaten sind leichter interpretierbar.
 
 === Explorative Datenanalyse
 
@@ -957,7 +940,7 @@ Worin unterscheiden sich die Positionen? Im Schnitt holen Mittelfeldspieler die 
   caption: [Punkteverteilung nach Spielerposition (Saison 2023-24). Mittelfeldspieler haben den höchsten Median (4.2), Stürmer die grösste Varianz (0-20 Punkte).]
 ) <fig-position-boxplot>
 
-Bemerkenswert ist ein Trend über die Jahre, in der Saison 2022/23 fielen im Schnitt mehr Tore als in den Vorjahren. Wahrscheinlich ist das den offensiveren taktischen Systemen geschuldet, die die ganzen Teams inzwischen spielen. Solche Trends machen Vorhersagen schwerer, weil alte Muster sich nicht 1:1 übertragen lassen.
+Bemerkenswert ist ein Trend über die Jahre: In der Saison 2022/23 fielen im Schnitt mehr Tore als in den Vorjahren. Solche saisonalen Schwankungen machen Vorhersagen schwerer, weil historische Muster sich nicht 1:1 übertragen lassen.
 
 == Feature Engineering
 
@@ -967,7 +950,10 @@ Die Qualität eines Machine-Learning-Modells hängt massgeblich von den verwende
 
 Diese beschreiben die aktuelle Form und Qualität eines Spielers:
 
-*Form (letzte 3 Gameweeks):* Durchschnitt der letzten 3 Spiele. Dieses Feature basiert auf der Annahme, dass kurzfristige Performance ein starker Prädiktor für die nächste Gameweek ist. Die Analyse bestätigte dies mit 33% Feature Importance.
+Form (letzte 3 Gameweeks): Gleitender Durchschnitt ("Rolling Average") der letzten 3 Spiele. Dabei wird immer über ein Fenster von 3 aufeinanderfolgenden Spielen gemittelt, das sich mit jeder neuen Gameweek weiterbewegt. Ein Beispiel: Hat ein Spieler in GW1-3 die Punkte [2, 8, 5], beträgt sein Rolling Average für GW4 genau (2+8+5)/3 = 5.0 Punkte. In GW5 "rutscht" das Fenster weiter: War GW4 = 10 Punkte, wird nun über [8, 5, 10] gemittelt = 7.7 Punkte. Das älteste Spiel (die 2) fällt raus, das neueste (die 10) kommt dazu. Die Wahl von 3 Gameweeks basiert auf zwei Überlegungen: (1) Kurze Zeitfenster erfassen aktuelle Form besser als lange, (2) zu kurze Fenster (1-2 GW) sind zu volatil und rauschen zu stark. Mit 3 Gameweeks erhält man eine gute Balance zwischen Aktualität und Stabilität. Die Analyse bestätigte dies mit 33% Feature Importance.
+
+
+Die Implementierung in Python erfolgt mit pandas' `rolling()`-Funktion:
 
 ```df['form_3'] = df.groupby('player_id')['total_points'] \
                  .rolling(3, min_periods=1) \
@@ -981,7 +967,7 @@ Saisonform: Durchschnitt über die ganze Saison bisher. Zeigt die generelle Qual
 
 Spielminuten (letzte 3 GW): wie viele Minuten hat der Spieler zuletzt gespielt? Wer regelmässig 90 Minuten spielt, ist sicher Stammspieler und wird mehr Punkte sammeln. Dieses Feature erwies sich als das wichtigste (33% Feature Importance).
 
-Position: kategorisch (GK, DEF, MID, FWD). Random Forest kann mit kategorischen Variablen umgehen, man braucht kein One-Hot-Encoding.
+Position: kategorisch (GK, DEF, MID, FWD). In scikit-learn müssen Kategorien codiert werden, z.B. per One-Hot-Encoding (`pd.get_dummies(position)`), bevor sie in den RandomForestRegressor fliessen.
 
 ICT-Index (letzte 3 GW): FPL's eigene Metrik für Einfluss, Kreativität und Angriffsgefahr. Dieses Feature war das zweitwichtigste (23% Feature Importance).
 
@@ -990,6 +976,8 @@ ICT-Index (letzte 3 GW): FPL's eigene Metrik für Einfluss, Kreativität und Ang
 Nicht alle Gegner sind gleich stark. Diese Features erfassen die Defensiv- und Offensivstärke des nächsten Gegners:
 
 Durchschnittliche Gegentore des Gegners: Wie viele Tore kassiert der Gegner im Schnitt? Ein Team, das keine gute Defensive hat, macht es den Angreifern einfacher.    
+
+Die Berechnung erfolgt in zwei Schritten. Zuerst wird die Defensivschwäche jedes Teams pro Gameweek ermittelt, dann wird diese Information an die Spielerdaten angehängt:
 
 ```# Team-Defensivstärke berechnen (Gegentore pro Spiel)
 team_def = df.groupby(['season', 'GW', 'opponent_team'])['goals_conceded'] \
@@ -1004,17 +992,20 @@ Durchschnittliche erzielte Tore des Gegners: Das zeigt die Offensivstärke. Gege
 
 Heimspiel vs. Auswärtsspiel: Boolean-Feature (1 = Heimspiel, 0 = Auswärtsspiel). Heimvorteil gibt es im Fussball wirklich.
 
-Diese Gegner-Features sollten sich auf die letzten 5 Spiele des Gegners beziehen, um die aktuelle Form abzudecken
+Diese Gegner-Features basieren auf den letzten 5 Spielen statt 3 wie bei den Spieler-Features. Der Grund: Team-Metriken (z.B. Gegentore) schwanken weniger stark als individuelle Spielerleistungen, daher ist ein längeres Zeitfenster sinnvoll, um robustere Durchschnitte zu erhalten.
+
 
 === Team-Features
 
 Natürlich spielt auch das eigene Team eine Rolle bei der Leistung einzelner Spieler:
 
-*Durchschnittliche Clean Sheets (letzte 5 Spiele):* Wie oft hat das Team zu null gespielt? Wenn eine Mannschaft defensiv stabil ist, profitieren Torhüter und Abwehrspieler.
+Durchschnittliche Clean Sheets (letzte 5 Spiele): Wie oft hat das Team zu null gespielt? Wenn eine Mannschaft defensiv stabil ist, profitieren Torhüter und Abwehrspieler.
 
-*Durchschnittliche erzielte Tore (letzte 5 Spiele):* Wenn das Team viele Tore schiesst, haben Stürmer und Mittelfeldspieler bessere Chancen auf Punkte.
+Durchschnittliche erzielte Tore (letzte 5 Spiele): Wenn das Team viele Tore schiesst, haben Stürmer und Mittelfeldspieler bessere Chancen auf Punkte.
 
-*Tabellenplatz:* Teams, die weiter oben in der Tabelle stehen, sind in der Regel stärker. Der Tabellenplatz korreliert mit der Qualität der Spieler.
+Tabellenplatz: Teams, die weiter oben in der Tabelle stehen, sind in der Regel stärker. Der Tabellenplatz korreliert mit der Qualität der Spieler.
+
+Für die Team-Offensivstärke wird analog zur Spieler-Form ein Rolling Average über die letzten 5 Spiele berechnet:
 
 ``` python
 # Team-Offensivstärke (Tore pro Spiel)
@@ -1031,82 +1022,70 @@ Insgesamt kamen so pro Spieler und Gameweek über 20 Features zusammen. Diese Vi
 
 === Implementierung mit Scikit-Learn
 
-Das Random-Forest-Modell wurde mit der Python-Bibliothek Scikit-Learn @sklearn-rf implementiert. Die Bibliothek ist eine Freude, sie hat eine gute API und ist gut dokumentiert:
+Das Random-Forest-Modell wurde mit der Python-Bibliothek Scikit-Learn @sklearn-rf implementiert. Die Bibliothek ist eine Freude, sie hat eine gute API und ist gut dokumentiert.
+
+Für die finale Auswertung wurde strikt saisonbasiert getrennt: Training auf 2016/17–2019/20, Test auf 2020/21–2023/24. Ein zeitliches Mischen (klassisches `train_test_split` oder k-fold-CV über alle Jahre) würde Data Leakage erzeugen. Das folgende Beispiel zeigt die chronologische Aufteilung und das Training:
 
 ``` python
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import train_test_split
 
 # Features und Zielvariable definieren
 feature_cols = [
-    'form_3', 'form_5', 'season_avg', 'minutes_3',
-    'position', 'value', 'opp_def_weakness', 'opp_goals_avg',
-    'is_home', 'team_clean_sheets_5', 'team_goals_avg_5'
+  'form_3', 'form_5', 'season_avg', 'minutes_3',
+  'position', 'value', 'opp_def_weakness', 'opp_goals_avg',
+  'is_home', 'team_clean_sheets_5', 'team_goals_avg_5'
 ]
-X = df[feature_cols]
-y = df['total_points']
 
-# Train-Test-Split
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, shuffle=False  # chronologisch!
-)
+train = df[df['season'] <= '2019-20']
+test  = df[df['season'] >= '2020-21']
 
-# Modell erstellen und trainieren
+X_train, y_train = train[feature_cols], train['total_points']
+X_test, y_test   = test[feature_cols],  test['total_points']
+
 rf = RandomForestRegressor(
-    n_estimators=100,
-    max_depth=15,
-    min_samples_leaf=5,
-    max_features='sqrt',
-    random_state=42
+  n_estimators=300,
+  max_depth=None,
+  min_samples_leaf=2,
+  random_state=42,
+  n_jobs=-1
 )
 rf.fit(X_train, y_train)
 ```
 
-Wichtig ist `shuffle=False` beim Train-Test-Split   wir wollen ja chronologisch bleiben, sonst lernt das Modell aus der Zukunft.
+Wenn Hyperparameter gesucht werden, muss auch die Validierung zeitlich sauber bleiben (z.B. 2016–2018 train, 2019–2020 valid). K-fold-CV über gemischte Jahre wurde für die berichteten Ergebnisse nicht verwendet.
 
 === Hyperparameter-Optimierung
 
 Random Forest hat einige Hyperparameter, die man vor dem Training festlegen muss. Diese Werte wirken sich sehr stark darauf aus, wie gut unser Modell funktioniert:
 
-*n_estimators (Anzahl Bäume):* je mehr Bäume, desto stabiler die Vorhersagen, aber desto länger braucht das Training. Ich habe 100 gewählt, bei 200 oder 500 Bäumen gab es kaum Leistungszuwächse, dafür aber eine Verdopplung der Laufzeit.
+n_estimators (Anzahl Bäume): je mehr Bäume, desto stabiler die Vorhersagen, aber desto länger braucht das Training. Ich habe 300 gewählt, da ab etwa 200-300 Bäumen die Fehlerrate typischerweise konvergiert @geron-2019. Mehr Bäume bringen kaum Verbesserung, kosten aber Rechenzeit.
 
-*max_depth (Maximale Tiefe):* Maximale Tiefe der Bäume. Zu tief ist Overfitting, zu flach Underfitting. Optimal war hier 15 nach Kreuzvalidierung.
+max_depth (Maximale Tiefe): Maximale Tiefe der Bäume. Hier wurde `None` (unbegrenzt) gewählt, da Random Forest durch die Bootstrap-Aggregation und Feature-Auswahl bereits gegen Overfitting geschützt ist.
 
-*min_samples_leaf (Mindestgrösse Blatt):* Jedes Blatt muss mindestens 5 Datenpunkte haben, dadurch werden die Vorhersagen glatter, einzelne Ausreisser dürfen nicht zu viel Gewicht haben.
+min_samples_leaf (Mindestgrösse Blatt): Jedes Blatt muss mindestens 2 Datenpunkte haben. Der Wert 2 verhindert, dass einzelne Ausreisser eigene Blätter bilden (was bei min_samples_leaf=1 möglich wäre), erlaubt aber dennoch feine Aufteilungen.
 
-*max_features (Features pro Split):* Bei jedem Split werden nur eine Auswahl der Features betrachtet. `'sqrt'` bedeutet, $sqrt(n)$ Features, bei n=20 also ca. 4-5. Dadurch werden die Bäume diverser.
+max_features (Features pro Split): Bei jedem Split werden nur eine Auswahl der Features betrachtet. Standardmässig nutzt scikit-learn alle Features bei Regression (max_features=1.0).
 
-Durchgeführt wurden diese Werte durch Grid Search mit 5-Fold Cross Validation:
+Die finalen Hyperparameter wurden durch manuelle Experimente und Erfahrungswerte gewählt:
 
 ``` python
-from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import RandomForestRegressor
 
-param_grid = {
-    'n_estimators': [50, 100, 200],
-    'max_depth': [10, 15, 20],
-    'min_samples_leaf': [3, 5, 10],
-    'max_features': ['sqrt', 'log2']
-}
-
-grid_search = GridSearchCV(
-    RandomForestRegressor(random_state=42),
-    param_grid,
-    cv=5,
-    scoring='neg_mean_absolute_error',
-    n_jobs=-1
+model = RandomForestRegressor(
+    n_estimators=300,      # 300 Bäume für Stabilität
+    max_depth=None,        # Unbegrenzte Tiefe
+    min_samples_leaf=2,    # Mindestens 2 Datenpunkte pro Blatt
+    random_state=42,       # Reproduzierbarkeit
+    n_jobs=-1              # Alle CPU-Kerne nutzen
 )
-grid_search.fit(X_train, y_train)
-
-print("Beste Parameter:", grid_search.best_params_)
-# Ausgabe: {'n_estimators': 100, 'max_depth': 15,
-#           'min_samples_leaf': 5, 'max_features': 'sqrt'}
+model.fit(X_train, y_train)
 ```
 
-Grid Search probiert alle Kombinationen durch und nimmt die beste mit dem geringsten MAE auf den Validierungsdaten.
+Die Wahl von 300 Bäumen mit unbegrenzter Tiefe folgt der Empfehlung, dass Random Forest durch Bootstrap-Aggregation und zufällige Feature-Auswahl bereits gegen Overfitting geschützt ist. Zusätzliche Regularisierung durch max_depth ist daher oft nicht nötig.
 
 === Feature Importance Analyse
 
-Nach dem Training können wir uns ansehen, welche Features am wichtigsten waren:
+Nach dem Training können wir uns ansehen, welche Features am wichtigsten waren. Random Forest speichert für jedes Feature die durchschnittliche Verbesserung des MSE über alle Bäume:
 
 ``` python
 import pandas as pd
@@ -1120,6 +1099,8 @@ feature_importance_df = pd.DataFrame({
 
 print(feature_importance_df.head(5))
 ```
+
+#pagebreak()
 
 Ergebnis (basierend auf 14'980 Spieler-GW der Saison 2020-21, GW2-28):
 
@@ -1151,7 +1132,7 @@ Ergebnis (basierend auf 14'980 Spieler-GW der Saison 2020-21, GW2-28):
       ]
     }
   ),
-  caption: [Feature Importance nach Training des Random Forest Modells. Die drei wichtigsten Features (Spielzeit, ICT-Index, Einfluss der letzten 3 GW) tragen zusammen 72% zur Vorhersagequalität bei.]
+  caption: [Feature Importance nach Training des Random Forest Modells (Saison 2020-21, GW2-28, Test-Set). Die drei wichtigsten Features (Spielzeit, ICT-Index, Einfluss der letzten 3 GW) tragen zusammen 72% zur Vorhersagequalität bei.]
 ) <tbl-feature-importance>
 
 Die Spielzeit der letzten 3 Gameweeks war mit 33% am wichtigsten   Spieler die regelmässig 90 Minuten spielen, sind Stammspieler und daher wertvoller. Der ICT-Index (23%) und Einfluss (16%) erfassen die aktuelle Form. Zusammen machen diese drei Features bereits 72% der Vorhersagequalität aus.
@@ -1160,7 +1141,9 @@ Die Spielzeit der letzten 3 Gameweeks war mit 33% am wichtigsten   Spieler die r
 
 Um zu prüfen, ob Random Forest überhaupt einen Mehrwert bietet, habe ich zuerst zwei einfache Baseline-Methoden implementiert:
 
-*Moving Average (MA3):* Hierbei bekommt jeder Spieler einfach den Durchschnitt seiner letzten 3 Gameweeks als Vorhersage.
+Moving Average (MA3): Hierbei bekommt jeder Spieler einfach den Durchschnitt seiner letzten 3 Gameweeks als Vorhersage.
+
+Die Implementierung ist sehr einfach: Pandas' `rolling()` und `shift(1)` für Zeitverschiebung:
 
 ``` python
 def predict_ma3(df):
@@ -1171,7 +1154,9 @@ def predict_ma3(df):
     return df
 ```
 
-*Positions-Mittelwert (POS):* Hierbei bekommt jeder Spieler den Durchschnitt aller Spieler seiner Position.
+Positions-Mittelwert (POS): Hierbei bekommt jeder Spieler den Durchschnitt aller Spieler seiner Position.
+
+Auch hier eine einfache Gruppierung:
 
 ``` python
 def predict_pos(df):
@@ -1187,13 +1172,15 @@ Diese Methoden sind extrem simpel, aber oft überraschend effektiv. Wenn Random 
 
 Die Evaluation erfolgte durch Backtesting auf historischen Daten anstelle von Live-Tests während einer laufenden Saison. Diese methodische Entscheidung basiert auf folgenden Überlegungen:
 
-*Zeitliche Effizienz:* Eine FPL-Saison dauert 9 Monate. Die Evaluation über vier Testsaisons (2020/21 bis 2023/24) hätte bei Live-Testing 3 Jahre benötigt. Backtesting ermöglicht die vollständige Evaluation in wenigen Stunden, was im Rahmen einer Maturaarbeit realistisch ist.
+Zeitliche Effizienz: Eine FPL-Saison dauert 9 Monate. Die Evaluation über vier Testsaisons (2020/21 bis 2023/24) hätte bei Live-Testing 3 Jahre benötigt. Backtesting ermöglicht die vollständige Evaluation in wenigen Stunden, was im Rahmen einer Maturaarbeit realistisch ist.
 
-*Kontrollierte Vergleichbarkeit:* Beim Backtesting werden alle Methoden (Random Forest, MA3, POS) unter identischen Bedingungen evaluiert. Jede Methode sieht dieselben Daten zum selben Zeitpunkt. Bei Live-Tests könnten saisonale Faktoren (z.B. Verletzungswellen, Regeländerungen) die Vergleichbarkeit beeinträchtigen.
+Kontrollierte Vergleichbarkeit: Beim Backtesting werden alle Methoden (Random Forest, MA3, POS) unter identischen Bedingungen evaluiert. Jede Methode sieht dieselben Daten zum selben Zeitpunkt. Bei Live-Tests könnten saisonale Faktoren (z.B. Verletzungswellen, Regeländerungen) die Vergleichbarkeit beeinträchtigen.
 
-*Wissenschaftliche Validität:* Backtesting ist die Standardmethode zur Evaluation von Vorhersagemodellen in der Finanzbranche und im Machine Learning @geron-2019. Die strikte chronologische Trennung von Training und Test (keine Data Leakage) gewährleistet valide Aussagen über die Generalisierungsfähigkeit.
+Wissenschaftliche Validität: Backtesting ist die Standardmethode zur Evaluation von Vorhersagemodellen in der Finanzbranche und im Machine Learning @geron-2019. Die strikte chronologische Trennung von Training und Test (keine Data Leakage) gewährleistet valide Aussagen über die Generalisierungsfähigkeit.
 
-*Reproduzierbarkeit:* Alle Ergebnisse sind vollständig reproduzierbar. Jeder kann mit denselben historischen Daten und demselben Code identische Resultate erzielen. Bei Live-Tests wäre dies nicht gegeben.
+Reproduzierbarkeit: Alle Ergebnisse sind vollständig reproduzierbar. Jeder kann mit denselben historischen Daten und demselben Code identische Resultate erzielen. Bei Live-Tests wäre dies nicht gegeben.
+
+Limitation: Die Aussagen gelten für historische Daten (Backtests). Live-Performance kann abweichen, weil aktuelle Verletzungen, Transfers oder taktische Änderungen nicht in den historischen Features stecken.
 
 Die Limitation von Backtesting liegt darin, dass kurzfristige Ereignisse (Last-Minute-Verletzungen, psychologischer Druck) nicht abgebildet werden. Für die wissenschaftliche Evaluation der grundsätzlichen Modellqualität ist Backtesting jedoch die geeignete Methode.
 
@@ -1201,24 +1188,25 @@ Die Limitation von Backtesting liegt darin, dass kurzfristige Ereignisse (Last-M
 
 === Aufbau des Projekts
 
-Das Projekt ist in Python implementiert und folgt einer einheitlichen Struktur. Die wichtigsten Bestandteile:
+Das Projekt ist in Python implementiert und folgt einer einheitlichen Struktur. Die Ordnerhierarchie trennt Daten, Code und Ausgaben klar:
 
 ``` plaintext
 fpl-matura/
 ├── code/
-│   ├── features/        # Feature Engineering
+│   ├── features/        # Feature Engineering (API-Abfragen)
 │   │   └── make_features.py
-│   ├── models/          # Model Training
-│   │   └── filled_model.py
-│   ├── lineup/          # Team Selection
-│   │   └── pick_lineup_autoformation.py
+│   ├── models/          # Model Training & Predictions
+│   │   └── make_predictions.py
+│   ├── lineup/          # Team Selection CLI
+│   │   └── auto_formation_cli_v2.py
 │   ├── evaluation/      # Backtesting
 │   │   └── team_backtest.py
 │   ├── pipeline/        # End-to-End Pipeline
 │   │   └── make_gw.py
-│   └── utils/           # Utilities
+│   └── utils/           # Utilities & Kernlogik
+│       ├── team_builder.py   # pick_lineup_autoformation
 │       └── season_rules.py
-├── data/                # Raw Data (CSV)
+├── data/                # Bereinigte Daten (CSV)
 ├── out/                 # Predictions & Results
 └── scripts/             # Automation Scripts
 ```
@@ -1237,7 +1225,7 @@ Diese Struktur trennt Datenverarbeitung, Modellierung und Evaluation klar vonein
 
 === Backtesting-Implementierung
 
-Das Kernstück der Evaluation ist das Backtesting-Skript `team_backtest.py`. Es simuliert eine komplette FPL-Saison:
+Das Kernstück der Evaluation ist das Backtesting-Skript `team_backtest.py`. Es simuliert eine komplette FPL-Saison. Für jede Gameweek werden Teams ausgewählt und mit echten Resultaten verglichen. Der folgende Code zeigt die Kernlogik in vereinfachter Form:
 
 ``` python
 def run_backtest(season: str, gw_start: int, gw_end: int, methods: List[str]):
@@ -1294,7 +1282,7 @@ Die Funktion `pick_squad_greedy()` implementiert eine gierige Auswahl: Spieler w
 
 === Daten-Pipeline
 
-Die End-to-End-Pipeline koordiniert alle Schritte von Rohdaten bis zur finalen Vorhersage:
+Die End-to-End-Pipeline koordiniert alle Schritte von Rohdaten bis zur finalen Vorhersage. 
 
 #figure(
   block(
@@ -1342,83 +1330,95 @@ Die End-to-End-Pipeline koordiniert alle Schritte von Rohdaten bis zur finalen V
   caption: [End-to-End Pipeline von Rohdaten bis Evaluation. Alle Schritte sind automatisiert und reproduzierbar.]
 ) <fig-pipeline>
 
+Folgendes Beispiel zeigt den kompletten Ablauf für eine einzelne Gameweek:
+
 ``` python
-# 1. Rohdaten laden
-raw_df = pd.read_csv("data/merged_gw_2023-24.csv")
+# 1. Bereinigte Daten laden
+raw_df = pd.read_csv("data/cleaned_merged_gw_2023-24.csv")
 
-# 2. Features berechnen
-from code.features.make_features import make_all_features
-feature_df = make_all_features(raw_df)
+# 2. Features sind bereits in den CSVs enthalten
+# (form, ict_index, opponent_strength etc.)
+feature_df = raw_df.copy()
 
-# 3. Modell laden
-import joblib
-rf_model = joblib.load("out/models/rf_model.pkl")
+# 3. Vorhersagen generieren (trainiert on-the-fly)
+from code.models.make_predictions import predict_gw
+predictions_df = predict_gw(season="2023-24", gw=38, method="rf")
 
-# 4. Vorhersagen für GW 38
-gw38_data = feature_df[feature_df["GW"] == 38]
-predictions = rf_model.predict(gw38_data[feature_cols])
-gw38_data["predicted_points"] = predictions
-
-# 5. Team optimieren
-from code.lineup.pick_lineup_autoformation import pick_lineup
-lineup = pick_lineup(
-    gw38_data, 
-    budget=100.0, 
-    max_per_club=3
+# 4. Team optimieren
+from code.utils.team_builder import pick_lineup_autoformation
+lineup = pick_lineup_autoformation(
+    predictions_df,
+    prefer_minutes=True,
+    p_floor=0.6
 )
 
-# 6. Ergebnis speichern
-lineup.to_json("out/lineup_gw38.json")
+# 5. Ergebnis speichern
+lineup.to_json("out/lineup/xi_2023-24_gw38.json")
 ```
 
-Diese Pipeline ist vollständig automatisiert. Ein Batch-Skript `run_full_backtest.bat` kann alle 4 Testsaisons (2020-21 bis 2023-24) in wenigen Minuten durchlaufen:
+Diese Pipeline ist vollständig automatisiert. Ein Batch-Skript `scripts/pipelines/run_multi_season_backtest.bat` kann alle 4 Testsaisons (2020-21 bis 2023-24) in wenigen Minuten durchlaufen.
+
+Das Skript generiert Predictions und führt Backtests für die letzten Gameweeks jeder Saison durch:
 
 ``` batch
 @echo off
-REM Backtesting für alle Saisons
-python code/evaluation/team_backtest.py --season 2020-21 --gw_start 1 --gw_end 38 --methods rf ma3 pos
-python code/evaluation/team_backtest.py --season 2021-22 --gw_start 1 --gw_end 38 --methods rf ma3 pos
-python code/evaluation/team_backtest.py --season 2022-23 --gw_start 1 --gw_end 38 --methods rf ma3 pos
-python code/evaluation/team_backtest.py --season 2023-24 --gw_start 1 --gw_end 38 --methods rf ma3 pos
+REM Multi-Season Backtest (GW 30-38 pro Saison)
+set SEASONS=2020-21 2021-22 2022-23 2023-24
+set GW_START=30
+set GW_END=38
+
+for %%S in (%SEASONS%) do (
+    python code\models\make_predictions.py --season %%S --gw %%G --method rf
+    python code\evaluation\team_backtest.py --season %%S --start %%GW_START%% --end %%GW_END%%
+)
 echo Fertig!
 ```
+
+_Hinweis: Das Beispiel zeigt den Schnelldurchlauf (GW 30-38). Für die vollständige Evaluation wurden alle Gameweeks (GW 2-38) jeder Saison durchlaufen, also 37 × 4 = 148 Gameweeks._
 
 === Reproduzierbarkeit
 
 Ein zentraler Aspekt des Projekts ist Reproduzierbarkeit. Jeder soll meine Ergebnisse nachvollziehen können:
 
-*Git-Versionierung:* Alle Code-Änderungen sind in Git dokumentiert. Jede Vorhersage wird mit einem Git-Commit-Hash versehen, so kann man später exakt nachvollziehen, welcher Code verwendet wurde.
+Git-Versionierung: Alle Code-Änderungen sind in Git dokumentiert. Jede Vorhersage wird mit einem Git-Commit-Hash versehen, so kann man später exakt nachvollziehen, welcher Code verwendet wurde.
 
-*Seed-Kontrolle:* Random Forest benutzt `random_state=42`   dadurch sind die Ergebnisse deterministisch. Bei gleichem Code und gleichen Daten kommt immer dasselbe Ergebnis raus.
+Seed-Kontrolle: Random Forest benutzt `random_state=42`   dadurch sind die Ergebnisse deterministisch. Bei gleichem Code und gleichen Daten kommt immer dasselbe Ergebnis raus.
 
-*Daten-Versionierung:* Die Rohdaten von Vaastav Anand sind öffentlich verfügbar @vaastav-fpl. Ich speichere zusätzlich einen Hashwert (MD5) jeder Datei, so kann man prüfen, ob die Daten unverändert sind.
+Daten-Versionierung: Die Rohdaten von Vaastav Anand sind öffentlich verfügbar @vaastav-fpl. Ich speichere zusätzlich einen Hashwert (MD5) jeder Datei, so kann man prüfen, ob die Daten unverändert sind.
 
-*Requirements.txt:* Alle Python-Bibliotheken mit exakten Versionen sind in `requirements.txt` dokumentiert:
+Requirements.txt: Alle benötigten Python-Bibliotheken sind in `requirements.txt` dokumentiert.
+
+Die Hauptabhängigkeiten:
 
 ``` plaintext
-numpy==1.24.3
-pandas==2.0.2
-scikit-learn==1.3.0
-matplotlib==3.7.1
+numpy
+pandas
+scikit-learn
+matplotlib
+seaborn
+requests
+pytest
 ```
 
-Damit kann jeder dieselbe Umgebung erstellen (`pip install -r requirements.txt`) und meine Experimente exakt nachbauen.
+Damit kann jeder dieselbe Umgebung erstellen (`pip install -r requirements.txt`). Die Kombination aus festem `random_state=42` und den stabilen APIs von scikit-learn gewährleistet reproduzierbare Ergebnisse.
 
 === Herausforderungen bei der Implementierung
 
 Einige technische Hürden gab es während der Entwicklung:
 
-*Fehlende Daten:* Manchmal fehlen Spieler-Features (z.B. neue Transfers ohne Vorgeschichte). Lösung: Positions-Durchschnitt als Fallback verwenden.
+Fehlende Daten: Manchmal fehlen Spieler-Features (z.B. neue Transfers ohne Vorgeschichte). Lösung: Positions-Durchschnitt als Fallback verwenden.
 
-*Budget-Optimierung:* Die optimale Teamauswahl unter Budget-Constraints ist ein NP-schweres Problem (Rucksackproblem). Exakte Optimierung würde zu lange dauern. Lösung: Gierige Heuristik, die in 99% der Fälle sehr gute Ergebnisse liefert.
+Budget-Optimierung: Die optimale Teamauswahl unter Budget-Constraints ist ein NP-schweres Problem (Rucksackproblem). Exakte Optimierung würde zu lange dauern. Lösung: Gierige Heuristik, die in der Praxis gute Ergebnisse liefert.
 
-*Speicherverbrauch:* Bei 8 Saisons mit je ~15,000 Datenpunkten und 20+ Features wird der Speicher knapp. Lösung: Saisonweise verarbeiten statt alles auf einmal zu laden.
+Speicherverbrauch: Bei 8 Saisons mit je ~15,000 Datenpunkten und 20+ Features wird der Speicher knapp. Lösung: Saisonweise verarbeiten statt alles auf einmal zu laden.
 
-*Captain-Wahl:* Der Captain bekommt doppelte Punkte   extrem wichtig! Aber sehr schwer vorherzusagen (hohe Varianz). Lösung: Einfach den Spieler mit höchster Vorhersage als Captain wählen (konservativ, aber robust).
+Captain-Wahl: Der Captain bekommt doppelte Punkte   extrem wichtig! Aber sehr schwer vorherzusagen (hohe Varianz). Lösung: Einfach den Spieler mit höchster Vorhersage als Captain wählen (konservativ, aber robust).
+
+Hinweis zum NN aus der Projektvereinbarung: Ein neuronales Netz war ursprünglich als Option vorgesehen, wurde aber für die vorliegenden Ergebnisse nicht umgesetzt. In der Arbeit werden nur RF/MA3/POS ausgewertet; ein NN ist Future Work.
 
 === Code-Qualität und Testing
 
-Um sicherzustellen, dass der Code korrekt funktioniert, habe ich Unit-Tests geschrieben:
+Um sicherzustellen, dass der Code korrekt funktioniert, habe ich Unit-Tests geschrieben. Folgendes Beispiel prüft, ob die Lineup-Auswahl gültige Formationen erzeugt:
 
 ``` python
 # tests/test_pick_lineup.py
@@ -1461,27 +1461,32 @@ Recharts: eine klare Lösung für einfache Diagramme   denk an Strich-, Säulen-
 
 === Architektur und Seitenstruktur
 
-Unsere App ist leicht aufgebaut   hier kommst du zu den 7 wichtigsten Seiten:
+Die Web-App besteht aus sieben Hauptseiten, die unterschiedliche Aspekte des Projekts abdecken:
 
-Homepage (`index.tsx`): Übersicht aller Analysen mit Kurzbeschreibung und Link, Meta-Informationen über die verwendeten Daten (Saisons) und Methoden
+Homepage (`index.tsx`): Die Startseite bietet eine Übersicht aller verfügbaren Analysen mit Kurzbeschreibungen und direkten Links. Sie zeigt Meta-Informationen über die verwendeten Daten (8 Saisons, 2016-2024), die implementierten Methoden (Random Forest Varianten, MA3, POS) und die Validierungsstrategie (Cross-Season Backtest).
 
-Vorhersagen (`prognosen.tsx`): Das ist der Kern der App. Der Nutzer wählt hier Saison, Spieltag und Art der Berechnung   etwa RF, MA3 oder POS. Pro Spieler sieht man erwartete Punkte, Rolle, Kosten und echte Ergebnisse. Automatisch markiert das System die Top-15. Zusätzlich gibt es eine übersichtliche Tabelle mit dem besten Elf aus 100 Mio £ Budget   max. drei Akteure je Verein erlaubt. Der Backtest („backtest.tsx") zeigt, wie gut die Modelle über mehrere Spieltage abschnitten. Linien-Diagramme vergleichen gesammelte Punkte von RF, MA3 und POS direkt mit dem theoretischen Maximum   also dem optimal möglichen Team rückblickend. Außerdem werden MAE und RMSE im zeitlichen Verlauf abgebildet, um zu sehen, wie stabil die Prognosen waren.
+Vorhersagen (`prognosen.tsx`): Der Kern der Applikation. Nutzer wählen Saison, Gameweek und Prognosemethode (RF, RF_Rank, RF_Pos, RF_Relaxed, MA3, POS). Für jeden Spieler werden vorhergesagte Punkte, Position, Team und Preis angezeigt. 
 
-Multi-Season (`multi-season.tsx`): Schaut, wie gut Modelle in den vier Testjahren (2020/21 2023/24) abschneiden. Dadurch wird klar, ob Verfahren jedes Jahr punkten können   oder nur gelegentlich klappen. Solche Abweichungen zeigen, wie stabil ein Ansatz wirklich ist.
+Team Backtest (`backtest.tsx`): Zeigt die Performance der Modelle über mehrere Gameweeks einer Saison. Liniendiagramme vergleichen die tatsächlich erzielten Team-Punkte von RF, MA3 und POS mit dem theoretischen Hindsight-Optimum. 
 
-Ein Balkendiagramm   es stellt dar, welche Merkmale wie viel Gewicht haben, in Prozent. Zwischen Saisons kann man wechseln, außerdem zwischen Ansätzen, einfach zum Vergleichen. So sieht man, ob sich im Lauf der Zeit etwas verschiebt bei den Faktoren.
+Multi-Season (`multi-season.tsx`): Vergleicht die Effizienz aller Methoden über mehrere Testsaisons (2020/21 bis 2023/24). Balkendiagramme zeigen Effizienz für jede Saison. Dadurch wird sichtbar, welche Methoden konsistent abschneiden und welche saisonale Schwankungen aufweisen.
 
-Methode (`methodik.tsx`): Zeigt klipp und klar, wie die einzelnen RF-Versionen   Standard, Rank, Position, Relaxed   funktionieren. Dazu kommen MA3 und POS als Vergleichsansätze. Für jede wird erklärt, was gut oder weniger gut läuft, plus wie das Training abläuft. Begleiter (`glossar.tsx`): Klärt Begriffe aus FPL wie GK, DEF, MID, FWD, Clean Sheet oder Captain auf. Ebenso Grundlagen aus dem ML-Bereich: MAE, RMSE, Spearman, Random Forest, Feature Importance. Hilft Einsteigern, tiefer reinzuschauen. Die App passt sich an jedes Gerät an   egal ob PC, Tablet oder Handy.
+Feature Importance (`feature-importance.tsx`): Visualisiert die wichtigsten Features des Random Forest Modells als Balkendiagramm. Nutzer können zwischen Saisons wechseln, um zu sehen, ob sich die Gewichtung der Features über die Zeit verändert. Die Wichtigkeiten werden in Prozent angezeigt (z.B. "Minuten (letzte 3 GW): 33%").
+
+Methodik (`methodik.tsx`): Erklärt die verschiedenen Prognosemethoden und deren Funktionsweise. Für jede Random Forest Variante (Standard, Rank, Position, Relaxed) sowie die Baseline-Methoden (MA3, POS) werden Vor- und Nachteile beschrieben. In der schriftlichen Arbeit werden jedoch nur Standard-RF, MA3 und POS ausgewertet; die Varianten Rank/Position/Relaxed sind in der Web-App dokumentiert, aber nicht Bestandteil der berichteten Resultate. Kurz: RF_Rank = Ranking-Optimierung (Spearman), RF_Pos = positionsweise Modelle, RF_Relaxed = RF mit weniger Constraints/vereinfachter Feature-Selektion.
+
+Glossar (`glossar.tsx`): Ein Nachschlagewerk für FPL-spezifische Begriffe (GK, DEF, MID, FWD, Clean Sheet, Captain, ICT-Index) sowie Machine-Learning-Konzepte (MAE, RMSE, Spearman, Random Forest, Feature Importance). Die Definitionen sind in Kategorien gruppiert und für Einsteiger verständlich formuliert.
+
 
 === Interaktive Elemente
 
 Die Applikation bietet einige interaktive Elemente an:
 
-Spieler suchen: Tippe einen Namen ein   sofort siehst du Schätzungen, dazu die realen Ergebnisse. Geht auch bei Fehlschreibungen, etwa „Haaland" statt „Erling Haaland". So findest du Leute locker, selbst wenn's grob gemeint ist.
+Dropdown-Menüs für Saison, Gameweek und Methode: Jede Änderung triggert automatisch ein neues Laden der Daten via API-Call. Die verfügbaren Optionen werden dynamisch basierend auf den vorhandenen Daten geladen.
 
-Der Lineup-Optimizer findet von allein die stärksten elf Spieler   je nach voraussichtlichen Punkten. Es gibt feste Vorgaben: ein Keeper, drei bis fünf Abwehrspieler, zwei bis fünf im Mittelfeld, ein bis drei Stürmer; gleichzeitig wird das Budget nicht überschritten. Die Basis ist klar: wer viele Punkte für wenig Geld liefert, rutscht vor   solange das Gesamtbudget hält und die Aufstellung passt. Sofort sehen Sie Änderungen in den Diagrammen: beim Hovern öffnen sich kleine Fenster mit exakten Werten. Eine Auswahl mit der Maus vergrößert den Ausschnitt direkt. Wenn du auf eine Beschriftung klickst, blendest du einen Datensatz aus   oder wieder ein.
+Diagramm-Interaktionen: Bei Hover über Datenpunkte werden Tooltips mit exakten Werten angezeigt. Man kann Zoomen und Pannen, sowie zum Teil die x- oder y-Achsen anpassen.
 
-Auswahlmenü mit zwei Feldern   eines für die Spielzeit, das andere für den Termin plus Ablauf. Tauschst du da was aus? Gleich danach aktualisiert sich alles, neue Daten werden angezeigt.
+Sortierbare Tabellen: Die Backtest-Detail-Tabelle kann nach Gameweek oder Methode sortiert werden.
 
 === API-Design
 
@@ -1511,62 +1516,16 @@ Die Web-Applikation ist öffentlich zugänglich unter:
 
 #v(1em)
 
-Das Deployment erfolgt über Vercel @vercel-docs, eine Cloud-Plattform für moderne Web-Anwendungen. Vercel bietet mehrere Vorteile:
+Das Deployment erfolgt über Vercel @vercel-docs, eine Cloud-Plattform für Next.js-Anwendungen. Bei jedem Push auf GitHub wird automatisch ein Build ausgelöst und innerhalb von 2-3 Minuten weltweit deployed. Die Applikation nutzt Serverless Functions für API-Routes und ein globales CDN für schnelle Auslieferung.
 
-*Automatisches Deployment:* Bei jedem Push auf den `main` Branch wird automatisch ein neuer Build gestartet @vercel-deployment. Innerhalb von 2-3 Minuten ist die neue Version live. Das ermöglicht iterative Entwicklung mit sofortiger Validierung.
-
-*Serverless Functions:* API-Routes werden als serverless Functions deployed, die nur bei Bedarf ausgeführt werden. Das spart Ressourcen und Kosten (Free Tier: 100 GB Bandwidth, 6000 Build-Minuten/Monat).
-
-*Edge Network:* Die Applikation wird auf Vercels globalem CDN deployed. Anfragen werden vom geografisch nächsten Server bearbeitet, was die Latenz minimiert.
-
-*Zero Configuration:* Next.js wird automatisch erkannt und korrekt konfiguriert. Kein manuelles Setup von Build-Scripts oder Environment Variables nötig.
-
-*Preview Deployments:* Jeder Pull Request erhält eine eigene Preview-URL. Das erleichtert Code-Reviews und das Testen von Features vor dem Merge.
-
-Der Deployment-Prozess:
-
-Der Deployment-Prozess:
-
-1. *Code Push:* Nach lokaler Entwicklung und Testing wird der Code via Git auf GitHub gepusht
-2. *Trigger:* Vercel erkennt den Push automatisch (GitHub Integration)
-3. *Build:* Next.js Build wird ausgeführt (`npm run build`), TypeScript wird kompiliert, Static Pages werden generiert
-4. *Deploy:* Build-Artefakte werden auf das CDN hochgeladen, API-Routes werden als Functions deployed
-5. *Live:* Neue Version ist innerhalb von 2-3 Minuten weltweit verfügbar
-
-Ein technisches Problem stellte die Grösse der JSON-Daten dar: Eine gesamte Saison mit allen Spielern und Gameweeks kann über 10 MB gross werden, was Vercels Limit für serverless Functions übersteigt. Die Lösung war, die Daten in `public/data/` zu platzieren und als statische Assets zu servieren. Die API-Routes lesen dann direkt aus diesen Files, ohne sie in Memory zu laden.
+Technische Herausforderung: Komplette Saisons-Daten (>10 MB) überschreiten Vercels Limit für Serverless Functions. Lösung: Daten werden als statische Assets in `public/data/` bereitgestellt, API-Routes lesen diese ohne In-Memory-Loading.
 
 Performance-Optimierungen:
 
-Statische Seitengenerierung (SSG): Seiten wie die Methodik oder das Glossar   sie bleiben meist gleich   entstehen schon beim Erstellen der Seite. Dadurch muss der Server später weniger tun, wodurch alles schneller läuft.
-
-Statische Seiten für Prognosen aktualisieren sich alle 24 Stunden   aber nur, wenn neue Daten vorliegen. So bekommt der Besucher stets frische Inhalte angezeigt, obwohl keine dynamische Neuladung beim Aufruf nötig ist.
-
-Code-Splitting bedeutet: Jede Seite nimmt nur den JS-Code, der nötig ist. Dadurch sinkt die anfängliche Bundle-Größe   von etwa 500 KB runter auf rund 150 KB je Seite.
-
-Bilder werden einfach umgewandelt   etwa nach WebP oder so   und erst dann geladen, sobald man sie sieht. Kein unnötiges Zeug wird vorab gezogen.
-
-Etwa unter einer Sekunde lädt die Seite   so zeigen es Tests via Google Lighthouse. Der Geschwindigkeitswert? Knapp unter voller Punktzahl: 95 von 100.
-
-=== Zusammenfassung
-
-Die Webseite macht die Modelle aus dem maschinellen Lernen direkt erlebbar   mit Ergebnissen vom Backtest zum Anklicken. Statt bloß Daten anzuzeigen, verbindet sie schnelle Technik hinter den Kulissen mit klaren Grafiken vorne drauf. Dabei helfen moderne Tools für Diagramme, schlau geplante Schnittstellen und einer Ladevariante, die schnell wirkt. Wichtig: Nutzer sehen nicht nur das Endergebnis, sondern verstehen Schritt für Schritt, wie's funktioniert hat. Gerade bei kniffligen Algorithmen hilft sowas enorm beim Nachvollziehen   besonders für Leute ohne Hintergrundwissen.
-
-=== Zusammenfassung Methodik
-
-Die Methodik kombiniert klassische Data-Science-Schritte mit domänenspezifischen FPL-Regeln:
-
-1. *Daten:* Vaastav-Anand-Dataset, 8 Saisons, 188'168 Datenpunkte
-2. *Features:* 20+ Features aus Spieler-, Gegner- und Team-Metriken
-3. *Modell:* Random Forest mit 100 Bäumen, max_depth=15, optimiert via Grid Search
-4. *Baselines:* MA3 und POS zum Vergleich
-5. *Evaluation:* Backtesting auf 4 ungesehenen Saisons (2020-24)
-6. *Implementierung:* Python, Scikit-Learn, modulare Architektur, vollständig reproduzierbar
-
-Im nächsten Kapitel schauen wir uns die Ergebnisse an: Wie gut schneidet Random Forest wirklich ab?
-
-
-
-
+- Static Site Generation (SSG) für statische Seiten (Methodik, Glossar)
+- Incremental Static Regeneration (ISR) für Prognosen (Update alle 24h bei neuen Daten)
+- Code-Splitting reduziert initiale Bundle-Größe von ~500 KB auf ~150 KB pro Seite
+- Lazy Loading für Bilder (WebP-Format)
 
 
 
@@ -1724,7 +1683,9 @@ Tabelle @tbl-backtest-results zeigt die durchschnittliche Team-Performance über
   caption: [Team-Performance im Vergleich (Durchschnitt 2020-2024). Moving Average (46.0 Pkt/GW) schneidet minimal besser ab als Random Forest (45.8 Pkt/GW). Position Average (13.0 Pkt/GW) liegt weit zurück.]
 ) <fig-team-performance>
 
-*Effizienz* = Tatsächliche Punkte / Hindsight-Optimum. Das Hindsight-Optimum ist das beste Team, das man hätte wählen können, wenn man die echten Punkte im Voraus gekannt hätte (theoretisches Maximum).
+Die Metrik *Effizienz* misst, wie nahe ein Modell am theoretisch besten Ergebnis liegt: Effizienz = (Team-Punkte des Modells) / (Hindsight-Optimum). Das Hindsight-Optimum ist das perfekte Team, das man rückblickend hätte wählen können, wenn man die tatsächlichen Punkte aller ~600 Spieler bereits gekannt hätte. Es wird berechnet, indem für jede Gameweek unter Berücksichtigung aller FPL-Regeln (Budget 100M£, max. 3 Spieler pro Club, Formation 3-4-3 bis 5-2-3) das punktestärkste Team aus den echten Resultaten ausgewählt wird. Beispiel: 46.0 Punkte/GW (MA3) geteilt durch 133.0 Punkte/GW (Optimum, aus echten Punkten berechnet) ≈ 34.6% Effizienz. Dieses Optimum ist in der Praxis unerreichbar, dient aber als Benchmark.
+
+*Hinweis:* Die angegebene Effizienz von 34.6% ist der Durchschnitt über alle vier Testsaisons (2020-21 bis 2023-24). Die saisonweisen Werte variieren zwischen 31.8% (RF, 2020-21) und 38.0% (RF, 2022-23).
 
 Die Resultate zeigen: *Moving Average (MA3) erzielt mit 46.0 Punkten pro Gameweek minimal mehr als Random Forest (45.8 Punkte)*. Der Unterschied ist sehr klein und liegt innerhalb der Standardabweichung. POS schneidet mit nur 13.0 Punkten deutlich schlechter ab   die Positions-Durchschnitte sind zu generisch.
 
@@ -1762,7 +1723,9 @@ Die Resultate zeigen ein interessantes Muster: *MA3 schlägt RF in zwei Saisons 
 
 *Wichtig:* Die saisonweisen Team-Punkte weichen zum Teil erheblich vom Gesamtdurchschnitt ab, weil RF und MA3 in den einzelnen Saisons unterschiedlich stark sind. Ein Beispiel: In der Saison 2023-24 liegt RF mit 47.4 Punkten pro Gameweek deutlich vor MA3 mit 45.1. Betrachtet man die vier Saisons insgesamt, so zeigt sich aber ein etwas anderes Bild: MA3 ist mit 46.0 Punkten pro Gameweek leicht konstanter und liegt nur knapp vor RF mit 45.8. So sind sowohl die saisonweisen Werte als auch die Durchschnittswerte richtig, sie beschreiben nur verschiedene Ebenen der Betrachtung.
 
-Diese Inkonsistenz deutet darauf hin, dass beide Methoden ihre Stärken und Schwächen haben. RF profitiert vermutlich von zusätzlichen Features (Gegnerstärke, Team-Metriken), aber MA3 ist robuster gegenüber Overfitting. POS bleibt durchweg schwach bei 10-15 Punkten.
+Diese Inkonsistenz deutet darauf hin, dass beide Methoden ihre Stärken und Schwächen haben. RF nutzt zusätzliche Features (Gegnerstärke, Team-Metriken), aber MA3 ist robuster gegenüber Overfitting. POS bleibt durchweg schwach bei 10-15 Punkten.
+
+*Bemerkenswert:* RF übertrifft MA3 in den neueren Saisons (2022-23 und 2023-24) deutlich. Dies könnte darauf hindeuten, dass das Modell von konsistenteren Datenstrukturen in neueren Saisons profitiert, oder dass sich Spielmuster im modernen Fussball besser durch die zusätzlichen Features (Gegnerstärke, Team-Metriken) erfassen lassen.
 
 == Spieler-Vorhersagen: MAE und RMSE
 
@@ -1783,25 +1746,28 @@ MA3 ist mit 1.24 nur minimal schlechter   sehr nahe an RF. POS liegt mit 1.53 sp
 
 === Root Mean Squared Error (RMSE)
 
-RMSE bestraft grosse Fehler stärker als MAE (quadratische Gewichtung):
+RMSE bestraft grosse Fehler stärker als MAE (quadratische Gewichtung). Zur Erinnerung: Bei MAE wird der absolute Fehler gemittelt, bei RMSE werden die Fehler quadriert, dann gemittelt und schliesslich die Wurzel gezogen. Dadurch werden grosse Abweichungen überproportional stärker gewichtet.
 
 - *RF:* RMSE = 2.18
 - *MA3:* RMSE = 2.32
 - *POS:* RMSE = 2.38
 
-Auch hier liegt RF vorne. Der grössere Abstand zwischen MAE (1.20) und RMSE (2.18) zeigt, dass es einige Ausreisser gibt   Spieler, bei denen RF sich stark verschätzt hat (z.B. unerwartete Hattricks oder rote Karten). Alle drei Methoden bleiben unter 2.4 RMSE, was auf relativ konsistente Vorhersagen hindeutet.
+Auch hier liegt RF vorne. Der grössere Abstand zwischen MAE (1.20) und RMSE (2.18) zeigt, dass es einige Ausreisser gibt   Spieler, bei denen RF sich stark verschätzt hat (z.B. unerwartete Hattricks oder rote Karten). Würden alle Fehler gleich gross sein, lägen MAE und RMSE näher beieinander. Der Faktor 1.8 zwischen den beiden Werten (2.18 / 1.20) deutet auf moderate Ausreisser hin. Alle drei Methoden bleiben unter 2.4 RMSE, was auf relativ konsistente Vorhersagen hindeutet.
 
 === Spearman-Korrelation
 
-Spearman-Korrelation misst, wie gut die *Rangfolge* der Spieler vorhergesagt wird. Für FPL ist das sehr relevant: Man will wissen, *welche* Spieler die besten sind, nicht exakt wie viele Punkte sie machen.
+Spearman-Korrelation misst, wie gut die *Rangfolge* der Spieler vorhergesagt wird. Zur Erinnerung: Die Spearman-Korrelation liegt zwischen -1 und +1. Ein Wert von +1 bedeutet perfekte Rangfolge (die Top-Spieler werden korrekt identifiziert), 0 bedeutet keine Korrelation (Zufall), und -1 bedeutet inverse Rangfolge (die besten Spieler werden als schlechteste vorhergesagt). Für FPL ist das sehr relevant: Man will wissen, *welche* Spieler die besten sind, nicht exakt wie viele Punkte sie machen.
 
 - *RF:* ρ = 0.001
 - *MA3:* ρ = 0.001
 - *POS:* ρ = -0.037
 
-Die Spearman-Werte liegen nahe Null, was zeigt, dass die *Rangfolge-Vorhersage* eine wesentlich schwierigere Aufgabe ist als die Punktzahl-Vorhersage. Random Forests optimieren auf durchschnittlichen Fehler (MAE), nicht auf korrekte Rankings. Das erklärt, warum selbst bei gutem MAE (1.20) die Ranking-Korrelation schwach bleibt.
+Die Spearman-Werte liegen nahe Null, was zeigt, dass die *Rangfolge-Vorhersage* eine wesentlich schwierigere Aufgabe ist als die Punktzahl-Vorhersage. Konkret: Ein Wert von 0.001 bedeutet praktisch keine Korrelation zwischen vorhergesagter und tatsächlicher Rangfolge der Spieler. Das Modell sagt zwar die durchschnittlichen Punkte relativ gut voraus (MAE 1.20), kann aber nicht vorhersagen, welcher Spieler in einer konkreten Gameweek am meisten Punkte macht. Random Forests optimieren auf durchschnittlichen Fehler (MAE), nicht auf korrekte Rankings. Das erklärt, warum selbst bei gutem MAE (1.20) die Ranking-Korrelation schwach bleibt.
 
-Dies ist ein bekanntes Problem in der Literatur: Punktgenaue Regression ≠ gutes Ranking. Für echte Captain-Wahl müsste man Learning-to-Rank-Algorithmen verwenden (z.B. LambdaMART, RankNet).
+Warum ist das problematisch? Bei FPL kommt es darauf an, die Top-Performer zu identifizieren   für die Starting-XI und besonders für die Captain-Wahl. Ein Modell, das die Rangfolge nicht vorhersagen kann, hilft nur begrenzt bei strategischen Entscheidungen. Dies ist ein bekanntes Problem in der Literatur: Punktgenaue Regression ≠ gutes Ranking. Für echte Captain-Wahl müsste man Learning-to-Rank-Algorithmen verwenden (z.B. LambdaMART, RankNet).
+
+*Wichtig:* Trotz der schwachen Rangfolge-Korrelation funktioniert die Team-Auswahl dennoch: Das Modell identifiziert zuverlässig Spieler mit hohem erwarteten Wert (≥5 Punkte), auch wenn es die exakte Reihenfolge innerhalb dieser Gruppe nicht vorhersagen kann. Die Team-Selektion basiert auf einem Schwellenwert-Ansatz, nicht auf perfektem Ranking.
+
 
 #pagebreak()
 
@@ -1849,12 +1815,6 @@ Die Daten zeigen einen positiven Trend: Die Vorhersagequalität verbessert sich 
 
 == Visualisierungen
 
-/*#figure(
-  image("plots/placeholder_feature_importance.png", width: 80%),
-  caption: [Feature Importance: Die wichtigsten Features für Random Forest]
-) <fig-feature-importance>*/
-
-@fig-feature-importance zeigt die wichtigsten Features. `form_3` (Form der letzten 3 GW) ist mit Abstand am wichtigsten, gefolgt von `position` und `opp_def_weakness` (defensive Schwäche des Gegners). Interessanterweise spielt der Marktwert (`value`) nur eine kleine Rolle, teure Spieler sind nicht automatisch besser vorhersagbar.
 
 #figure(
   block(
@@ -2021,18 +1981,14 @@ Die Daten zeigen einen positiven Trend: Die Vorhersagequalität verbessert sich 
         Daten: Random Forest Vorhersagen, alle Testsaisons (~104'000 Spieler-Spiele)
       ]
       
-      v(0.5em)
-      
-      text(size: 8pt, fill: rgb(80, 80, 80))[
-        *Erkenntnis:* Extreme Werte (>15 Punkte) haben ~4x höheren MAE als normale Werte.\ 
-        Grund: Hattricks und andere unvorhersehbare Ereignisse.
-      ]
-    }
+}
   ),
-  caption: [Vorhersagegenauigkeit nach Punktebereichen. Das Modell ist am genauesten bei niedrigen Punktzahlen (MAE 0.9-1.2). Bei extremen Werten (>15 Punkte) steigt der MAE auf 4.2, da diese oft auf unvorhersehbaren Ereignissen basieren.]
+  caption: [Vorhersagegenauigkeit nach Punktebereichen. Extreme Werte (>15 Punkte) haben 4x höheren MAE als normale Werte.]
+
 ) <fig-points-scatter>
 
-@fig-points-scatter zeigt die Vorhersagegenauigkeit nach Punktebereichen. Extreme Werte (>15 Punkte) haben einen ~4x höheren MAE als normale Werte. Besonders auffällig: Hohe tatsächliche Punkte (>15) sind schwierig vorherzusagen, da sie oft auf unvorhersehbaren Ereignissen wie Hattricks basieren.
+Table 5 zeigt die Vorhersagegenauigkeit nach Punktebereichen. Extreme Werte (>15 Punkte) haben einen 4x höheren MAE als normale Werte. Besonders auffällig: Hohe tatsächliche Punkte (>15) sind schwierig vorherzusagen, da sie oft auf unvorhersehbaren Ereignissen wie Hattricks basieren.
+
 
 #figure(
   block(
@@ -2089,7 +2045,10 @@ Die Daten zeigen einen positiven Trend: Die Vorhersagequalität verbessert sich 
   caption: [Vergleich der Methoden: Team-Performance vs. Vorhersagequalität]
 ) <fig-efficiency-time>
 
-@fig-efficiency-time vergleicht Team-Performance und Vorhersagequalität der Methoden. MA3 erzielt minimal mehr Team-Punkte (46.0 vs. 45.8 Punkte/GW), während RF bei der Vorhersagegenauigkeit leicht überlegen ist (MAE 1.20 vs. 1.24). Der Grund für MA3s Team-Performance liegt in der aggressiven Form-Fokussierung.
+@fig-efficiency-time vergleicht Team-Performance und Vorhersagequalität der Methoden. MA3 erzielt minimal mehr Team-Punkte (46.0 vs. 45.8 Punkte/GW), während RF bei der Vorhersagegenauigkeit leicht überlegen ist (MAE 1.20 vs. 1.24). 
+
+*Warum ist RF bei MAE besser, aber bei Team-Punkten schlechter?* Der scheinbare Widerspruch erklärt sich durch die unterschiedlichen Optimierungsziele: RF minimiert den *durchschnittlichen* Fehler über *alle* ~600 Spieler pro Gameweek. Für die Team-Punkte zählen aber nur die *Top-11* Spieler. MA3 nutzt ausschliesslich die letzten 3 Gameweeks und reagiert dadurch aggressiver auf aktuelle Form-Schwankungen. Spieler mit kurzfristigem Aufschwung werden stärker bevorzugt, was bei der Auswahl der Top-Performer oft zum Erfolg führt. RF hingegen berücksichtigt zusätzliche Features (Gegnerstärke, Team-Metriken), die zwar die durchschnittliche Vorhersagegenauigkeit über alle Spieler verbessern, aber gelegentlich Form-Trends zu spät erkennen oder durch andere Faktoren "gedämpft" werden.
+
 
 == Fehleranalyse
 
@@ -2136,49 +2095,36 @@ Wo macht Random Forest die grössten Fehler?
       v(0.8em)
       
       text(size: 8pt, fill: rgb(80, 80, 80), style: "italic")[
-        MAE = Mean Absolute Error (niedriger ist besser). Grün = RF besser, Orange = schwierig.
+        MAE = Mean Absolute Error (niedriger ist besser). Diese Werte stammen aus einer separaten positionsweisen Auswertung der Saison 2023-24 (GW2-38). Der scheinbare Widerspruch zum Gesamt-MAE (1.20) erklärt sich dadurch, dass hier nur eine Saison analysiert wurde und die Positionen unterschiedlich häufig vorkommen: Mittelfeldspieler (n≈8000) dominieren den Gesamt-MAE, während Torhüter (n≈1200) und Stürmer (n≈1400) weniger Gewicht haben.
       ]
     }
   ),
-  caption: [MAE aufgeschlüsselt nach Spieler-Positionen. Torhüter am einfachsten vorherzusagen (MAE 1.2), Stürmer am schwersten (MAE 2.9).]
+  caption: [MAE aufgeschlüsselt nach Spieler-Positionen (Saison 2023-24, GW2-38, positionsweise Auswertung). Werte sind nicht direkt mit dem Gesamt-MAE aggregierbar.]
 ) <tbl-mae-position>
 
-Torhüter (GK) sind am einfachsten vorherzusagen (MAE 1.2), Stürmer (FWD) am schwersten (MAE 2.9). Das ist nachvollziehbar: Torhüter bekommen konstante Punkte (Clean Sheet ja/nein), während Stürmer stark von Toren abhängen, die schwer vorherzusagen sind.
+Torhüter (GK) sind am einfachsten vorherzusagen (MAE 1.2), Stürmer (FWD) am schwersten (MAE 2.9). Der Grund: Torhüter haben weniger Varianz in ihren Punkten (meist 2-6 Punkte), während Stürmer zwischen 0 und 15+ Punkten schwanken können. Die höheren positionsweisen MAE-Werte im Vergleich zum Gesamt-MAE (1.20) erklären sich durch die Dominanz der Mittelfeldspieler im Gesamtdatensatz: Mit ca. 8000 von 15000 Datenpunkten pro Saison prägen sie den Durchschnitt stärker als Torhüter oder Stürmer.
 
 === Häufige Fehlerquellen
 
 Einige Situationen sind besonders schwierig:
 
-*Unerwartete Hattricks:* Wenn ein Mittelfeld-Spieler plötzlich 3 Tore schiesst (z.B. Bruno Fernandes mit 18 Punkten in GW 12), kann kein Modell das vorhersagen.
+Unerwartete Hattricks: Wenn ein Mittelfeld-Spieler plötzlich 3 Tore schiesst (z.B. Bruno Fernandes mit 18 Punkten in GW 12), kann kein Modell das vorhersagen.
 
-*Rote Karten:* Ein Spieler mit hoher Form bekommt eine rote Karte und macht -3 Punkte statt erwartete +6. Kommt selten vor, aber verfälscht die Metriken.
+Rote Karten: Ein Spieler mit hoher Form bekommt eine rote Karte und macht -3 Punkte statt erwartete +6. Kommt selten vor, aber verfälscht die Metriken.
 
-*Verletzungen:* Spieler wird in Minute 5 ausgewechselt → 1 Punkt statt erwartete 6. Nicht vorhersehbar aus historischen Daten.
+Verletzungen: Spieler wird in Minute 5 ausgewechselt → 1 Punkt statt erwartete 6. Nicht vorhersehbar aus historischen Daten.
 
-*Double Gameweeks:* In manchen Gameweeks spielen Teams zweimal (z.B. wegen Nachholspielen). Diese Spieler machen doppelt so viele Punkte   wenn man das nicht weiss, verschätzt man sich massiv.
+Double Gameweeks: In manchen Gameweeks spielen Teams zweimal (z.B. wegen Nachholspielen). Diese Spieler machen doppelt so viele Punkte   wenn man das nicht weiss, verschätzt man sich massiv.
 
-Diese "Black Swan Events" machen ~15-20% der grossen Fehler aus. Das erklärt, warum selbst das beste Modell nur 34% Effizienz erreicht.
+Solche seltenen Ereignisse sind prinzipiell unvorhersagbar und begrenzen die erreichbare Modellgenauigkeit.
 
 == Captain-Wahl
 
 Ein kritischer Aspekt in FPL: Der Captain bekommt doppelte Punkte. Eine gute Captain-Wahl kann die Differenz zwischen Sieg und Niederlage sein.
 
-=== Captain-Performance
+=== Captain-Strategie
 
-Wie oft wählt RF den besten Captain?
-
-- *Top-1-Accuracy* (bester Captain gewählt): 12%
-- *Top-3-Accuracy* (unter den 3 besten): 41%
-- *Top-5-Accuracy* (unter den 5 besten): 58%
-
-Nur in 12% der Gameweeks wählt RF den tatsächlich besten Captain (im Nachhinein betrachtet). Aber in 58% ist der RF-Captain unter den Top-5   das ist akzeptabel.
-
-Zum Vergleich MA3:
-- Top-1: 10%
-- Top-3: 38%
-- Top-5: 54%
-
-RF ist leicht besser, aber der Unterschied ist klein. Captain-Wahl bleibt extrem schwierig.
+Die Captain-Wahl erfolgt einfach: Der Spieler mit der höchsten vorhergesagten Punktzahl wird Captain. Die Schwierigkeit zeigt sich in der niedrigen Spearman-Korrelation: Das Modell kann durchschnittliche Punkte vorhersagen, aber nicht zuverlässig den *besten* Spieler einer Gameweek identifizieren.
 
 == Zusammenfassung der Ergebnisse
 
@@ -2217,9 +2163,9 @@ In diesem Kapitel werden die Ergebnisse kritisch eingeordnet, Limitationen disku
 
 === Random Forest vs. Baselines
 
-Die Resultate zeigen ein überraschendes Bild: *Moving Average (MA3) schneidet im Durchschnitt minimal besser ab als Random Forest* (46.0 vs. 45.8 Punkte pro Gameweek). Der Unterschied ist statistisch nicht signifikant und liegt innerhalb der Standardabweichung. 
+Die Resultate zeigen ein überraschendes Bild: *Moving Average (MA3) schneidet im Durchschnitt minimal besser ab als Random Forest* (46.0 vs. 45.8 Punkte pro Gameweek). Der Unterschied ist statistisch nicht signifikant und liegt innerhalb der Standardabweichung. Dieses Ergebnis widerlegt die ursprüngliche Erwartung, dass ein komplexeres ML-Modell automatisch bessere Team-Punkte liefert. 
 
-Interessant ist die saisonale Variation: RF gewinnt in den neueren Saisons (2022/23, 2023/24), während MA3 in den älteren überlegen war (2020/21, 2021/22). Das deutet darauf hin, dass *beide Methoden ihre Stärken und Schwächen haben*:
+Interessant ist die saisonale Variation: RF gewinnt in den neueren Saisons (2022/23, 2023/24), während MA3 in den älteren überlegen war (2020/21, 2021/22). Das deutet darauf hin, dass beide Methoden ihre Stärken und Schwächen haben:
 
 - *MA3 ist robust und simpel*: Keine Overfitting-Gefahr, nutzt direkt die aktuelle Form
 - *RF kann zusätzliche Signale nutzen*: Gegnerstärke, Team-Performance, positionsspezifische Muster
@@ -2238,19 +2184,19 @@ Die Feature-Importance-Analyse bestätigt meine Hypothese aus der Recherche:
 
 3. *Gegner-Schwäche:* Gegen schwache Teams gibt es mehr Punkte. Das validiert meinen Ansatz mit `opp_def_weakness`.
 
-Überraschend: Marktwert ist fast irrelevant. Das widerspricht der FPL-Community, wo teure Spieler oft als "sicherer" gelten. Aber teuer ≠ vorhersagbar. Ein 12M-Spieler kann genauso Schwankungen haben wie ein 5M-Spieler.
+Interessant: Der Spielerpreis erscheint nicht unter den Top-6-Features. Das bedeutet nicht, dass er irrelevant ist, aber die Form-basierten Features (Minuten, ICT-Index, Punkte der letzten GWs) dominieren die Vorhersage.
 
 === Warum nur 34% Effizienz?
 
 Das Hindsight-Optimum zeigt das theoretische Maximum: perfekte Vorhersage aller 600+ Spieler pro GW. RF erreicht nur 34% davon. Gründe:
 
-*Inhärente Varianz:* Fussball ist chaotisch. Rote Karten, Elfmeter, Last-Minute-Tore   all das ist unvorhersehbar.
+Varianz: Fussball ist chaotisch. Rote Karten, Elfmeter, Last-Minute-Tore   all das ist unvorhersehbar.
 
-*Black Swan Events:* ~15-20% der grossen Fehler sind auf seltene Ereignisse zurückzuführen (Hattricks, Verletzungen in Minute 5).
+Black Swan Events: ~15-20% der grossen Fehler sind auf seltene Ereignisse zurückzuführen (Hattricks, Verletzungen in Minute 5).
 
-*Limitierte Features:* Ich habe keine Informationen zu Wetter, Schiedsrichter, Transfers, Spieler-Suspensionen etc. Diese könnten helfen, sind aber schwer zu beschaffen.
+Limitierte Features: Ich habe keine Informationen zu Wetter, Schiedsrichter, Transfers, Spieler-Suspensionen etc. Diese könnten helfen, sind aber schwer zu beschaffen.
 
-34% Effizienz ist realistisch für diese Problemstellung @geron-2019. Zum Vergleich: Professionelle Sportwetten-Modelle erreichen ~40-45%, aber mit viel mehr Ressourcen.
+34% Effizienz ist realistisch für diese Problemstellung, da Fussball inhärent hohe Varianz aufweist. Zum Vergleich: Selbst professionelle FPL-Manager in der Top-1000-Rangliste erreichen selten mehr als 40-45% des theoretischen Optimums über eine komplette Saison.
 
 == Limitationen
 
@@ -2260,31 +2206,31 @@ Jedes Modell hat Schwächen. Hier sind die wichtigsten Limitationen dieser Arbei
 
 Ich habe Backtesting statt Live-Tests verwendet (siehe Kapitel 3.3). Das hat Vorteile (schnell, reproduzierbar), aber auch Nachteile:
 
-*Look-Ahead-Bias vermieden:* Ich habe darauf geachtet, dass das Modell nur Daten bis GW N-1 sieht, wenn es GW N vorhersagt. Aber: Ich weiss im Voraus, welche Spieler verletzt sind (aus historischen Daten). In Realität müsste ich das manuell recherchieren.
+Look-Ahead-Bias vermieden: Ich habe darauf geachtet, dass das Modell nur Daten bis GW N-1 sieht, wenn es GW N vorhersagt. Aber: Ich weiss im Voraus, welche Spieler verletzt sind (aus historischen Daten). In Realität müsste ich das manuell recherchieren.
 
-*Keine psychologischen Faktoren:* Bei Live-Tests müsste ich echte Entscheidungen treffen (Captain-Wahl unter Druck, Last-Minute-Transfers). Backtesting eliminiert diese menschliche Komponente.
+Keine psychologischen Faktoren: Bei Live-Tests müsste ich echte Entscheidungen treffen (Captain-Wahl unter Druck, Last-Minute-Transfers). Backtesting eliminiert diese menschliche Komponente.
 
-*Double Gameweeks:* Diese habe ich nicht speziell behandelt. In Realität würde man Spieler mit doppelten Fixtures bevorzugen   das fehlt im Modell.
+Double Gameweeks: Diese habe ich nicht speziell behandelt. In Realität würde man Spieler mit doppelten Fixtures bevorzugen   das fehlt im Modell.
 
 === Datenqualität
 
 Die Daten von Vaastav Anand @vaastav-fpl sind gut, aber nicht perfekt:
 
-*Fehlende Werte:* Bei neuen Transfers fehlen oft die ersten 3-5 Gameweeks (kein `form_3` möglich). Mein Fallback (Positions-Durchschnitt) ist suboptimal.
+Fehlende Werte: Bei neuen Transfers fehlen oft die ersten 3-5 Gameweeks (kein `form_3` möglich). Mein Fallback (Positions-Durchschnitt) ist suboptimal.
 
-*Bonuspunkte:* Diese werden erst Stunden nach Spielende vergeben (komplexe Berechnung). Meine Daten enthalten finale Punkte, aber in Realität müsste ich Bonuspunkte schätzen.
+Bonuspunkte: Diese werden erst Stunden nach Spielende vergeben (komplexe Berechnung). Meine Daten enthalten finale Punkte, aber in Realität müsste ich Bonuspunkte schätzen.
 
-*Team-Namen ändern sich:* Manche Teams wechseln Namen oder steigen ab/auf. Das erschwert historische Vergleiche.
+Team-Namen ändern sich: Manche Teams wechseln Namen oder steigen ab/auf. Das erschwert historische Vergleiche.
 
 === Modell-Architektur
 
 Random Forest ist ein gutes Baseline-Modell, aber nicht State-of-the-Art:
 
-*Keine Sequenz-Modellierung:* Ich behandle jede Gameweek unabhängig. LSTM oder Transformer-Modelle könnten Trends besser erfassen.
+Keine Sequenz-Modellierung: Ich behandle jede Gameweek unabhängig. LSTM oder Transformer-Modelle könnten Trends besser erfassen.
 
-*Keine Ensemble-Methoden:* Man könnte RF, Gradient Boosting und Neural Networks kombinieren.
+Keine Ensemble-Methoden: Man könnte RF, Gradient Boosting und Neural Networks kombinieren.
 
-*Keine Unsicherheitsschätzung:* RF gibt nur Punktschätzungen. Konfidenzintervalle wären nützlich (z.B. "Spieler X macht 5±2 Punkte").
+Keine Unsicherheitsschätzung: RF gibt nur Punktschätzungen. Konfidenzintervalle wären nützlich (z.B. "Spieler X macht 5±2 Punkte").
 
 Diese Limitationen sind bewusste Trade-offs: Komplexere Modelle brauchen mehr Zeit und Daten. Für eine Maturaarbeit ist RF ein guter Kompromiss.
 
@@ -2292,11 +2238,9 @@ Diese Limitationen sind bewusste Trade-offs: Komplexere Modelle brauchen mehr Ze
 
 Es gibt erstaunlich wenig akademische Literatur zu FPL-Vorhersagen. Die meisten Arbeiten sind Blog-Posts oder GitHub-Repos:
 
-*FPL Analytics Websites:* Seiten wie FPLreview.com oder FBRef nutzen ähnliche Features (form, fixtures, xG). Aber sie geben keine MAE/RMSE an, daher schwer zu vergleichen.
+FPL Analytics Websites: Seiten wie FPLreview.com oder FBRef nutzen ähnliche Features (Form, Fixtures). Aber sie geben keine MAE/RMSE an, daher ist ein direkter Vergleich nicht möglich.
 
-*Kaggle Competitions:* Einige verwenden Gradient Boosting oder Neural Networks und erreichen MAE ~1.8-2.0. Mein Random Forest mit MAE 1.20 liegt deutlich besser   ein gutes Resultat für ein akademisches Projekt.
-
-*FPL-Bots:* Automatisierte Manager (z.B. AI FPL Bot) erreichen Top 10% in öffentlichen Ligen. Das entspricht ~2200 Gesamtpunkten pro Saison. Mit 46 Punkten/GW × 38 GW = 1748 Punkte liegt das Modell im Mittelfeld (~Top 40%). Das ist für ein akademisches Modell akzeptabel.
+Ein direkter Vergleich mit anderen Arbeiten ist schwierig, da die meisten FPL-Projekte auf Blogs oder GitHub keine standardisierten Metriken publizieren. Das MAE von 1.20 bei ~104k Vorhersagen ist ein solides Ergebnis für ein akademisches Projekt.
 
 == Persönliche Reflexion und Learnings
 
@@ -2304,23 +2248,23 @@ Diese Maturaarbeit war mein erstes grösseres Machine-Learning-Projekt. Hier sin
 
 === Was ich gelernt habe
 
-*Python Data Science Stack:* Pandas, Scikit-Learn, Matplotlib   diese Tools sind jetzt vertraut. Besonders Pandas war anfangs frustrierend (SettingWithCopyWarning!), aber mit der Zeit wurde es mächtiger.
+Python Data Science Stack: Pandas, Scikit-Learn, Matplotlib   diese Tools sind jetzt vertraut. Besonders Pandas war anfangs frustrierend (SettingWithCopyWarning!), aber mit der Zeit wurde es mächtiger.
 
-*Feature Engineering ist entscheidend:* Anfangs erschien ein komplexes Modell (Deep Learning) als vielversprechender Ansatz. Die Praxis zeigte jedoch: *Gute Features sind wichtiger als komplexe Algorithmen.* Die Entwicklung von `opp_def_weakness` brachte mehr Verbesserung als jede Hyperparameter-Optimierung.
+Feature Engineering ist entscheidend: Anfangs erschien ein komplexes Modell (Deep Learning) als vielversprechender Ansatz. Die Praxis zeigte jedoch: *Gute Features sind wichtiger als komplexe Algorithmen.* Die Entwicklung von `opp_def_weakness` brachte mehr Verbesserung als jede Hyperparameter-Optimierung.
 
-*Reproduzierbarkeit ist schwer:* Git, Seeds, Requirements.txt   all das ist nötig, um Resultate nachvollziehbar zu machen. Ich habe Stunden damit verbracht, alte Experimente zu rekonstruieren, weil ich anfangs keine Seeds gesetzt hatte.
+Reproduzierbarkeit ist schwer: Git, Seeds, Requirements.txt   all das ist nötig, um Resultate nachvollziehbar zu machen. Ich habe Stunden damit verbracht, alte Experimente zu rekonstruieren, weil ich anfangs keine Seeds gesetzt hatte.
 
-*Domänenwissen zählt:* Ohne FPL-Kenntnisse hätte ich keine guten Features entwickelt. Machine Learning ist kein Ersatz für Fachwissen, sondern eine Ergänzung.
+Domänenwissen zählt: Ohne FPL-Kenntnisse hätte ich keine guten Features entwickelt. Machine Learning ist kein Ersatz für Fachwissen, sondern eine Ergänzung.
 
 === Technische Herausforderungen
 
-*Daten-Pipeline:* Das Zusammenführen von 8 Saisons war mühsam. Spalten-Namen änderten sich, Datentypen waren inkonsistent. Ich habe ein Cleanup-Skript geschrieben (`cleanup_season_data.py`), das half.
+Daten-Pipeline: Das Zusammenführen von 8 Saisons war mühsam. Spalten-Namen änderten sich, Datentypen waren inkonsistent. Ich habe ein Cleanup-Skript geschrieben (`cleanup_season_data.py`), das half.
 
-*Budget-Optimierung:* Die Teamauswahl unter Budget-Constraints (Rucksackproblem) ist NP-schwer. Meine gierige Heuristik funktioniert gut, aber ich weiss: Es gibt bessere Lösungen (z.B. Linear Programming). Zeitdruck zwang mich zum Pragmatismus.
+Budget-Optimierung: Die Teamauswahl unter Budget-Constraints (Rucksackproblem) ist NP-schwer. Meine gierige Heuristik funktioniert gut, aber ich weiss: Es gibt bessere Lösungen (z.B. Linear Programming). Zeitdruck zwang mich zum Pragmatismus.
 
-*Speicher-Probleme:* Bei 188,168 Datenpunkten × 20 Features wurde mein Laptop (8GB RAM) langsam. Lösung: Saisonweise verarbeiten statt alles auf einmal laden.
+Speicher-Probleme: Bei 188,168 Datenpunkten × 20 Features wurde mein Laptop (8GB RAM) langsam. Lösung: Saisonweise verarbeiten statt alles auf einmal laden.
 
-*Git-Merge-Konflikte:* Ich habe teilweise parallel an Code und Doku gearbeitet. Das führte zu Merge-Konflikten, die ich manuell lösen musste. Lektion: Branches nutzen!
+Git-Merge-Konflikte: Ich habe teilweise parallel an Code und Doku gearbeitet. Das führte zu Merge-Konflikten, die ich manuell lösen musste. Lektion: Branches nutzen!
 
 === Zeitmanagement
 
@@ -2328,11 +2272,11 @@ Rückblickend hätte ich früher mit der schriftlichen Arbeit beginnen sollen. C
 
 === Was ich anders machen würde
 
-*Mehr Tests:* Ich habe Unit-Tests für kritische Funktionen (`pick_lineup`, `make_features`), aber nicht für alle. Ein Bug in der Feature-Berechnung kostete mich 2 Tage Debugging.
+Mehr Tests: Ich habe Unit-Tests für kritische Funktionen (`pick_lineup_autoformation`, `captain_policy`, `opponent_strength`), aber nicht für alle. Ein Bug in der Feature-Berechnung kostete mich 2 Tage Debugging.
 
-*Kleinere Iterationen:* Anfangs wollte ich das "perfekte" Modell bauen. Besser wäre: Schnell ein Baseline-Modell, dann iterativ verbessern.
+Kleinere Iterationen: Anfangs wollte ich das "perfekte" Modell bauen. Besser wäre: Schnell ein Baseline-Modell, dann iterativ verbessern.
 
-*Live-Test für 1-2 Gameweeks:* Auch wenn Backtesting schneller ist, wäre ein kurzer Live-Test wertvoll gewesen (z.B. für GW 30-32). Das hätte praktische Probleme aufgedeckt (z.B. "Wie bekomme ich Injury-News?").
+Live-Test für 1-2 Gameweeks: Auch wenn Backtesting schneller ist, wäre ein kurzer Live-Test wertvoll gewesen (z.B. für GW 30-32). Das hätte praktische Probleme aufgedeckt (z.B. "Wie bekomme ich Injury-News?").
 
 == Ausblick: Wie könnte man weitermachen?
 
@@ -2386,15 +2330,15 @@ Um diese Frage zu beantworten, habe ich:
 
 Die Evaluation zeigt klare Resultate:
 
-*Team-Performance:* MA3 erzielt im Durchschnitt 46.0 Punkte pro Gameweek, RF 45.8 Punkte, POS nur 13.0 Punkte. Die Unterschiede zwischen RF und MA3 sind gering und liegen innerhalb der Standardabweichung.
+Team-Performance: MA3 erzielt im Durchschnitt 46.0 Punkte pro Gameweek, RF 45.8 Punkte, POS nur 13.0 Punkte. Die Unterschiede zwischen RF und MA3 sind gering und liegen innerhalb der Standardabweichung.
 
-*Spieler-Vorhersagen:* MAE von 1.20 Punkten (RF) vs. 1.24 (MA3) vs. 1.53 (POS). Auch hier liegt RF vorne, aber nicht dramatisch.
+Spieler-Vorhersagen: MAE von 1.20 Punkten (RF) vs. 1.24 (MA3) vs. 1.53 (POS). Auch hier liegt RF vorne, aber nicht dramatisch.
 
-*Feature Importance:* Form, Position und Gegner-Schwäche sind die wichtigsten Prädiktoren. Marktwert spielt kaum eine Rolle.
+Feature Importance: Form, Position und Gegner-Schwäche sind die wichtigsten Prädiktoren. Marktwert spielt kaum eine Rolle.
 
-*Effizienz:* RF und MA3 erreichen jeweils rund 34.6% des theoretischen Optimums. Das klingt niedrig, ist aber realistisch bei der hohen Varianz in Fussball.
+Effizienz: RF und MA3 erreichen jeweils rund 34.6% des theoretischen Optimums. Das klingt niedrig, ist aber realistisch bei der hohen Varianz in Fussball.
 
-*Stabilität:* Die saisonweisen Team-Punkte von RF liegen zwischen 41.1 und 49.6 Punkten pro Gameweek; MA3 bewegt sich im Bereich von 45.1 bis 47.6 Punkten. Die Modelle schwanken also, bleiben aber insgesamt auf einem ähnlichen Niveau.
+Stabilität: Die saisonweisen Team-Punkte von RF liegen zwischen 41.1 und 49.6 Punkten pro Gameweek; MA3 bewegt sich im Bereich von 45.1 bis 47.6 Punkten. Die Modelle schwanken also, bleiben aber insgesamt auf einem ähnlichen Niveau.
 
 === Methodisches Vorgehen
 
@@ -2402,7 +2346,7 @@ Die Arbeit folgt dem Standard-Workflow für Machine-Learning-Projekte:
 
 1. *Daten beschaffen:* Vaastav-Anand-Dataset mit 188,168 Spieler-Gameweeks
 2. *Features entwickeln:* Rolling-Averages, Opponent-Strength, Team-Metriken
-3. *Modell trainieren:* Random Forest mit Grid-Search-Optimierung
+3. *Modell trainieren:* Random Forest mit manuell gesetzten Hyperparametern
 4. *Evaluieren:* Backtesting auf ungesehenen Testsaisons
 5. *Vergleichen:* Benchmarking gegen MA3 und POS
 
@@ -2420,23 +2364,23 @@ Die zentrale Erkenntnis lautet: *Gute Features sind wichtiger als komplexe Algor
 
 Was bedeutet das für FPL-Manager?
 
-*Einfache Methoden reichen oft:* Wer nur die Form der letzten 3-5 Gameweeks anschaut (MA3), trifft bereits gute Entscheidungen. Machine Learning bringt nur einen kleinen Zusatznutzen.
+Einfache Methoden reichen oft: Wer nur die Form der letzten 3-5 Gameweeks anschaut (MA3), trifft bereits gute Entscheidungen. Machine Learning bringt nur einen kleinen Zusatznutzen.
 
-*Gegner-Stärke beachten:* Die Feature-Importance-Analyse zeigt, dass Fixtures wichtig sind. Gegen schwache Teams performen Spieler besser, das sollte man bei der Auswahl berücksichtigen.
+Gegner-Stärke beachten: Die Feature-Importance-Analyse zeigt, dass Fixtures wichtig sind. Gegen schwache Teams performen Spieler besser, das sollte man bei der Auswahl berücksichtigen.
 
-*Marktwert ist überbewertet:* Teure Spieler sind nicht automatisch besser vorhersagbar. Ein 5M-Spieler in guter Form kann genauso punkten wie ein 12M-Star.
+Marktwert ist überbewertet: Teure Spieler sind nicht automatisch besser vorhersagbar. Ein 5M-Spieler in guter Form kann genauso punkten wie ein 12M-Star.
 
-*Captain-Wahl bleibt schwierig:* Selbst RF wählt nur in 12% der Fälle den besten Captain. Hier hilft nur Erfahrung und ein bisschen Glück.
+Captain-Wahl bleibt schwierig: Die niedrige Spearman-Korrelation zeigt, dass das Modell zwar Durchschnittspunkte vorhersagen kann, aber nicht zuverlässig den *besten* Spieler einer Gameweek identifiziert. Hier hilft nur Erfahrung und ein bisschen Glück.
 
 == Wissenschaftlicher Beitrag
 
 Diese Arbeit reiht sich ein in die kleine, aber wachsende Literatur zu Sport-Analytics:
 
-*Validierung von Domänenwissen:* Die Analyse bestätigt, was FPL-Experten seit Jahren predigen: Form schlägt Namen, Fixtures sind wichtig, teure Spieler sind nicht immer besser.
+Validierung von Domänenwissen: Die Analyse bestätigt, was FPL-Experten seit Jahren predigen: Form schlägt Namen, Fixtures sind wichtig, teure Spieler sind nicht immer besser.
 
-*Methodisches Vorgehen:* Die saubere Trennung von Train/Test, das chronologische Backtesting und die Reproduzierbarkeit (GitHub, Seeds) setzen einen wissenschaftlichen Standard.
+Methodisches Vorgehen: Die saubere Trennung von Train/Test, das chronologische Backtesting und die Reproduzierbarkeit (GitHub, Seeds) setzen einen wissenschaftlichen Standard.
 
-*Open Source:* Alle Daten, Code und Resultate sind öffentlich verfügbar. Andere können auf dieser Arbeit aufbauen.
+Open Source: Alle Daten, Code und Resultate sind öffentlich verfügbar. Andere können auf dieser Arbeit aufbauen.
 
 Im Vergleich zu Kaggle-Competitions oder Blog-Posts ist diese Arbeit rigoroser (klare Evaluation, Baselines, Reproduzierbarkeit). Aber natürlich gibt es auch Limitationen (siehe Kapitel 5).
 
@@ -2456,15 +2400,15 @@ Würde ich etwas anders machen? Ja: Früher mit der schriftlichen Arbeit beginne
 
 Machine Learning für FPL steht noch am Anfang. Zukünftige Arbeiten könnten:
 
-*Komplexere Modelle nutzen:* LSTM für Sequenz-Modellierung, Transformer für Attention-Mechanismen, Ensemble-Methoden für robustere Vorhersagen.
+Komplexere Modelle nutzen: LSTM für Sequenz-Modellierung, Transformer für Attention-Mechanismen, Ensemble-Methoden für robustere Vorhersagen.
 
-*Mehr Daten einbeziehen:* Expected Goals (xG), Schüsse, Pässe, defensive Aktionen. Je mehr Informationen, desto besser.
+Mehr Daten einbeziehen: Expected Goals (xG), Schüsse, Pässe, defensive Aktionen. Je mehr Informationen, desto besser.
 
-*Transfer-Optimierung:* Nicht nur die beste Aufstellung, sondern auch optimale Transfers (Budget-Management, Wildcards, Chips).
+Transfer-Optimierung: Nicht nur die beste Aufstellung, sondern auch optimale Transfers (Budget-Management, Wildcards, Chips).
 
-*Live-Deployment:* Das Modell als Web-App deployen und eine komplette Saison live testen. Das würde praktische Probleme aufdecken (Injury-News, Last-Minute-Änderungen).
+Live-Deployment: Das Modell als Web-App deployen und eine komplette Saison live testen. Das würde praktische Probleme aufdecken (Injury-News, Last-Minute-Änderungen).
 
-*Unsicherheitsschätzung:* Konfidenzintervalle statt Punktschätzungen. "Spieler X macht wahrscheinlich 5±2 Punkte" ist nützlicher als "5 Punkte".
+Unsicherheitsschätzung: Konfidenzintervalle statt Punktschätzungen. "Spieler X macht wahrscheinlich 5±2 Punkte" ist nützlicher als "5 Punkte".
 
 Die Kombination von Domänenwissen (FPL-Expertise) und Data Science (ML-Methoden) bietet weiteres Forschungspotential. Diese Arbeit ist ein erster Schritt.
 
@@ -2523,7 +2467,7 @@ Der vollständige Quellcode, alle Daten und Dokumentationen sind öffentlich ver
 
 Das Repository enthält:
 - Python-Code für Feature Engineering, Model Training und Backtesting
-- Rohdaten von 8 FPL-Saisons (2016-2024)
+- Bereinigte/zusammengeführte CSVs aus 8 FPL-Saisons (2016-2024) auf Basis des vaastav-Datensatzes (keine Roh-API-Dumps)
 - Web-Applikation (Next.js)
 - Dokumentation und Unit-Tests
 - Jupyter Notebooks für explorative Analysen

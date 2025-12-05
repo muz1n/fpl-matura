@@ -9,7 +9,7 @@ Dieser Ordner enthält alle Daten für das FPL-Vorhersage-System.
 #### Bereinigte Daten (`cleaned_merged_gw_YYYY-YY.csv`)
 - **Verwendung**: Training und Backtesting der ML-Modelle
 - **Bereinigung**: Duplikate entfernt, Datenqualität geprüft
-- **Spalten**: 65 Features inkl. Punkte, Minuten, xG, xA, Gegner, etc.
+- **Spalten**: 65 Spalten inkl. Punkte, Minuten, ICT-Index, Gegner, etc. (Modell verwendet davon nur rolling-Features)
 - **Saisons**:
   - `cleaned_merged_gw_2016-17.csv` - 23.106 Zeilen
   - `cleaned_merged_gw_2017-18.csv` - 21.797 Zeilen

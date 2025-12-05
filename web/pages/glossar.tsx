@@ -139,10 +139,6 @@ export default function GlossarPage() {
                     definition: "Rollierender ICT-Index über 3 GWs. Zeigt konstante Aktivität."
                 },
                 {
-                    term: "xG_roll3 / xA_roll3",
-                    definition: "Expected Goals/Assists über letzte 3 GWs. Zeigt Chancenqualität unabhängig von Glück."
-                },
-                {
                     term: "was_home",
                     definition: "Heimspiel (1) oder Auswärtsspiel (0). Heimvorteil kann Performance beeinflussen."
                 },

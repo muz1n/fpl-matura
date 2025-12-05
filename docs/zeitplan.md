@@ -8,7 +8,7 @@
 
 ## 2: Feature Engineering & Modelltraining (August 2025)
 - Datensammlung (historische FPL-Daten, API-Zugriffe testen)
-- Datenbereinigung & Feature Engineering (z. B. xG, Gegnerstärke)
+- Datenbereinigung & Feature Engineering (z. B. ICT-Index, Gegnerstärke)
 - Training einfacher Modelle: Random Forest oder Neuronales Netz
 - Evaluation mit MAE + Vergleich zur Baseline
 ## Reale Anwendung: Saisonstart und reale Anwendung

@@ -135,7 +135,7 @@ export default function InfoPage() {
                                         </div>
                                         <div className="flex items-start gap-2">
                                             <div className="w-2 h-2 bg-pink-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                                            <p className="text-sm text-slate-300">xG/xA, ICT-Index, Verletzungsstatus</p>
+                                            <p className="text-sm text-slate-300">ICT-Index (Influence, Creativity, Threat), Verletzungsstatus</p>
                                         </div>
                                         <div className="flex items-start gap-2">
                                             <div className="w-2 h-2 bg-pink-500 rounded-full mt-1.5 flex-shrink-0"></div>

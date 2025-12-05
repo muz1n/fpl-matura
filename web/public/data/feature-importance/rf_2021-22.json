@@ -1,64 +1,50 @@
 {
-  "season": "2021-22",
-  "method": "rf",
-  "n_features": 8,
-  "generated_at": "2025-12-04",
-  "features": [
-    {
-      "feature": "price",
-      "importance": 0.231168,
-      "normalized": 0.231168,
-      "cumulative": 0.231168,
-      "rank": 1
-    },
-    {
-      "feature": "influence_r3",
-      "importance": 0.142977,
-      "normalized": 0.142977,
-      "cumulative": 0.374145,
-      "rank": 2
-    },
-    {
-      "feature": "creativity_r3",
-      "importance": 0.138958,
-      "normalized": 0.138958,
-      "cumulative": 0.513103,
-      "rank": 3
-    },
-    {
-      "feature": "ict_index_r3",
-      "importance": 0.137621,
-      "normalized": 0.137621,
-      "cumulative": 0.650724,
-      "rank": 4
-    },
-    {
-      "feature": "minutes_r3",
-      "importance": 0.118963,
-      "normalized": 0.118963,
-      "cumulative": 0.769686,
-      "rank": 5
-    },
-    {
-      "feature": "threat_r3",
-      "importance": 0.097833,
-      "normalized": 0.097833,
-      "cumulative": 0.867519,
-      "rank": 6
-    },
-    {
-      "feature": "points_per90_r3",
-      "importance": 0.093086,
-      "normalized": 0.093086,
-      "cumulative": 0.960605,
-      "rank": 7
-    },
-    {
-      "feature": "points_r3",
-      "importance": 0.039395,
-      "normalized": 0.039395,
-      "cumulative": 1.0,
-      "rank": 8
-    }
-  ]
+    "season": "2021-22",
+    "method": "rf",
+    "n_features": 6,
+    "generated_at": "2025-12-05",
+    "features": [
+        {
+            "feature": "minutes_ma3",
+            "importance": 0.3255,
+            "normalized": 0.3255,
+            "cumulative": 0.3255,
+            "rank": 1
+        },
+        {
+            "feature": "ict_index_ma3",
+            "importance": 0.2304,
+            "normalized": 0.2304,
+            "cumulative": 0.5559,
+            "rank": 2
+        },
+        {
+            "feature": "influence_ma3",
+            "importance": 0.1611,
+            "normalized": 0.1611,
+            "cumulative": 0.7170,
+            "rank": 3
+        },
+        {
+            "feature": "creativity_ma3",
+            "importance": 0.1107,
+            "normalized": 0.1107,
+            "cumulative": 0.8277,
+            "rank": 4
+        },
+        {
+            "feature": "points_ma3",
+            "importance": 0.0980,
+            "normalized": 0.0980,
+            "cumulative": 0.9257,
+            "rank": 5
+        },
+        {
+            "feature": "threat_ma3",
+            "importance": 0.0744,
+            "normalized": 0.0744,
+            "cumulative": 1.0001,
+            "rank": 6
+        }
+    ]
 }

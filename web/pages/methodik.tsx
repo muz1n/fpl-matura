@@ -61,7 +61,7 @@ export default function MethodikPage() {
                                         <h3 className="text-lg font-bold text-pink-400 mb-2">Random Forest (Standard)</h3>
                                         <p className="text-sm text-slate-300 mb-3">
                                             Das Basismodell trainiert direkt auf FPL-Punkte. Es nutzt alle verfügbaren Features
-                                            (Form, xG/xA, Gegnerstärke, ICT-Index usw.) und lernt komplexe, nichtlineare Zusammenhänge.
+                                            (Form, Gegnerstärke, ICT-Index usw.) und lernt komplexe, nichtlineare Zusammenhänge.
                                         </p>
                                         <div className="space-y-1">
                                             <p className="text-xs text-slate-400"><strong className="text-pink-400">Vorteil:</strong> Flexibel, erfasst komplexe Muster</p>
@@ -221,7 +221,7 @@ export default function MethodikPage() {
                                             <h3 className="font-semibold text-slate-200 mb-1">Feature Engineering</h3>
                                             <p className="text-sm text-slate-300">
                                                 Zusätzliche Features: Gegnerstärke (defensiv/offensiv), Heim/Auswärts,
-                                                ICT-Index, Expected Goals/Assists (xG/xA), Verletzungsstatus.
+                                                ICT-Index-Komponenten (Influence, Creativity, Threat), Verletzungsstatus.
                                             </p>
                                         </div>
                                     </div>
