@@ -56,12 +56,12 @@ Das Script verwendet:
 Das Random Forest Modell nutzt folgende Features:
 - `price`: Spielerpreis
 - `selected`: Auswahlrate (%)
-- `influence_r3`: Influence (Rolling 3 GW Durchschnitt)
-- `creativity_r3`: Creativity (Rolling 3 GW)
-- `threat_r3`: Threat (Rolling 3 GW)
-- `ict_index_r3`: ICT Index (Rolling 3 GW)
-- `minutes_r3`: Minuten gespielt (Rolling 3 GW)
-- `points_per90_r3`: Punkte pro 90 Minuten (Rolling 3 GW)
+- `influence_ma3`: Influence (Moving Average 3 GW)
+- `creativity_ma3`: Creativity (MA3)
+- `threat_ma3`: Threat (MA3)
+- `ict_index_ma3`: ICT Index (MA3)
+- `minutes_ma3`: Minuten gespielt (MA3)
+- `points_per90_ma3`: Punkte pro 90 Minuten (MA3)
 
 ## Workflow
 

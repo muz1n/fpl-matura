@@ -85,7 +85,7 @@ export default function GlossarPage() {
                 },
                 {
                     term: "Rolling Feature",
-                    definition: "Wert über mehrere Spieltage (z.B. form_roll3 = Formdurchschnitt letzte 3 GWs)."
+                    definition: "Wert über mehrere Spieltage (z.B. form_ma3 = Formdurchschnitt letzte 3 GWs)."
                 },
                 {
                     term: "MAE (Mean Absolute Error)",
@@ -123,19 +123,19 @@ export default function GlossarPage() {
                     definition: "Offensive Stärke des Gegners (0-5). Hohe Werte = starker Angriff = weniger Clean Sheets für DEF/GK."
                 },
                 {
-                    term: "_r3 / _roll3 Suffix",
-                    definition: "Rolling Feature über 3 Gameweeks. Durchschnitt der letzten 3 Spieltage (z.B. points_r3 = Ø Punkte letzte 3 GWs). Verhindert Look-Ahead Bias, da nur Vergangenheit verwendet wird."
+                    term: "_ma3 Suffix",
+                    definition: "Moving Average über 3 Gameweeks. Durchschnitt der letzten 3 Spieltage (z.B. points_ma3 = Ø Punkte letzte 3 GWs). Verhindert Look-Ahead Bias, da nur Vergangenheit verwendet wird."
                 },
                 {
-                    term: "minutes_roll3",
+                    term: "minutes_ma3",
                     definition: "Durchschnittliche Einsatzminuten über letzte 3 Spieltage. Zeigt Stammplatz-Status."
                 },
                 {
-                    term: "form_roll3",
+                    term: "form_ma3",
                     definition: "Formdurchschnitt (Punkte pro Spiel) über letzte 3 Gameweeks."
                 },
                 {
-                    term: "ict_index_roll3",
+                    term: "ict_index_ma3",
                     definition: "Rollierender ICT-Index über 3 GWs. Zeigt konstante Aktivität."
                 },
                 {

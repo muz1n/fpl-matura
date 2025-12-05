@@ -155,9 +155,6 @@ export default function BacktestPage() {
                 // Alle Methoden initial selektiert - AUSSER deprecated methods
                 const allMethods: string[] = Array.from(new Set(data.detail.map((r: BacktestDetailRow) => r.method)))
                     .filter(m => m !== 'rf_filled' && m !== 'rf_optfill')
-                console.log('🔍 Gefundene Methoden:', allMethods)
-                console.log('📊 Anzahl Detail-Rows:', data.detail.length)
-                console.log('📈 Summary Rows:', data.summary.map(s => s.method))
                 setSelectedMethods(allMethods)
                 setState('success')
             } catch (err) {

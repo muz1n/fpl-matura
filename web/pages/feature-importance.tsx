@@ -157,8 +157,8 @@ export default function FeatureImportancePage() {
                                     </div>
                                     <ul className="list-disc pl-5 space-y-2 text-sm text-slate-300">
                                         <li><strong>Hohe Wichtigkeit</strong> → Modell nutzt dieses Merkmal häufig für Entscheidungen (z.B. Preis als Proxy für Spielerqualität)</li>
-                                        <li><strong>Rolling Features (_r3)</strong> → Durchschnitt über letzte 3 Spieltage. Verhindert Look-Ahead Bias (keine zukünftigen Daten)</li>
-                                        <li><strong>Warum nur r3?</strong> → Diese Features wurden im Modelltraining verwendet. Andere wie Gegnerstärke sind implizit enthalten oder separat berechnet.</li>
+                                        <li><strong>Rolling Features (_ma3)</strong> → Moving Average über letzte 3 Spieltage. Verhindert Look-Ahead Bias (keine zukünftigen Daten)</li>
+                                        <li><strong>Warum nur _ma3?</strong> → Diese Features wurden im Modelltraining verwendet. Andere wie Gegnerstärke sind implizit enthalten oder separat berechnet.</li>
                                         <li>Niedrige Importances können dennoch für Stabilität relevant sein</li>
                                     </ul>
                                 </div>

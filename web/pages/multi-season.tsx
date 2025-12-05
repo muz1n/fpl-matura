@@ -78,25 +78,20 @@ export default function MultiSeasonPage() {
         async function fetchRanges() {
             try {
                 const firstSeason = selectedSeasons[0]
-                console.log('Fetching ranges for season:', firstSeason)
                 const res = await fetch(`/api/backtests/${firstSeason}`)
                 if (!res.ok) {
-                    console.warn('Failed to fetch ranges, using defaults')
                     setAvailableRanges(['2-38', '30-38'])
                     setGwRange('30-38')
                     return
                 }
                 const data = await res.json()
                 const ranges = data.available_ranges ?? []
-                console.log('Available ranges:', ranges)
                 setAvailableRanges(ranges)
                 if (ranges.length > 0) {
                     const defaultRange = ranges[ranges.length - 1]
-                    console.log('Setting default range:', defaultRange)
                     setGwRange(defaultRange)
                 }
-            } catch (err) {
-                console.error('Error fetching ranges:', err)
+            } catch {
                 setAvailableRanges(['2-38', '30-38'])
                 setGwRange('30-38')
             }
@@ -112,24 +107,19 @@ export default function MultiSeasonPage() {
         async function fetchData() {
             setState('loading')
             setError('')
-            console.log('Fetching multi-season data for:', selectedSeasons, gwRange)
             try {
                 const seasonParam = selectedSeasons.join(',')
                 const res = await fetch(`/api/backtest/multi?seasons=${seasonParam}&gwRange=${gwRange}`)
-                console.log('Response status:', res.status)
                 if (!res.ok) {
                     const err = await res.json()
-                    console.error('Error response:', err)
                     setError(err.error || 'Fehler beim Laden')
                     setState('error')
                     return
                 }
                 const json: MultiSeasonResponse = await res.json()
-                console.log('Data loaded:', json)
                 setData(json)
                 setState('success')
             } catch (e: any) {
-                console.error('Fetch error:', e)
                 setError('Fehler beim Laden der Daten: ' + (e.message || 'Unbekannter Fehler'))
                 setState('error')
             }
@@ -139,9 +129,7 @@ export default function MultiSeasonPage() {
 
     // Daten für Chart vorbereiten: Pro Methode die Effizienz über alle Saisons
     const chartData = useMemo(() => {
-        console.log('Computing chartData, data:', data)
         if (!data || !data.data || data.data.length === 0) {
-            console.log('No data or no results')
             return null
         }
 
@@ -164,15 +152,11 @@ export default function MultiSeasonPage() {
                 })
         })
 
-        const result = Object.values(methodsData)
-        console.log('ChartData computed:', result)
-        return result
+        return Object.values(methodsData)
     }, [data])
 
     const chartOption: EChartsOption | null = useMemo(() => {
-        console.log('Computing chartOption, chartData:', chartData, 'length:', chartData?.length)
         if (!chartData || chartData.length === 0) {
-            console.log('No chartData or empty array')
             return null
         }
 
@@ -237,8 +221,6 @@ export default function MultiSeasonPage() {
             series: seriesData,
         }
     }, [chartData, selectedSeasons])
-
-    console.log('Render state:', { state, hasData: !!data, hasChartData: !!chartData, chartDataLength: chartData?.length, hasChartOption: !!chartOption })
 
     const toggleSeason = (season: string) => {
         setSelectedSeasons(prev =>
