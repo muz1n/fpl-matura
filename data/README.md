@@ -25,19 +25,11 @@ Dieser Ordner enthält alle Daten für das FPL-Vorhersage-System.
 - **Zustand**: Vor Duplikat-Entfernung
 - **Quelle**: Von vaastav/Fantasy-Premier-League GitHub heruntergeladen
 
-#### All-Seasons Datensatz
-- `merged_gw_all_seasons.csv` - 196.538 Zeilen
-- **Verwendung**: Gesamtübersicht aller Saisons kombiniert
+### Gesamt-Datensatz
 
-### Aktuelle Saison (2024-25)
-
-- `cleaned_players_2025-26.csv` - 668 Spieler
-  - Aktuelle Spielerdaten für Prognosen
-  - 19 Spalten: player_id, name, team, position, price, etc.
-
-- `cleaned_players_2025-26_team.csv` - 696 Spieler
-  - Erweiterte Version mit Team-Informationen
-  - Wird für Web-App verwendet
+- `merged_gw_all_seasons.csv` - 188.168 Zeilen (bereinigt)
+- **Verwendung**: Gesamtübersicht aller 8 Saisons kombiniert
+- **Train/Test**: 2016-20 (Training), 2020-24 (Testing)
 
 ## 🔧 Konfigurations- und Qualitätsdateien
 
@@ -76,7 +68,6 @@ python tools/validate_season_data.py
 
 ## 📝 Hinweise
 
-- **Regel-Änderungen**: Ab Saison 2024-25 wurden FPL-Regeln geändert (z.B. GK Goal = 5 statt 6, DC = 2)
-- **Era-System**: Code unterscheidet zwischen Era 1 (2016-24) und Era 2 (2024+)
 - **Datenqualität**: Alle Dateien wurden auf Duplikate und Konsistenz geprüft
 - **Backup**: Originale `merged_gw_*.csv` bleiben als Backup erhalten
+- **Gesamt**: 188.168 Spieler-Gameweek-Datensätze über 8 Saisons

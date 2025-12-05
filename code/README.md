@@ -79,6 +79,6 @@ code/
 
 ## 📖 Weitere Dokumentation
 
-- **CODE_STRUCTURE.md**: Detaillierte Übersicht aller Skripte
 - **README_make_predictions.md**: Details zu make_predictions.py
+- **Hauptdokumentation**: `docs/schriftliche_maturaarbeit/maturaarbeit.typ`
 

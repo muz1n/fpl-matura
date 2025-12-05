@@ -1,24 +1,50 @@
-# fpl-matura — web (Next.js + TypeScript + Tailwind)
+# FPL Maturaprojekt - Web-Applikation
 
-This folder is a small demo scaffold for Next.js + TypeScript + Tailwind.
+Next.js + TypeScript + Tailwind CSS Web-App für FPL-Vorhersagen und Backtests.
 
-Quick start (from repository root):
+## Quick Start
 
-```cmd
+```bash
 cd web
 npm install
 npm run dev
+# → http://localhost:3000
 ```
 
-Available npm scripts:
-- dev: start dev server (next dev)
-- build: build for production (next build)
-- start: run production build (next start)
-- lint: run next lint
-- test: run Jest tests
+## Features
 
-Demo JSON files (placed in public/demo):
-- predictions_gw38.json
-- lineup_gw38.json
+- 📊 Interaktive Vorhersagen für alle Saisons & Gameweeks
+- 📈 Backtest-Visualisierungen mit Performance-Charts
+- 🔄 Multi-Season-Vergleich (8 Saisons: 2016-2024)
+- 🎯 Automatische Lineup-Optimierung
+- 🌓 Dark Mode Support
+- 📱 Responsive Design
 
-You can replace those demo files with real files later.
+## Technologie-Stack
+
+- **Framework**: Next.js 14
+- **Sprache**: TypeScript
+- **Styling**: Tailwind CSS
+- **Charts**: Recharts
+- **Deployment**: Vercel (automatische CI/CD via GitHub)
+
+## Verfügbare Scripts
+
+- `npm run dev` - Entwicklungsserver starten
+- `npm run build` - Production Build erstellen
+- `npm start` - Production Server starten
+- `npm run lint` - Linting ausführen
+- `npm test` - Jest Tests ausführen
+
+## Datenquellen
+
+Die App liest Backtest-Resultate aus `out/backtests/`:
+- JSON-Dateien mit Vorhersagen
+- CSV-Dateien mit Evaluations-Ergebnissen
+- PNG-Grafiken mit Performance-Charts
+
+## Deployment
+
+Automatisches Deployment via Vercel:
+- Push zu `main` Branch → automatischer Build & Deploy
+- Live-URL: Siehe Vercel Dashboard
