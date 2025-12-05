@@ -69,8 +69,8 @@ def calculate_metrics(df: pd.DataFrame) -> dict:
     if len(valid) == 0:
         return {"mae": None, "rmse": None, "n": 0}
 
-    pred = valid["predicted_points"].values
-    actual = valid["actual_points"].values
+    pred = valid["predicted_points"].to_numpy(dtype=np.float64)
+    actual = valid["actual_points"].to_numpy(dtype=np.float64)
 
     mae = np.mean(np.abs(pred - actual))
     rmse = np.sqrt(np.mean((pred - actual) ** 2))

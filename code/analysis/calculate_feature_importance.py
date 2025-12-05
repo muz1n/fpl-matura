@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 
@@ -155,7 +156,7 @@ def compute_weighted_average_importance(feature_importances):
     # Sammle alle Feature-Namen (sollten gleich sein)
     all_features = None
     total_samples = 0
-    weighted_importance = None
+    weighted_importance: npt.NDArray[np.float64] | None = None
 
     for pos, data in feature_importances.items():
         n = data["n_samples"]
@@ -170,6 +171,8 @@ def compute_weighted_average_importance(feature_importances):
         weighted_importance += importance * n
 
     # Normalisieren
+    assert all_features is not None
+    assert weighted_importance is not None
     weighted_importance /= total_samples
 
     # Sortieren nach Importance
